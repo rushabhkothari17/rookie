@@ -283,6 +283,9 @@ Build a white-label service commerce platform with:
 - **Partner Signup Migration**: Added `_migrate_partner_signup_schema` function to inject `admin_email`/`admin_password` locked fields into old partner signup schemas. Called in both GET /website-settings endpoints
 - Tested via iteration_280 — **6/6 frontend + 11/11 backend PASS (100%)**
 
+- **Dynamic Visibility (Part A — Field-level)**: Added `VisibilityRuleSet` types + `VisibilityRuleEditor` component to `FormSchemaBuilder.tsx`. Each field now has a collapsible "Visibility rule" panel with AND/OR group logic, up to 3 groups × 4 conditions, operators (equals/not_equals/contains/not_contains/not_empty/empty), and a field-picker dropdown. Eye icon in field header when rule is active. `UniversalFormRenderer.tsx` evaluates rules in real-time — hidden fields are removed from the rendered list.
+- **Dynamic Visibility (Part B — Form-level)**: `AdminIntakeFormsTab.tsx` Customer Assignment now has 3 modes: "All customers", "Specific customers only" (customer_ids picker), and "Conditional (profile-based)" which renders `ProductConditionBuilder` reused from `ProductForm.tsx`. Backend updated: `visibility_conditions: Optional[Dict]` field added to create/update models; `_customer_matches_rules` refactored to a clean 3-way priority: specific IDs → profile conditions → all.
+
 - **Gap Fix 4 — Branded PDF**: Both admin and customer PDFs now include: colored header band (brand `primary_color`), logo image (if `logo_url` set), store name in white, form title + customer meta, brand-colored divider, question/answer pairs with label hierarchy, signature box, and timestamped footer. Async logo fetch using FileReader → base64.
 - **Mandatory Rejection Reason**: Admin selecting "Rejected" from status dropdown now opens a Dialog requiring a reason before confirming. Reason is sent to backend and included in the rejection email notification.
 

@@ -15,6 +15,7 @@ import api from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
+import { ProductConditionBuilder, ProductVisRuleSet } from "@/pages/admin/ProductForm";
 import {
   Plus, Pencil, Trash2, Eye, Download, FileText, StickyNote, History, ChevronDown, ChevronUp, Settings2, ToggleLeft, ToggleRight, X, Check, Clock, AlertCircle
 } from "lucide-react";
@@ -81,8 +82,9 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const [isEnabled, setIsEnabled] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
   const [allowSkipSig, setAllowSkipSig] = useState(false);
-  const [assignAll, setAssignAll] = useState(true);
+  const [visMode, setVisMode] = useState<"all" | "specific" | "conditional">("all");
   const [customerIds, setCustomerIds] = useState<string[]>([]);
+  const [visibilityConditions, setVisibilityConditions] = useState<ProductVisRuleSet | null>(null);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -99,7 +101,8 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
 
   const resetEditor = () => {
     setName(""); setDescription(""); setSchema([]); setIsEnabled(true);
-    setAutoApprove(false); setAllowSkipSig(false); setAssignAll(true); setCustomerIds([]); setCustSearch("");
+    setAutoApprove(false); setAllowSkipSig(false);
+    setVisMode("all"); setCustomerIds([]); setVisibilityConditions(null); setCustSearch("");
   };
 
   const openNew = () => {
@@ -111,17 +114,22 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
     try { setSchema(JSON.parse(f.schema || "[]")); } catch { setSchema([]); }
     setIsEnabled(f.is_enabled); setAutoApprove(f.auto_approve); setAllowSkipSig(f.allow_skip_signature);
     const ids = f.customer_ids || [];
-    setAssignAll(ids.length === 0); setCustomerIds(ids); setCustSearch("");
+    const vc = (f as any).visibility_conditions || null;
+    if (ids.length > 0) { setVisMode("specific"); setCustomerIds(ids); setVisibilityConditions(null); }
+    else if (vc) { setVisMode("conditional"); setVisibilityConditions(vc); setCustomerIds([]); }
+    else { setVisMode("all"); setCustomerIds([]); setVisibilityConditions(null); }
+    setCustSearch("");
     setShowEditor(true);
   };
 
   const save = async () => {
     if (!name.trim()) { toast.error("Form name is required"); return; }
     setSaving(true);
-    const payload = {
+    const payload: Record<string, any> = {
       name: name.trim(), description, form_schema: JSON.stringify(schema),
       is_enabled: isEnabled, auto_approve: autoApprove, allow_skip_signature: allowSkipSig,
-      customer_ids: assignAll ? [] : customerIds,
+      customer_ids: visMode === "specific" ? customerIds : [],
+      visibility_conditions: visMode === "conditional" ? visibilityConditions : null,
     };
     try {
       if (editingForm) { await api.put(`/admin/intake-forms/${editingForm.id}`, payload); toast.success("Form updated"); }
@@ -292,30 +300,30 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
             <div className="border border-slate-200 rounded-xl p-4 space-y-3">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer Assignment</p>
               <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input type="radio" checked={assignAll} onChange={() => { setAssignAll(true); setCustomerIds([]); }}
-                    className="h-3.5 w-3.5" data-testid="intake-assign-all-radio" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-700">All customers</p>
-                    <p className="text-xs text-slate-400">Every customer in your account must complete this form</p>
-                  </div>
-                </label>
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input type="radio" checked={!assignAll} onChange={() => setAssignAll(false)}
-                    className="h-3.5 w-3.5" data-testid="intake-assign-specific-radio" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-700">Specific customers only</p>
-                    <p className="text-xs text-slate-400">Only selected customers will be required to complete this form</p>
-                  </div>
-                </label>
+                {(["all", "specific", "conditional"] as const).map(mode => (
+                  <label key={mode} className="flex items-start gap-2.5 cursor-pointer">
+                    <input type="radio" checked={visMode === mode}
+                      onChange={() => { setVisMode(mode); if (mode !== "specific") setCustomerIds([]); if (mode !== "conditional") setVisibilityConditions(null); }}
+                      className="h-3.5 w-3.5 mt-0.5" data-testid={`intake-assign-${mode}-radio`} />
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">
+                        {mode === "all" ? "All customers" : mode === "specific" ? "Specific customers only" : "Conditional (profile-based)"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {mode === "all" && "Every customer in your account must complete this form"}
+                        {mode === "specific" && "Only selected customers will be required to complete this form"}
+                        {mode === "conditional" && "Show only to customers matching profile conditions (country, plan, company type, etc.)"}
+                      </p>
+                    </div>
+                  </label>
+                ))}
               </div>
-              {!assignAll && (
+
+              {/* Specific customers picker */}
+              {visMode === "specific" && (
                 <div className="mt-2 space-y-2">
-                  <Input
-                    className="h-7 text-xs" placeholder="Search customers…"
-                    value={customerSearch} onChange={e => setCustSearch(e.target.value)}
-                    data-testid="intake-customer-search"
-                  />
+                  <Input className="h-7 text-xs" placeholder="Search customers…"
+                    value={customerSearch} onChange={e => setCustSearch(e.target.value)} data-testid="intake-customer-search" />
                   {customerIds.length > 0 && (
                     <p className="text-[11px] text-blue-600 font-medium">{customerIds.length} customer{customerIds.length !== 1 ? "s" : ""} selected</p>
                   )}
@@ -325,13 +333,9 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                     ) : filteredCustomers.map((c: any) => {
                       const selected = customerIds.includes(c.id);
                       return (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => toggleCustomerId(c.id)}
+                        <button key={c.id} type="button" onClick={() => toggleCustomerId(c.id)}
                           className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors ${selected ? "bg-blue-50" : ""}`}
-                          data-testid={`intake-customer-${c.id}`}
-                        >
+                          data-testid={`intake-customer-${c.id}`}>
                           <span className={`h-4 w-4 shrink-0 rounded border flex items-center justify-center ${selected ? "bg-blue-500 border-blue-500" : "border-slate-300"}`}>
                             {selected && <Check size={9} className="text-white" strokeWidth={3} />}
                           </span>
@@ -344,6 +348,15 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                     })}
                   </div>
                 </div>
+              )}
+
+              {/* Profile-based condition builder */}
+              {visMode === "conditional" && (
+                <ProductConditionBuilder
+                  value={visibilityConditions}
+                  onChange={setVisibilityConditions}
+                  customers={allCustomers}
+                />
               )}
             </div>
 

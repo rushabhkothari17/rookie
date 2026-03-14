@@ -25,21 +25,15 @@ router = APIRouter(prefix="/api", tags=["admin-intake-forms"])
 
 # ── Pydantic models ────────────────────────────────────────────────────────────
 
-class CustomerVisibilityRule(BaseModel):
-    field: str        # customer field key e.g. "company_name", "custom_*"
-    operator: str     # equals, not_equals, contains, in, not_empty, empty
-    value: str = ""
-
-
 class IntakeFormCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    form_schema: str = "[]"           # JSON array of FormField (aliased to avoid shadowing BaseModel.schema)
+    form_schema: str = "[]"
     is_enabled: bool = True
     auto_approve: bool = False
     allow_skip_signature: bool = False
-    visibility_rules: Optional[List[CustomerVisibilityRule]] = None
-    customer_ids: Optional[List[str]] = None   # direct targeting
+    customer_ids: Optional[List[str]] = None         # direct targeting
+    visibility_conditions: Optional[Dict] = None     # profile-based grouped conditions
 
     class Config:
         populate_by_name = True
@@ -52,8 +46,8 @@ class IntakeFormUpdate(BaseModel):
     is_enabled: Optional[bool] = None
     auto_approve: Optional[bool] = None
     allow_skip_signature: Optional[bool] = None
-    visibility_rules: Optional[List[CustomerVisibilityRule]] = None
     customer_ids: Optional[List[str]] = None
+    visibility_conditions: Optional[Dict] = None
 
 
 class RecordNote(BaseModel):
@@ -90,34 +84,44 @@ class PortalSubmitRecord(BaseModel):
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _customer_matches_rules(customer: Dict, rules: List[Dict], customer_ids: List[str]) -> bool:
+def _eval_cond(cval: str, op: str, target: str) -> bool:
+    cv, tv = cval.lower(), target.lower()
+    if op == "equals":       return cv == tv
+    if op == "not_equals":   return cv != tv
+    if op == "contains":     return tv in cv
+    if op == "not_contains": return tv not in cv
+    if op == "not_empty":    return bool(cv)
+    if op == "empty":        return not cv
+    if op == "in":           return cv in [v.strip().lower() for v in tv.split(",")]
+    return True
+
+
+def _eval_vis_conditions(customer: Dict, vc: Optional[Dict]) -> bool:
+    """Evaluate grouped visibility conditions (ProductVisRuleSet) against a customer."""
+    if not vc or not vc.get("groups"):
+        return True
+    def eval_group(g: Dict) -> bool:
+        logic = g.get("logic", "AND")
+        results = [
+            _eval_cond(str(customer.get(c.get("field", ""), "") or ""), c.get("operator", "equals"), str(c.get("value", "")))
+            for c in g.get("conditions", [])
+        ]
+        return all(results) if logic == "AND" else any(results)
+    top = vc.get("top_logic", "AND")
+    group_results = [eval_group(g) for g in vc["groups"]]
+    return all(group_results) if top == "AND" else any(group_results)
+
+
+def _customer_matches_rules(customer: Dict, customer_ids: List[str], visibility_conditions: Optional[Dict] = None) -> bool:
     """Return True if customer should complete this intake form."""
-    # Direct customer targeting
-    if customer_ids and customer.get("id") in customer_ids:
-        return True
-    # No rules + no direct targeting = applies to all customers
-    if not rules and not customer_ids:
-        return True
-    if not rules:
-        return False
-    for rule in rules:
-        field = rule.get("field", "")
-        operator = rule.get("operator", "equals")
-        value = str(rule.get("value", ""))
-        field_val = str(customer.get(field, "") or "")
-        if operator == "equals" and field_val.lower() == value.lower():
-            return True
-        if operator == "not_equals" and field_val.lower() != value.lower():
-            return True
-        if operator == "contains" and value.lower() in field_val.lower():
-            return True
-        if operator == "in" and field_val.lower() in [v.strip().lower() for v in value.split(",")]:
-            return True
-        if operator == "not_empty" and field_val:
-            return True
-        if operator == "empty" and not field_val:
-            return True
-    return False
+    # Mode 1: specific customer IDs
+    if customer_ids:
+        return customer.get("id") in customer_ids
+    # Mode 2: profile-based conditions
+    if visibility_conditions:
+        return _eval_vis_conditions(customer, visibility_conditions)
+    # Mode 3: all customers
+    return True
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -149,8 +153,8 @@ async def create_intake_form(
         "is_enabled": payload.is_enabled,
         "auto_approve": payload.auto_approve,
         "allow_skip_signature": payload.allow_skip_signature,
-        "visibility_rules": [r.dict() for r in (payload.visibility_rules or [])],
         "customer_ids": payload.customer_ids or [],
+        "visibility_conditions": payload.visibility_conditions or None,
         "created_by": admin.get("email", "admin"),
         "created_at": now,
         "updated_at": now,
@@ -191,8 +195,11 @@ async def update_intake_form(
             updates[field] = val
     if payload.form_schema is not None:
         updates["schema"] = payload.form_schema
-    if payload.visibility_rules is not None:
-        updates["visibility_rules"] = [r.dict() for r in payload.visibility_rules]
+    if payload.visibility_conditions is not None:
+        updates["visibility_conditions"] = payload.visibility_conditions
+    elif hasattr(payload, "visibility_conditions") and payload.visibility_conditions is None:
+        # Explicitly cleared
+        updates["visibility_conditions"] = None
     await db.intake_forms.update_one({"id": form_id}, {"$set": updates})
     await create_audit_log(
         entity_type="intake_form", entity_id=form_id,
@@ -572,7 +579,7 @@ async def portal_get_intake_forms(user: Dict[str, Any] = Depends(get_current_use
     for form in forms:
         rules = form.get("visibility_rules", [])
         c_ids = form.get("customer_ids", [])
-        if not _customer_matches_rules(customer, rules, c_ids):
+        if not _customer_matches_rules(customer, c_ids, form.get("visibility_conditions")):
             continue
 
         # Get or create record
@@ -605,7 +612,7 @@ async def portal_check_pending(user: Dict[str, Any] = Depends(get_current_user))
     for form in forms:
         rules = form.get("visibility_rules", [])
         c_ids = form.get("customer_ids", [])
-        if not _customer_matches_rules(customer, rules, c_ids):
+        if not _customer_matches_rules(customer, c_ids, form.get("visibility_conditions")):
             continue
 
         record = await db.intake_form_records.find_one(

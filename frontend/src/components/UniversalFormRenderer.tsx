@@ -18,7 +18,33 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { AddressFieldRenderer } from "@/components/AddressFieldRenderer";
 import { FormField } from "@/components/FormSchemaBuilder";
+import type { VisibilityRuleSet } from "@/components/FormSchemaBuilder";
 import { cn } from "@/lib/utils";
+
+// ── Field-level visibility evaluation ─────────────────────────────────────────
+function evalVisibility(rule: VisibilityRuleSet | null | undefined, values: Record<string, any>): boolean {
+  if (!rule || !rule.groups?.length) return true;
+  const evalGroup = (g: { logic: string; conditions: any[] }) => {
+    if (!g.conditions.length) return true;
+    const results = g.conditions.map(c => {
+      const raw = values[c.depends_on];
+      const a = String(raw ?? "").toLowerCase();
+      const e = (c.value || "").toLowerCase();
+      switch (c.operator) {
+        case "equals":      return a === e;
+        case "not_equals":  return a !== e;
+        case "contains":    return a.includes(e);
+        case "not_contains": return !a.includes(e);
+        case "not_empty":   return !!a;
+        case "empty":       return !a;
+        default:            return true;
+      }
+    });
+    return g.logic === "OR" ? results.some(Boolean) : results.every(Boolean);
+  };
+  const groupResults = rule.groups.map(g => evalGroup(g));
+  return rule.top_logic === "OR" ? groupResults.some(Boolean) : groupResults.every(Boolean);
+}
 
 type AddressValue = {
   line1?: string; line2?: string; city?: string;
@@ -243,7 +269,7 @@ function SignatureField({ field, values, onChange, animStyle, compact }: SigProp
 export function UniversalFormRenderer({
   fields, values, onChange, compact = false, partnerCode, addressMode = "flat", readonlyKeys = [],
 }: Props) {
-  const enabled = fields.filter(f => f.enabled !== false);
+  const enabled = fields.filter(f => f.enabled !== false && evalVisibility(f.show_when, values));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleChange = (key: string, newVal: string, required: boolean) => {

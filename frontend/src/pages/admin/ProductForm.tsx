@@ -353,7 +353,7 @@ function LogicBtnVis({ value, onChange, small }: { value: "AND" | "OR"; onChange
   );
 }
 
-function ProductConditionBuilder({
+export function ProductConditionBuilder({
   value,
   onChange,
   customers = [],

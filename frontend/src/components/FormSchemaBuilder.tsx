@@ -2,7 +2,198 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Trash2, ChevronUp, ChevronDown, Plus, Settings2, GripVertical } from "lucide-react";
+import { Lock, Trash2, ChevronUp, ChevronDown, Plus, Settings2, GripVertical, Eye, X, ChevronRight } from "lucide-react";
+
+// ── Visibility rule types ─────────────────────────────────────────────────────
+export interface VisibilityConditionRow {
+  depends_on: string;
+  operator: "equals" | "not_equals" | "contains" | "not_contains" | "not_empty" | "empty";
+  value: string;
+}
+export interface VisibilityGroup { logic: "AND" | "OR"; conditions: VisibilityConditionRow[]; }
+export interface VisibilityRuleSet { top_logic: "AND" | "OR"; groups: VisibilityGroup[]; }
+
+const VIS_OPERATORS = [
+  { value: "equals",       label: "equals" },
+  { value: "not_equals",   label: "does not equal" },
+  { value: "contains",     label: "contains" },
+  { value: "not_contains", label: "does not contain" },
+  { value: "not_empty",    label: "is not empty" },
+  { value: "empty",        label: "is empty" },
+];
+const NO_VAL_OPS = new Set(["not_empty", "empty"]);
+const MAX_CONDS = 4; const MAX_GROUPS = 3;
+const defCond = (): VisibilityConditionRow => ({ depends_on: "", operator: "equals", value: "" });
+const defGroup = (): VisibilityGroup => ({ logic: "AND", conditions: [defCond()] });
+
+function normRule(raw: any): VisibilityRuleSet {
+  if (!raw) return { top_logic: "AND", groups: [defGroup()] };
+  if (raw.groups && Array.isArray(raw.groups)) return raw as VisibilityRuleSet;
+  if (raw.conditions && Array.isArray(raw.conditions))
+    return { top_logic: "AND", groups: [{ logic: raw.logic || "AND", conditions: raw.conditions }] };
+  return { top_logic: "AND", groups: [defGroup()] };
+}
+
+function visSummary(rule: any): string {
+  try {
+    const rs = normRule(rule);
+    const total = rs.groups.reduce((s, g) => s + g.conditions.length, 0);
+    if (!total) return "";
+    const first = rs.groups[0]?.conditions[0];
+    if (!first?.depends_on) return `${total} condition${total !== 1 ? "s" : ""}`;
+    const opMap: Record<string, string> = { equals: "=", not_equals: "≠", contains: "has", not_contains: "!has", not_empty: "≠ empty", empty: "= empty" };
+    const val = NO_VAL_OPS.has(first.operator) ? "" : ` "${first.value}"`;
+    return `${first.depends_on} ${opMap[first.operator] ?? first.operator}${val}${total > 1 ? ` +${total - 1} more` : ""}`;
+  } catch { return ""; }
+}
+
+function LogicPill({ value, onChange, small }: { value: "AND" | "OR"; onChange: (v: "AND" | "OR") => void; small?: boolean }) {
+  const sz = small ? "px-1.5 py-0.5 text-[9px]" : "px-2 py-0.5 text-[10px]";
+  return (
+    <div className="flex rounded overflow-hidden border border-blue-200">
+      {(["AND", "OR"] as const).map(l => (
+        <button key={l} type="button" onClick={() => onChange(l)}
+          className={`${sz} font-bold transition-colors ${value === l ? "bg-blue-600 text-white" : "bg-white text-blue-500 hover:bg-blue-50"}`}>{l}</button>
+      ))}
+    </div>
+  );
+}
+
+function VisibilityRuleEditor({ rule, onChange, otherFields }: {
+  rule: VisibilityRuleSet | null | undefined;
+  onChange: (r: VisibilityRuleSet | null) => void;
+  otherFields: FormField[];
+}) {
+  const isOn = !!rule;
+  const [expanded, setExpanded] = useState(false);
+  const rs: VisibilityRuleSet = isOn ? normRule(rule) : { top_logic: "AND", groups: [defGroup()] };
+
+  const toggle = (on: boolean) => { onChange(on ? rs : null); if (on) setExpanded(true); };
+  const setTopLogic = (tl: "AND" | "OR") => onChange({ ...rs, top_logic: tl });
+  const setGroupLogic = (gi: number, l: "AND" | "OR") =>
+    onChange({ ...rs, groups: rs.groups.map((g, i) => i === gi ? { ...g, logic: l } : g) });
+  const setCond = (gi: number, ci: number, p: Partial<VisibilityConditionRow>) =>
+    onChange({ ...rs, groups: rs.groups.map((g, i) => i !== gi ? g : { ...g, conditions: g.conditions.map((c, j) => j !== ci ? c : { ...c, ...p }) }) });
+  const addCond = (gi: number) => {
+    if (rs.groups[gi].conditions.length >= MAX_CONDS) return;
+    onChange({ ...rs, groups: rs.groups.map((g, i) => i !== gi ? g : { ...g, conditions: [...g.conditions, defCond()] }) });
+  };
+  const removeCond = (gi: number, ci: number) => {
+    const ng = rs.groups.map((g, i) => i !== gi ? g : { ...g, conditions: g.conditions.filter((_, j) => j !== ci) }).filter(g => g.conditions.length > 0);
+    onChange(ng.length ? { ...rs, groups: ng } : null);
+  };
+  const addGroup = () => { if (rs.groups.length >= MAX_GROUPS) return; onChange({ ...rs, groups: [...rs.groups, defGroup()] }); };
+  const removeGroup = (gi: number) => { const ng = rs.groups.filter((_, i) => i !== gi); onChange(ng.length ? { ...rs, groups: ng } : null); };
+
+  const eligible = otherFields.filter(f => f.key && f.type !== "signature" && f.type !== "terms_conditions");
+
+  return (
+    <div className="col-span-2 border-t border-slate-100 pt-2.5 mt-1 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Eye size={12} className="text-slate-400" />
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Visibility rule</span>
+          {isOn && !expanded && (
+            <span className="text-[10px] text-blue-500 italic">— {visSummary(rule)}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isOn && (
+            <button type="button" onClick={() => setExpanded(v => !v)}
+              className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600">
+              <ChevronRight size={11} className={`transition-transform ${expanded ? "rotate-90" : ""}`} />
+              {expanded ? "Collapse" : "Edit"}
+            </button>
+          )}
+          <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
+            <input type="checkbox" checked={isOn} onChange={e => toggle(e.target.checked)} className="w-3 h-3 rounded accent-slate-900" />
+            {isOn ? "On" : "Off"}
+          </label>
+        </div>
+      </div>
+
+      {isOn && expanded && (
+        <div className="space-y-3">
+          <p className="text-[11px] text-blue-600 font-medium">Show this field only when:</p>
+          {rs.groups.map((group, gi) => (
+            <div key={gi}>
+              {gi > 0 && (
+                <div className="flex items-center gap-2 my-2">
+                  <div className="flex-1 border-t border-dashed border-slate-300" />
+                  <LogicPill value={rs.top_logic} onChange={setTopLogic} />
+                  <div className="flex-1 border-t border-dashed border-slate-300" />
+                </div>
+              )}
+              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">
+                    {rs.groups.length > 1 ? `Group ${gi + 1}` : "Conditions"}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {group.conditions.length > 1 && <LogicPill value={group.logic} onChange={l => setGroupLogic(gi, l)} small />}
+                    {rs.groups.length > 1 && (
+                      <button type="button" onClick={() => removeGroup(gi)} className="text-slate-300 hover:text-red-400"><X size={12} /></button>
+                    )}
+                  </div>
+                </div>
+                {group.conditions.map((cond, ci) => (
+                  <div key={ci} className="space-y-2">
+                    {ci > 0 && (
+                      <div className="flex items-center gap-1.5 my-1">
+                        <div className="flex-1 border-t border-blue-100" />
+                        <span className="text-[9px] font-bold text-blue-400">{group.logic}</span>
+                        <div className="flex-1 border-t border-blue-100" />
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-slate-500 block mb-1">Field</label>
+                        <Select value={cond.depends_on || ""} onValueChange={v => setCond(gi, ci, { depends_on: v })}>
+                          <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="Pick field…" /></SelectTrigger>
+                          <SelectContent>
+                            {eligible.map(f => <SelectItem key={f.id} value={f.key}>{f.label || f.key}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-slate-500 block mb-1">Condition</label>
+                        <div className="flex gap-1">
+                          <Select value={cond.operator} onValueChange={v => setCond(gi, ci, { operator: v as any, value: NO_VAL_OPS.has(v) ? "" : cond.value })}>
+                            <SelectTrigger className="h-7 text-xs flex-1"><SelectValue /></SelectTrigger>
+                            <SelectContent>{VIS_OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
+                          </Select>
+                          {(group.conditions.length > 1 || rs.groups.length > 1) && (
+                            <button type="button" onClick={() => removeCond(gi, ci)} className="text-slate-300 hover:text-red-400"><X size={13} /></button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {!NO_VAL_OPS.has(cond.operator) && (
+                      <Input value={cond.value || ""} onChange={e => setCond(gi, ci, { value: e.target.value })}
+                        placeholder="e.g. yes, UK, premium" className="h-7 text-xs" />
+                    )}
+                  </div>
+                ))}
+                {group.conditions.length < MAX_CONDS && (
+                  <button type="button" onClick={() => addCond(gi)}
+                    className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-1">
+                    <Plus size={11} /> Add condition
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          {rs.groups.length < MAX_GROUPS && (
+            <button type="button" onClick={addGroup}
+              className="flex items-center gap-1.5 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium border border-dashed border-indigo-200 rounded-md px-2.5 py-1.5 w-full justify-center hover:bg-indigo-50/50">
+              <Plus size={11} /> Add group
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Address sub-field config types ────────────────────────────────────────────
 export interface AddressSubField {
@@ -60,6 +251,7 @@ export interface FormField {
   max_value?: number;          // number type
   address_config?: AddressConfig;
   terms_text?: string;         // terms_conditions type: the terms body text
+  show_when?: VisibilityRuleSet | null; // field-level dynamic visibility
 }
 
 export type FieldType = "text" | "email" | "tel" | "number" | "date" | "textarea" | "select" | "checkbox" | "file" | "password" | "address" | "terms_conditions" | "signature";
@@ -234,6 +426,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                   {field.locked && <Lock size={10} className="text-amber-500 shrink-0" />}
                   <span className="text-[10px] text-slate-400 bg-slate-50 border border-slate-200 px-1.5 rounded font-mono">{field.type}</span>
                   {field.required && <span className="text-[10px] text-red-500">required</span>}
+                  {field.show_when && <Eye size={10} className="text-blue-400 shrink-0" title="Has visibility rule" />}
                   {field.locked && (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${field.enabled ? "text-emerald-700 bg-emerald-50" : "text-slate-400 bg-slate-100"}`}>
                       {field.enabled ? "shown" : "hidden"}
@@ -493,6 +686,14 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                         />
                         <p className="text-[10px] text-slate-400 mt-1">Press Enter to add a new option. Use Label|value format to set separate display labels and values.</p>
                       </div>
+                    )}
+                    {/* Visibility rule — not for locked/signature fields */}
+                    {!field.locked && field.type !== "signature" && (
+                      <VisibilityRuleEditor
+                        rule={field.show_when}
+                        onChange={r => updateField(field.id, { show_when: r })}
+                        otherFields={fields.filter(f => f.id !== field.id)}
+                      />
                     )}
                   </>
                 )}
