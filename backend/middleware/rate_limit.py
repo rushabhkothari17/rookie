@@ -46,10 +46,16 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._store: Dict[str, List[float]] = defaultdict(list)
 
     def _get_client_ip(self, request: Request) -> str:
-        # Honour X-Forwarded-For from trusted proxies (Kubernetes ingress)
-        forwarded = request.headers.get("X-Forwarded-For")
+        # In Kubernetes, the ingress controller appends the real client IP as the
+        # FIRST entry in X-Forwarded-For. We take it but cap at a reasonable length
+        # to mitigate header-stuffing. For multi-proxy chains, take only the leftmost IP.
+        forwarded = request.headers.get("X-Forwarded-For", "").strip()
         if forwarded:
-            return forwarded.split(",")[0].strip()
+            # Only use the leftmost IP (the one the ingress actually saw first)
+            ip = forwarded.split(",")[0].strip()
+            # Basic sanity: reject obviously spoofed / malformed values
+            if ip and len(ip) <= 45:  # max IPv6 length
+                return ip
         return request.client.host if request.client else "unknown"
 
     def _check(self, key: str, max_req: int, window: int) -> bool:

@@ -16,6 +16,14 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - Security Audit & Hardening
+- **CRITICAL fixed**: `get_current_user` now explicitly rejects JWTs with `type: "refresh"` — refresh tokens can no longer impersonate access tokens.
+- **HIGH fixed**: `password_hash` now excluded from all 6 `find_one` calls in `users.py` and `security.py`.
+- **MEDIUM fixed**: Added `Strict-Transport-Security: max-age=31536000; includeSubDomains` to `SecurityHeadersMiddleware`.
+- **MEDIUM fixed**: Rate limiter `_get_client_ip` validates X-Forwarded-For length (max 45 chars = IPv6) to mitigate header-stuffing attacks.
+- **Known remaining (P2)**: Integration secrets (Stripe, GoCardless, Resend) stored plaintext in `app_settings` — recommend AES encryption at rest. Requires data migration.
+- **Testing**: All fixes curl-verified.
+
 ### Session: Mar 2026 - Full Audit Logging Coverage
 - **P0** — Added missing `create_audit_log` calls to `coupons.py` (create/update/delete), `currencies.py` (add/remove), `platform_billing_settings.py` (update), `intake_forms.py` (delete form, admin create/update record, add/update/delete note, portal submit).
 - **P1** — Added `/logs` GET endpoints for: coupon, form (forms management), intake_form definition, webhook (audit trail). Added `AuditLogDialog` log buttons to: Coupons (PlansTab), Forms Management, Intake Forms builder, Webhooks (separate from delivery logs).

@@ -28,6 +28,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
         # Content Security Policy — API responses should never be rendered directly
         response.headers["Content-Security-Policy"] = _CSP
+        # HSTS — enforce HTTPS for 1 year, include subdomains
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         # Remove server fingerprint
         response.headers["server"] = ""
         response.headers["Server"] = ""

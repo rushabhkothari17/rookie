@@ -211,7 +211,7 @@ async def admin_update_user(
     from routes.admin.permissions import ADMIN_MODULES
 
     tf = get_tenant_filter(admin)
-    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(404, "User not found")
 
@@ -305,7 +305,7 @@ async def admin_set_user_active(
     admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     tf = get_tenant_filter(admin)
-    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(404, "User not found")
 
@@ -354,7 +354,7 @@ async def admin_send_user_reset_link(
     Increments token_version to force logout on all existing sessions.
     """
     tf = get_tenant_filter(admin)
-    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(404, "User not found")
 

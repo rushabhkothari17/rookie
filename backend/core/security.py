@@ -89,9 +89,12 @@ async def get_current_user(
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    # Use decode without type check for backward compatibility with existing tokens
+    # Use decode without type check for backward compatibility with existing tokens,
+    # but explicitly reject refresh tokens regardless of the "type" field.
     payload = decode_token_no_type_check(token)
-    user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
+    if payload.get("type") == "refresh":
+        raise HTTPException(status_code=401, detail="Refresh token cannot be used for API access")
+    user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     if not user.get("is_active", True):
@@ -133,7 +136,7 @@ async def optional_get_current_user(request: Request) -> Optional[Dict[str, Any]
     
     try:
         payload = decode_token(token)
-        user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
+        user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0, "password_hash": 0})
         if user and user.get("is_active", True):
             from services.audit_service import set_audit_tenant
             set_audit_tenant(user.get("tenant_id"))
