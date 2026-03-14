@@ -621,7 +621,7 @@ async def get_tenant_info(
     return {"tenant": {"name": tenant["name"], "code": tenant["code"], "is_platform": False}}
 
 
-async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
+async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str, base_currency: str = "USD") -> None:
     """Provision a brand-new tenant with generic sample data (no other-tenant references)."""
     # 1. Website settings — generic, no Automate Accounts content
     await db.website_settings.insert_one({
@@ -635,10 +635,10 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
         "login_portal_label": "Customer Portal",
         "login_btn_text": "Sign In",
         "register_title": "Create your account",
-        "register_subtitle": "",
+        "register_subtitle": f"Join {tenant_name} and get access to our full range of professional services.",
         "signup_label": "Get Started",
         "signup_form_title": "Create your account",
-        "signup_form_subtitle": "",
+        "signup_form_subtitle": "Fill in your details to create your account and get started.",
         "signup_btn_text": "Create Account",
         "verify_email_label": "Verify Email",
         "verify_email_title": "Enter your code",
@@ -672,7 +672,7 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
         "quote_form_response_time": "We'll respond within 1–2 business days.",
         "scope_form_title": "Request Scope",
         "scope_form_subtitle": "Tell us about your project and we'll get back to you with a detailed scope.",
-        "email_from_name": "",
+        "email_from_name": tenant_name,
         "email_article_subject_template": "Article: {{article_title}}",
         "email_article_cta_text": "View Article",
         "email_article_footer_text": "Your consultant has shared this document with you.",
@@ -726,10 +726,15 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
         "id": prod_id,
         "tenant_id": tenant_id,
         "name": "Sample Service",
+        "tagline": "Professional service tailored to your business — update this tagline.",
         "description": "This is a sample service. Edit or replace it from the Admin > Catalog panel.",
+        "description_long": "<p>This is the full description for your sample service. Update this text to explain what your service includes, who it's for, and why clients should choose you.</p><p>You can include multiple paragraphs, key benefits, and any other details that help potential customers make a decision.</p>",
+        "card_description": "A professional service designed to help your business grow. Click to learn more.",
+        "bullets": "Expert team with years of experience\nFast turnaround and clear communication\nTailored to your specific needs\nOngoing support included",
+        "faqs": '[{"question": "How do I get started?", "answer": "Simply click the button above to place an order or request a quote, and our team will be in touch within 1–2 business days."}, {"question": "What is included in this service?", "answer": "Full details are described above. If you have any questions, please contact us directly."}, {"question": "Can I customise this service?", "answer": "Absolutely. We tailor every engagement to the client\'s specific requirements."}]',
         "category": "General Services",
         "is_active": True,
-        "currency": "GBP",
+        "currency": base_currency,
         "pricing_type": "fixed",
         "base_price": 99.00,
         "billing_period": "one_time",
@@ -765,19 +770,9 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
         "updated_at": now,
     })
 
-    # 7. Default email template (order confirmation)
-    tpl_id = make_id()
-    await db.email_templates.insert_one({
-        "id": tpl_id,
-        "tenant_id": tenant_id,
-        "trigger": "order_confirmed",
-        "name": "Order Confirmed",
-        "subject": "Your order has been confirmed — {{order_number}}",
-        "body": "<p>Hi {{customer_name}},</p><p>Thank you for your order. Your order <strong>{{order_number}}</strong> has been confirmed.</p><p>We'll be in touch soon.</p><p>Thanks,<br>{{store_name}}</p>",
-        "is_active": True,
-        "created_at": now,
-        "updated_at": now,
-    })
+    # 7. Seed all default email templates (includes order_placed, subscription_created, etc.)
+    from services.email_service import EmailService
+    await EmailService.ensure_seeded(db, tenant_id)
 
 
 @router.post("/auth/register-partner")
@@ -820,8 +815,8 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         raise HTTPException(status_code=400, detail=pw_error)
 
     # ── Address (optional, but if partially filled must be complete) ──────────
-    if any(str(address.get(f, "")).strip() for f in ["line1", "city", "postal", "country"]):
-        mandatory_addr = ["line1", "city", "postal", "country"]
+    if any(str(address.get(f, "")).strip() for f in ["line1", "city", "postal", "country", "region"]):
+        mandatory_addr = ["line1", "city", "postal", "country", "region"]
         missing = [f for f in mandatory_addr if not str(address.get(f, "")).strip()]
         if missing:
             raise HTTPException(status_code=400, detail=f"Address fields required: {', '.join(missing)}")
@@ -902,7 +897,6 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
     # Lockout check
     if pending.get("locked_until"):
         try:
-            from datetime import timezone
             locked = datetime.fromisoformat(pending["locked_until"].replace("Z", "+00:00"))
             if datetime.now(timezone.utc) < locked:
                 raise HTTPException(status_code=429, detail="Too many attempts. Please request a new code.")
@@ -913,7 +907,6 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
         attempts = pending.get("verification_attempts", 0) + 1
         update: Dict[str, Any] = {"verification_attempts": attempts}
         if attempts >= 5:
-            from datetime import timezone, timedelta
             update["locked_until"] = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
         await db.pending_partner_registrations.update_one({"email": email}, {"$set": update})
         raise HTTPException(status_code=400, detail="Invalid code")
@@ -946,7 +939,7 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
     })
 
     # ── Seed tenant defaults ──────────────────────────────────────────────────
-    await _seed_new_tenant(tenant_id, org_name, now)
+    await _seed_new_tenant(tenant_id, org_name, now, base_currency=pending.get("base_currency", "USD"))
 
     # ── Assign free trial plan ────────────────────────────────────────────────
     try:
@@ -957,6 +950,63 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
                 "license": {"plan_id": free_trial["id"], "plan_name": free_trial["name"],
                              "assigned_at": now, **limits}
             }})
+            # ── Create partner subscription + order for the free plan ──────────
+            sub_count = await db.partner_subscriptions.count_documents({})
+            sub_number = f"PS-{datetime.now(timezone.utc).strftime('%Y')}-{(sub_count + 1):04d}"
+            sub_id = make_id()
+            await db.partner_subscriptions.insert_one({
+                "id": sub_id,
+                "subscription_number": sub_number,
+                "partner_id": tenant_id,
+                "partner_name": org_name,
+                "plan_id": free_trial["id"],
+                "plan_name": free_trial["name"],
+                "description": f"Initial plan — {free_trial['name']}",
+                "amount": 0.0,
+                "currency": "USD",
+                "billing_interval": "monthly",
+                "status": "active",
+                "payment_method": "manual",
+                "processor_id": None,
+                "stripe_subscription_id": None,
+                "start_date": now[:10],
+                "next_billing_date": None,
+                "term_months": None,
+                "auto_cancel_on_termination": False,
+                "contract_end_date": None,
+                "reminder_days": None,
+                "cancelled_at": None,
+                "internal_note": "Auto-created on partner signup",
+                "created_by": "system",
+                "payment_url": None,
+                "created_at": now,
+                "updated_at": now,
+            })
+            ord_count = await db.partner_orders.count_documents({})
+            ord_number = f"PO-{datetime.now(timezone.utc).strftime('%Y')}-{(ord_count + 1):04d}"
+            ord_id = make_id()
+            await db.partner_orders.insert_one({
+                "id": ord_id,
+                "order_number": ord_number,
+                "partner_id": tenant_id,
+                "partner_name": org_name,
+                "plan_id": free_trial["id"],
+                "plan_name": free_trial["name"],
+                "description": f"Initial setup — {free_trial['name']}",
+                "amount": 0.0,
+                "currency": "USD",
+                "status": "paid",
+                "payment_method": "manual",
+                "processor_id": None,
+                "invoice_date": now[:10],
+                "due_date": None,
+                "paid_at": now,
+                "internal_note": "Auto-created on partner signup",
+                "created_by": "system",
+                "payment_url": None,
+                "created_at": now,
+                "updated_at": now,
+            })
     except Exception:
         pass
 

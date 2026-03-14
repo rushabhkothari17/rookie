@@ -361,6 +361,7 @@ async def get_website_settings_public(
         # Branding (from app_settings — authoritative, must not be overridden by website_settings)
         "store_name": app_s.get("store_name", ""),
         "logo_url": app_s.get("logo_url") or "",
+        "favicon_url": app_s.get("favicon_url") or "",
         "primary_color": app_s.get("primary_color") or "",
         "accent_color": app_s.get("accent_color") or "",
         "danger_color": app_s.get("danger_color") or "",
@@ -375,7 +376,7 @@ async def get_website_settings_public(
         # Content overrides (from website_settings — exclude branding keys which live in app_settings)
         **{k: v for k, v in web_s.items() if v is not None and k not in (
             "_id", "tenant_id",
-            "store_name", "logo_url",
+            "store_name", "logo_url", "favicon_url",
             "primary_color", "accent_color", "danger_color", "success_color",
             "warning_color", "background_color", "card_color", "surface_color",
             "text_color", "border_color", "muted_color",
@@ -431,7 +432,7 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
         # Content overrides (from website_settings — exclude branding keys which live in app_settings)
         **{k: v for k, v in web_s.items() if v is not None and k not in (
             "_id", "tenant_id",
-            "store_name", "logo_url",
+            "store_name", "logo_url", "favicon_url",
             "primary_color", "accent_color", "danger_color", "success_color",
             "warning_color", "background_color", "card_color", "surface_color",
             "text_color", "border_color", "muted_color",
@@ -439,6 +440,7 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
         # Branding (from app_settings — authoritative)
         "store_name": app_s.get("store_name", ""),
         "logo_url": app_s.get("logo_url") or "",
+        "favicon_url": app_s.get("favicon_url") or "",
         "primary_color": app_s.get("primary_color") or "",
         "accent_color": app_s.get("accent_color") or "",
         "danger_color": app_s.get("danger_color") or "",
@@ -451,7 +453,6 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
         "border_color": app_s.get("border_color") or "",
         "muted_color": app_s.get("muted_color") or "",
     }
-    # Migrate: inject default checkout_sections when DB has empty value
     try:
         cs = merged.get("checkout_sections", "[]")
         if not cs or json.loads(cs) == []:

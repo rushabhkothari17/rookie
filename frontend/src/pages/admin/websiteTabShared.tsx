@@ -112,6 +112,7 @@ export interface BrandingData {
   background_color: string; card_color: string; surface_color: string;
   text_color: string; border_color: string; muted_color: string;
   logo_url: string;
+  favicon_url: string;
 }
 
 export const WEB_DEFAULTS: WebsiteData = {

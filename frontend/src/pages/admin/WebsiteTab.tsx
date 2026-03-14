@@ -39,15 +39,18 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
     background_color: "", card_color: "", surface_color: "",
     text_color: "", border_color: "", muted_color: "",
     logo_url: "",
+    favicon_url: "",
   });
   const [structured, setStructured] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [slideSaving, setSlideSaving] = useState(false);
   const [authSlide, setAuthSlide] = useState<AuthSlide | null>(null);
   const [formSlide, setFormSlide] = useState<"quote" | "scope" | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const faviconRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (defaultSection && !forcedSection) setActiveSection(defaultSection);
@@ -77,6 +80,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
         border_color:     app_.border_color     || DEFAULT_BRAND_COLORS.border_color!,
         muted_color:      app_.muted_color      || DEFAULT_BRAND_COLORS.muted_color!,
         logo_url:         app_.logo_url         || "",
+        favicon_url:      app_.favicon_url      || "",
       });
       setStructured(structRes.data.settings || {});
     } catch { toast.error("Failed to load settings"); }
@@ -167,6 +171,28 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
     } catch { toast.error("Failed to remove logo"); }
   };
 
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFavicon(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.post("/admin/upload-favicon", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      setBranding(prev => ({ ...prev, favicon_url: res.data.favicon_url }));
+      toast.success("Favicon uploaded");
+    } catch { toast.error("Favicon upload failed"); }
+    finally { setUploadingFavicon(false); if (faviconRef.current) faviconRef.current.value = ""; }
+  };
+
+  const handleRemoveFavicon = async () => {
+    try {
+      await api.put("/admin/settings", { favicon_url: "" });
+      setBranding(prev => ({ ...prev, favicon_url: "" }));
+      toast.success("Favicon removed");
+    } catch { toast.error("Failed to remove favicon"); }
+  };
+
   const onStructuredSaved = (key: string, newVal: any) => {
     setStructured(prev => {
       const next = { ...prev };
@@ -229,6 +255,8 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
               save={save} saving={saving} forcedSection={!!forcedSection}
               uploadingLogo={uploadingLogo} handleLogoUpload={handleLogoUpload}
               handleRemoveLogo={handleRemoveLogo} fileRef={fileRef}
+              uploadingFavicon={uploadingFavicon} handleFaviconUpload={handleFaviconUpload}
+              handleRemoveFavicon={handleRemoveFavicon} faviconRef={faviconRef}
             />
           )}
 

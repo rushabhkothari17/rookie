@@ -1,76 +1,81 @@
 <analysis>**original_problem_statement:**
-The user requested a full audit and fix of all product page layouts (, , , ) to match the functionality and style of the Standard () layout. This was prompted by numerous bugs and inconsistencies, such as Contact us showing for free products, missing information, hardcoded values, and weird color combinations.
+The user requested a detailed audit of the default data and configuration that a new partner receives upon signing up. Following the audit, the user provided a comprehensive list of required changes to improve the onboarding experience.
 
-During the session, the user also requested and had the agent implement several other features and fixes:
-1.  **Admin Sidebar**: Make it collapsible with accordion sections.
-2.  **Password Reset**: Implement an admin-initiated password reset link feature for users and customers.
-3.  **Password Visibility**: Add an eye icon to toggle password visibility on login and password change forms.
-4.  **Admin Tables**: Add a Partner Code column to all relevant tables for platform admins.
-5.  **Customer Edit Form**: Make the password field read-only while keeping the email field editable.
-6.  **Bug Fixes**: Addressed a  error on logout, fixed an issue with the product dropdown for manual subscriptions, fixed unreadable text selection in dark mode, and permanently fixed the active tab highlighting in the admin sidebar.
+**PRODUCT REQUIREMENTS:**
+1.  **Address Validation:** Make the  field mandatory if any other primary address field is provided.
+2.  **Partner Subscription:** Automatically create a subscription and a corresponding order for the new partner, assigning them the default (free) plan upon signup.
+3.  **Default Currency:** The sample product created for a new partner must use the partner's selected , not a hardcoded value.
+4.  **Content Auto-Generation:**
+    *   Auto-generate subtitles for the registration and signup forms (, ).
+    *   Auto-generate multiple fields for the sample product (e.g., , , , , ).
+5.  **Default Settings:**
+    *   The  in website settings should default to the new partner's organization name.
+    *   The  and  email templates should be enabled by default.
+6.  **Favicon Upload:** Add a UI in the admin panel (under Branding) for partners to upload a .
+7.  **Legacy Code Cleanup:** Investigate and likely remove the old  function, as it appears redundant.
+8.  **Clarification:** The user also asked for the location of several settings fields (, , etc.) and a list of platform-global settings, which the agent has investigated.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application has received significant updates. A secure admin-initiated password reset feature is now in place, the admin sidebar has been revamped to be a collapsible accordion, and password visibility toggles have been added to auth forms. Several bugs related to admin table visibility, UI consistency, and error handling have been resolved.
+The agent has successfully completed several major tasks, including a massive overhaul of all product page layouts to fix over 36 bugs, standardizing them against a . The password reset flow was also significantly improved with full link-based resets and an expiry countdown timer.
 
-Most importantly, the agent has completed a comprehensive audit of all product page layouts, identifying **36 distinct bugs and inconsistencies**. The agent began the implementation phase by centralizing currency formatting logic and fixing the root cause of the Contact Us bug for free products. The main body of work—fixing the remaining 35+ bugs across the product layouts—is currently in progress.
+Most recently, the agent performed an exhaustive codebase audit in response to the user's request about the new partner onboarding flow. The agent has identified all relevant files, database models, and default seeding logic. It has gathered all the information needed to implement the user's list of required changes but has not yet started the implementation.
 
 **Last working item**:
-    - Last item agent was working: The agent was in the midst of a large-scale refactoring effort to fix 36 identified bugs across all non-standard product page layouts (, , , ). The goal is to standardize their functionality and appearance to match the .
-    - Status: IN PROGRESS
+    - Last item agent was working: Investigating a detailed list of user-requested changes to the new partner signup and data seeding process. The agent completed a full codebase audit to understand the current implementation and locate all the necessary files and logic to address the user's requirements.
+    - Status: NOT STARTED
     - Agent Testing Done: N
-    - Which testing method agent to use?: Frontend testing agent
+    - Which testing method agent to use?: both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Standardize all product page layouts to match the Standard layout (P0)
+  - Issue 1: Overhaul the new partner signup and default data seeding process (P0)
   - Issue 2: Missing Resend API Key for Email Delivery (P1)
   - Issue 3: Spacing on Resources Page (P2)
   
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: A full audit was completed, identifying 36 specific bugs. A shared  utility was created in , and the core  logic in  was fixed.
+     - Attempted fixes: None. An exhaustive investigation and audit have been completed to prepare for implementation.
      - Next debug checklist: 
-        1.  Continue implementing the 36 fixes as detailed in the audit.
-        2.  Centralize  and  logic into .
-        3.  Replace all hardcoded currency formatters with the new shared  function.
-        4.  Replace all native  tooltips on form questions with the Radix  component for consistency.
-        5.  Ensure all layouts use  for  and custom section content.
-        6.  Fix layout-specific bugs, such as the  cap in , the broken review step and progress bar in , and the missing/hardcoded sections in .
-        7.  Replace all hardcoded theme colors (e.g., ) with CSS variables (e.g., ).
-     - Why fix this issue and what will be achieved with the fix? This will resolve dozens of UI bugs and create a consistent, reliable, and professional user experience across all product purchasing flows.
-     - Status:  IN PROGRESS
+        1.  **Backend (, ):**
+            - Modify the address validation rule in .
+            - In the  endpoint, add logic to find the default plan and create a  and  for the new partner.
+            - Update  to use the tenant's  for the sample product.
+            - Implement auto-generation for product and website setting fields.
+            - Set  for the  and  email templates.
+            - Default  to the organization name.
+            - Analyze and remove the legacy  function if redundant.
+        2.  **Frontend ():**
+            - Add a new file upload component for the  in the branding settings.
+            - Ensure the backend is updated to handle the favicon upload and storage.
+     - Why fix this issue and what will be achieved with the fix? This will significantly improve the out-of-the-box experience for new partners, reducing manual setup, fixing bugs like hardcoded currency, and providing a more complete and professional default application state.
+     - Status:  NOT STARTED
      - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
+     - Should Test frontend/backend/both after fix? Both
      - Blocked on other issue: None
   - Issue 2: 
-     - Attempted fixes: The agent updated the toast notification to clarify that an email service needs to be configured, but the core issue remains.
+     - Attempted fixes: A toast notification was updated, but the core issue remains.
      - Next debug checklist:
-        1.  Implement a new UI in the admin panel (e.g., in Settings) for tenants to enter their Resend API key.
-        2.  Create a backend endpoint to securely store this key against the tenant's data.
-        3.  Modify the  to retrieve and use the stored key.
-     - Why fix this issue and what will be achieved with the fix? This will make the password reset feature and any other email-sending functionality fully operational.
+        1.  Create a UI in the admin panel for tenants to enter their Resend API key.
+        2.  Build a backend endpoint to securely store the key.
+        3.  Update the email service to use the stored key.
+     - Why fix this issue and what will be achieved with the fix? To make all email-sending features (like password resets) fully functional.
      - Status:  NOT STARTED
      - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Both
      - Blocked on other issue: None
   - Issue 3: 
      - Attempted fixes: None.
-     - Next debug checklist: Compare CSS of the Resources page with other admin pages and apply consistent padding/margin.
-     - Why fix this issue and what will be achieved with the fix? Improves visual consistency across the admin panel.
+     - Next debug checklist: Adjust CSS padding/margin on the Resources page to align with other admin pages.
+     - Why fix this issue and what will be achieved with the fix? To improve visual consistency in the admin panel.
      - Status:  NOT STARTED
      - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1: Complete the implementation of all 36 layout bug fixes.
-     - Where to resume: The agent has created  and fixed . The next step is to systematically apply the remaining fixes across , , , and .
-     - What will be achieved with this? A consistent and bug-free user experience for all product page layouts.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on something: None
+  - None.
 
 **Upcoming and Future Tasks**
   Upcoming Tasks:
@@ -82,86 +87,81 @@ Most importantly, the agent has completed a comprehensive audit of all product p
     - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **Admin-Initiated Password Reset**: Implemented backend endpoints and frontend UI for admins to send password reset links to both users and customers.
-- **Admin Sidebar Overhaul**:
-  - Implemented a collapsible accordion-style sidebar in .
-  - Permanently fixed the active tab highlighting bug using a React Context.
-  - Removed redundant tooltips that appeared on hover.
-- **Customer/User Form Enhancements**:
-  - Made the password field read-only in the customer edit modal while allowing the email to be edited, using a new  prop in .
-  - Added a password visibility toggle (eye icon) to  and .
-- **Admin Table Improvements**: Added the Partner Code column to , , , , and  for platform admins.
-- **Critical Bug Fixes**:
-  - Fixed Contact us text showing for zero-priced products by correcting logic in .
-  - Fixed a bug where products weren't appearing in the manual subscription creation dropdown.
-  - Fixed  error on logout by adding a guard clause to the token refresh logic in .
-  - Fixed unreadable text selection in dark mode via .
+- **Product Layout Standardization**: Fixed 36+ bugs across , , , and  layouts to match , managed via a new Service Detail Page admin UI.
+- **Dark Mode UI Fixes**: Corrected dark mode styling for multiple admin components.
+- **Password Reset Overhaul**:
+    - Implemented a full-link based reset flow with a new  email template.
+    - Added a 24-hour link expiry with a live countdown timer and disabled state on the reset page.
+- **Product Page Bug Fixes**: Prevented  from appearing incorrectly on layouts and fixed a tagline fallback issue.
+- **New Partner Onboarding Audit**: Completed an exhaustive investigation into the entire new partner signup flow, documenting all default data, seeded records, and configurations.
 
 **Earlier issues found/mentioned but not fixed**
-   - Issue 1: Spacing on Resources Page.
-   - Issue 2: Missing Resend API Key for Email Delivery.
+   - Issue 1: Missing Resend API Key for Email Delivery.
+   - Issue 2: Spacing on Resources Page.
 
 **Known issue recurrence from previous fork**
   - **Recurrence count:** 3 issues (Active tab highlight, Spacing, Resend Key).
-  - **Status:** The Active tab highlight was RESOLVED in this session. The other two remain NOT STARTED.
+  - **Status:** Active tab highlight was RESOLVED. Spacing and Resend Key remain NOT STARTED.
 
 **Code Architecture**
-readonlyKeysformatCurrencygetStartingPrice
+
 
 **Key Technical Concepts**
-- **Large-Scale UI Auditing**: Systematically comparing multiple component implementations () against a golden reference () to identify and catalog dozens of inconsistencies and bugs.
-- **Refactoring for Standardization**: Centralizing duplicated logic (like ) into a shared utility file () to be used by all layouts, ensuring consistency and easier maintenance.
-- **React Context for State Management**: Using a React Context () to share the  state and solve a complex CSS specificity issue between the sidebar and a third-party tooltip library.
-- **Enhancing Reusable Components**: Adding a  prop to the  component to programmatically disable specific form fields, making the component more flexible.
+- **Data Seeding**: The process of populating a new tenant's database with default records (settings, products, categories) upon signup.
+- **Database Auditing**: Tracing the creation and default state of data across multiple database collections to understand the application's initial state for a new user.
+- **Configuration Management**: Differentiating between tenant-specific settings (e.g., brand colors) and platform-global settings (e.g., service fees) to correctly modify them.
 
 **key DB schema**
-  - No changes were made to the database schema.
+  - No changes made in this session. Investigation focused on existing schema for , , , , , , and .
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
--  (All files in this directory are the primary target for the main pending task).
--  (Newly created utility file for shared logic).
--  (Contains shared product page logic like ).
--  (Reference for sidebar structure).
--  (Reference for user/customer editing UI).
+-  (Handles partner registration and verification).
+-  (Contains logic for seeding default data for new tenants).
+-  (Orchestrates the seeding process and contains the legacy function to be removed).
+-  (Target for adding the favicon upload UI).
+-  (Various files to understand the data structure).
 
 **Areas that need refactoring**:
-- The primary task is to refactor all product page layouts in  to remove inconsistencies and align with .
--  is still a very large file (>1200 lines) and could be broken down into smaller components.
+- The  function in  is likely redundant and should be removed after confirming it's safely replaced by the lazy-seeding mechanism for email templates.
+- The sample product creation logic needs to be refactored to use the partner's  instead of being hardcoded.
 
 **key api endpoints**
 - 
 - 
+- 
 
 **Critical Info for New Agent**
-1.  **Main Priority (P0)**: Your immediate and primary task is to continue the large-scale UI standardization of the product page layouts. A detailed audit identifying **36 specific bugs** has already been completed and is your guide. The user wants a thorough fix, so focus on creating shared utilities (, , etc.) in  and applying them consistently across all layouts.
-2.  **Wizard Layout Bugs**: The user specifically highlighted two bugs in the : the review step showing a dash instead of the selected answer, and the progress bar starting at an incorrect percentage. Ensure these are fixed as part of the overall effort, as they are high-visibility issues.
-3.  **No New Features**: Do not start any new features (like the Resend API key UI) until the layout standardization is complete and verified. The current task is large and critical.
-4.  **Testing is Crucial**: After implementing the fixes across all layouts, you must call the frontend testing agent to perform a comprehensive regression test. Given the scope of the changes, manual verification via screenshots will be insufficient.
+1.  **Main Priority (P0)**: Your immediate task is to implement the user's requested changes to the new partner signup process. The investigation phase is complete. Proceed directly to planning and implementing the feature list outlined in the .
+2.  **User's Change List:** Refer to the detailed list of requirements. Key actions include: modifying address validation, auto-creating a subscription/order, fixing the default product's currency, auto-generating content, enabling email templates, and adding a favicon upload UI.
+3.  **Seeding Logic is Key:** The majority of the work will be in the backend, specifically in  (for triggering actions on signup) and  (for changing default values).
+4.  **Frontend Change:** A specific frontend change is required: adding a favicon upload component to  and connecting it to a backend endpoint.
+5.  **Cleanup:** As part of the task, remove the legacy  function after ensuring its functionality is covered elsewhere.
 
 **documents and test reports created in this job**
-  - None.
+  - 
+  - 
+  - 
 
 **Last 10 User Messages and any pending HUMAN messages** 
- - **User (Latest)**: Approved the plan to fix the 36 identified layout bugs, highlighted specific issues in the Wizard layout (review answers and progress bar), and encouraged a deeper comparison to ensure no bugs were missed. **Status: IN PROGRESS.**
- - **User:** Reported widespread inconsistencies in product layouts and a bug where a product showed Contact us instead of Free. Requested a full audit comparing all layouts to the Standard one. **Status: RESOLVED (Audit complete, Contact Us fix implemented).**
- - **User:** Clarified that in the customer edit form, the email should be editable, but the password should be a read-only field with asterisks. Approved other pending fixes. **Status: RESOLVED.**
- - **User:** Asked for the reasoning behind hiding email/password fields in the edit form and reported other UI bugs (sidebar tooltip, Contact us). **Status: RESOLVED.**
- - **User:** Pointed out several issues: password reset emails not sending, a subscription filter being too restrictive, missing Partner Code columns, and the ability to still edit customer passwords. **Status: RESOLVED.**
- - **User:** Confirmed the new accordion sidebar and other fixes were working. **Status: RESOLVED.**
- - **User:** Requested a collapsible sidebar, a fix for the product dropdown, and the addition of the Partner Code column to all tables. Also asked for an explanation of the new password reset logic. **Status: RESOLVED.**
+ - **User (Latest)**: Provided a long list of required changes and questions about the new partner onboarding flow, including making address fields mandatory, auto-creating subscriptions, fixing default currency, enabling email templates, and adding a favicon upload UI. **Status: NOT STARTED (Investigation complete).**
+ - **User:** Requested a detailed audit of everything a new partner gets by default upon signing up, down to individual fields and default values. **Status: RESOLVED.**
+ - **User:** Approved the enhancement to add an expiry timer to the password reset link. **Status: RESOLVED.**
+ - **User:** Approved the plan to fix the password reset flow and product page layout issues. **Status: RESOLVED.**
+ - **User:** Reported that the password reset email sends a code without a link and that  shows incorrectly on some product pages. **Status: RESOLVED.**
+ - **User:** Approved the plan to standardize all product layouts and create an admin UI to manage labels. **Status: RESOLVED.**
+ - **User:** Confirmed the password reset, sidebar, and other fixes were working. **Status: RESOLVED.**
  - **User:** Confirmed the password visibility toggle was working. **Status: RESOLVED.**
+ - **User:** Confirmed the admin-initiated password reset feature was working. **Status: RESOLVED.**
  - **User:** Requested a password visibility toggle (eye icon) for login forms. **Status: RESOLVED.**
- - **User:** Confirmed the admin-initiated password reset feature was working as expected. **Status: RESOLVED.**
 
 **Project Health Check:**
 - **Broken**:
-  - **Product Page Layouts**: All layouts except Standard (, , , ) have numerous bugs, including incorrect pricing display, missing features from the Standard layout, inconsistent styling, and hardcoded values.
-  - **Wizard Layout**: Contains specific, user-reported bugs where the review step fails to display answers and the progress bar calculation is incorrect.
+    - **New Partner Onboarding**: The default experience for new partners is incomplete. It includes a sample product with a hardcoded currency, has key transactional emails disabled, and lacks important default content.
 - **Mocked**:
-  - **Resend Email Integration**: The password reset feature is functionally incomplete. While the UI and backend logic exist, emails are not actually sent because there is no mechanism for an admin to configure the required Resend API key.
+    - **Resend Email Integration**: Remains functionally incomplete. Emails are logged but not sent, as there is no UI for admins to configure their Resend API key.
 
 **3rd Party Integrations**
 *   Zoho CRM
@@ -173,7 +173,7 @@ readonlyKeysformatCurrencygetStartingPrice
 *   
 
 **Testing status**
-  - Testing agent used after significant changes: NO
+  - Testing agent used after significant changes: YES
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None.
   - Known regressions: None from this session.
@@ -184,4 +184,5 @@ readonlyKeysformatCurrencygetStartingPrice
   - Password: 
 
 **What agent forgot to execute**
-- The agent was in the middle of a large-scale implementation to fix the 36 identified bugs in the product page layouts. This work is incomplete and is the highest priority for the next session.</analysis>
+- The agent has not yet started implementing the user's latest and highest-priority request to overhaul the new partner signup process.
+- The two long-standing issues (Resend API Key UI and Resources Page Spacing) are still pending.</analysis>

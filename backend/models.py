@@ -532,6 +532,7 @@ class AppSettingsUpdate(BaseModel):
     border_color: Optional[str] = None
     muted_color: Optional[str] = None
     logo_url: Optional[str] = None
+    favicon_url: Optional[str] = None
     store_name: Optional[str] = None
 
 

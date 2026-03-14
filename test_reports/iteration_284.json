@@ -1,0 +1,57 @@
+{
+  "summary": "Comprehensive testing of partner signup overhaul: address validation, seeding, product currency, placeholder content, website settings, email templates, and favicon upload. Found and fixed a critical bug causing silent failure in partner_subscription/order creation. All 19 backend tests pass. Favicon upload UI verified in admin panel.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/auth/verify-partner-email",
+        "issue": "FIXED: UnboundLocalError: 'cannot access local variable timezone where it is not associated with a value'. Python treats 'timezone' as a local variable (due to 'from datetime import timezone' inside conditional blocks earlier in the function), causing UnboundLocalError when datetime.now(timezone.utc) is called in the free-trial-plan try/except block. This was silently swallowed by 'except Exception: pass', preventing partner_subscription and partner_order from being created. Fixed by removing redundant local imports at lines 902 and 911 in backend/routes/auth.py.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/settings",
+        "issue": "Does not include 'favicon_url' field in response when no favicon has been uploaded (field not in MongoDB document). GET /api/settings/public always includes it. Frontend handles this gracefully with fallback. Consider normalizing the response to always include favicon_url."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin > Organization Info > Branding",
+        "issues": ["Minor: When no favicon has been uploaded, the dropzone shows correctly. When a favicon is uploaded, Replace/Remove buttons appear — this is correct behavior."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_partner_signup_seeding.py",
+    "/app/test_reports/pytest/test_284_results.xml"
+  ],
+  "action_items": [
+    "Consider normalizing GET /api/admin/settings to always include favicon_url field (even if null) for API consistency"
+  ],
+  "critical_code_review_comments": [
+    "FIXED: auth.py lines 902-912: Local 'from datetime import timezone' imports inside if blocks caused UnboundLocalError in the free-trial plan creation code path. The try/except Exception:pass block silently swallowed the error, making it impossible to debug without detailed tracing.",
+    "The 'except Exception: pass' anti-pattern in verify_partner_email (lines 947-1013) should be replaced with proper error logging to prevent future silent failures."
+  ],
+  "updated_files": [
+    "/app/backend/routes/auth.py"
+  ],
+  "success_rate": {
+    "backend": "100% (19/19 after fix)",
+    "frontend": "100% - Favicon UI section visible and correctly positioned"
+  },
+  "seed_data_creation": "Two test tenant partners created (TestOrg 1773447364, TestOrg 1773447662) for testing. These remain in the DB. Favicon uploaded to platform admin settings.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Critical bug was fixed in verify-partner-email endpoint (auth.py): local 'from datetime import timezone' imports inside conditional blocks caused UnboundLocalError when creating partner_subscription/order. All 19 tests pass after fix. Favicon upload UI is working and visible in Admin > Settings > Organization Info page. Test data: Two test tenants in DB (TestOrg 1773447364 and TestOrg 1773447662) - can be cleaned up. The platform admin settings now has a favicon_url set (base64 PNG).",
+  "rca_of_the_issue": {
+    "bug": "partner_subscription and partner_order not created after verify-partner-email",
+    "root_cause": "Python function scoping issue: when 'from datetime import timezone' appears inside any conditional block within a function, Python marks 'timezone' as a LOCAL variable for the ENTIRE function scope. In verify_partner_email, two conditional blocks (lockout check and too-many-attempts check) each had 'from datetime import timezone'. In the normal success path (correct OTP, no lockout), neither block executes, so 'timezone' is never assigned. When the free-trial subscription creation code runs 'datetime.now(timezone.utc)', Python raises UnboundLocalError because it looks for the local 'timezone' variable which was never assigned. This exception is caught and discarded by 'except Exception: pass'.",
+    "reproduction": "1. Register a partner, 2. Verify with correct OTP on first attempt (no lockout) - subscription/order not created",
+    "fix": "Removed the redundant 'from datetime import timezone' (and timedelta) imports inside the conditional blocks since these are already imported at the module level (lines 1-7 of auth.py)",
+    "files_changed": ["backend/routes/auth.py: removed local imports at lines 902 and 911"]
+  }
+}

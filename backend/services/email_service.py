@@ -140,7 +140,7 @@ _TEMPLATES: list[Dict[str, Any]] = [
   <p style="color:#475569;">Your order <strong>{{order_number}}</strong> has been confirmed. Our team will be in touch shortly.</p>
   <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
 </div></body></html>""",
-        "is_enabled": False,
+        "is_enabled": True,
         "available_variables": ["{{store_name}}", "{{order_number}}", "{{customer_name}}", "{{customer_email}}", "{{order_total}}", "{{order_currency}}"],
         "is_system": True,
     },
@@ -182,7 +182,7 @@ _TEMPLATES: list[Dict[str, Any]] = [
   <p style="color:#475569;">Your subscription is now active. You can manage it any time from your portal.</p>
   <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
 </div></body></html>""",
-        "is_enabled": False,
+        "is_enabled": True,
         "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}"],
         "is_system": True,
     },

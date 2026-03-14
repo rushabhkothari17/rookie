@@ -50,6 +50,7 @@ async def get_public_settings(
         "success_color":    settings.get("success_color"),
         "warning_color":    settings.get("warning_color"),
         "logo_url":         settings.get("logo_url"),
+        "favicon_url":      settings.get("favicon_url"),
         "store_name":       settings.get("store_name"),
         **extra,
     }}
@@ -167,3 +168,27 @@ async def upload_logo(
     await db.app_settings.update_one({"tenant_id": tid, "key": {"$exists": False}}, {"$set": {"logo_url": data_url}}, upsert=True)
     await create_audit_log(entity_type="setting", entity_id="logo", action="logo_uploaded", actor=admin.get("email", "admin"), details={"file_name": file.filename, "content_type": content_type})
     return {"logo_url": data_url}
+
+
+@router.post("/admin/upload-favicon")
+async def upload_favicon(
+    file: UploadFile = File(...),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    allowed_types = {"image/png", "image/x-icon", "image/vnd.microsoft.icon", "image/jpeg", "image/webp", "image/gif"}
+    if file.content_type and file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: PNG, ICO, JPG, WebP, GIF")
+
+    tid = tenant_id_of(admin)
+    contents = await file.read()
+
+    MAX_FAVICON_SIZE = 512 * 1024  # 512 KB
+    if len(contents) > MAX_FAVICON_SIZE:
+        raise HTTPException(status_code=413, detail="Favicon file too large. Maximum allowed size is 512 KB.")
+
+    b64 = base64.b64encode(contents).decode()
+    content_type = file.content_type or "image/png"
+    data_url = f"data:{content_type};base64,{b64}"
+    await db.app_settings.update_one({"tenant_id": tid, "key": {"$exists": False}}, {"$set": {"favicon_url": data_url}}, upsert=True)
+    await create_audit_log(entity_type="setting", entity_id="favicon", action="favicon_uploaded", actor=admin.get("email", "admin"), details={"file_name": file.filename, "content_type": content_type})
+    return {"favicon_url": data_url}

@@ -28,6 +28,7 @@ export interface WebsiteSettings {
   // Branding
   store_name: string;
   logo_url: string;
+  favicon_url: string;
   primary_color: string;
   accent_color: string;
   danger_color: string;
@@ -214,6 +215,7 @@ export interface WebsiteSettings {
 const DEFAULT_SETTINGS: WebsiteSettings = {
   store_name: "",
   logo_url: "",
+  favicon_url: "",
   primary_color: "",
   accent_color: "",
   danger_color: "",
@@ -482,6 +484,17 @@ function _applyBrandingToDOM(s: Record<string, any>) {
   }
   if (s.card_color && s.border_color) set("--aa-card-border", s.border_color);
   if (s.muted_color) { set("--aa-muted", s.muted_color); setHsl("--muted-foreground", s.muted_color); }
+
+  // Apply favicon if set
+  if (s.favicon_url) {
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = s.favicon_url;
+  }
 
   // Auto-toggle .aa-dark class based on final background luminance
   // Use custom bg if set, otherwise fall back to CSS-computed value, then to default

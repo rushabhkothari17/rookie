@@ -78,9 +78,13 @@ interface Props {
   handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleRemoveLogo: () => void;
   fileRef: React.RefObject<HTMLInputElement>;
+  uploadingFavicon: boolean;
+  handleFaviconUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleRemoveFavicon: () => void;
+  faviconRef: React.RefObject<HTMLInputElement>;
 }
 
-export function OrgInfoSection({ ws, branding, b, onResetColors, onApplyPreset, save, saving, forcedSection, uploadingLogo, handleLogoUpload, handleRemoveLogo, fileRef }: Props) {
+export function OrgInfoSection({ ws, branding, b, onResetColors, onApplyPreset, save, saving, forcedSection, uploadingLogo, handleLogoUpload, handleRemoveLogo, fileRef, uploadingFavicon, handleFaviconUpload, handleRemoveFavicon, faviconRef }: Props) {
   return (
     <>
       <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
@@ -105,6 +109,26 @@ export function OrgInfoSection({ ws, branding, b, onResetColors, onApplyPreset, 
           </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} data-testid="ws-logo-input" />
+      </div>
+      <div className="border-t border-slate-100 pt-4">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">Favicon</h3>
+        <p className="text-xs text-slate-400 mb-3">Small icon shown in browser tabs. Recommended: 32×32 or 64×64 PNG/ICO.</p>
+        {branding.favicon_url ? (
+          <div className="flex items-center gap-4">
+            <img src={branding.favicon_url} alt="Favicon" className="h-10 w-10 object-contain border border-slate-200 rounded p-1.5 bg-slate-50" data-testid="ws-favicon-preview" />
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => faviconRef.current?.click()} disabled={uploadingFavicon}>Replace</Button>
+              <Button variant="ghost" size="sm" className="text-red-500" onClick={handleRemoveFavicon}>Remove</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-slate-400 transition-colors" onClick={() => faviconRef.current?.click()} data-testid="ws-favicon-dropzone">
+            <Upload size={20} className="mx-auto text-slate-400 mb-2" />
+            <p className="text-sm text-slate-500">Click to upload favicon</p>
+            <p className="text-xs text-slate-400 mt-1">PNG, ICO — max 512KB</p>
+          </div>
+        )}
+        <input ref={faviconRef} type="file" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/jpeg,image/webp" className="hidden" onChange={handleFaviconUpload} data-testid="ws-favicon-input" />
       </div>
       <div className="border-t border-slate-100 pt-4">
         <div className="flex items-center justify-between mb-1">
