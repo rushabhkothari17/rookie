@@ -595,8 +595,7 @@ async def get_tenant_info(
         import hashlib
         key_hash = hashlib.sha256(x_api_key.encode()).hexdigest()
         key_doc = await db.api_keys.find_one({"key_hash": key_hash, "is_active": True}, {"_id": 0, "tenant_id": 1})
-        if not key_doc:
-            key_doc = await db.api_keys.find_one({"key": x_api_key, "is_active": True}, {"_id": 0, "tenant_id": 1})
+        # Note: no plaintext fallback — all keys are stored as hashes only
         if not key_doc:
             raise HTTPException(status_code=401, detail="Invalid API key")
         tid = key_doc["tenant_id"]
@@ -1544,7 +1543,28 @@ async def reset_password(payload: ResetPasswordRequest):
     stored_code = user.get("password_reset_code")
     expires_str = user.get("password_reset_expires")
 
+    # Check per-user brute-force lockout
+    reset_locked_until = user.get("password_reset_locked_until")
+    if reset_locked_until:
+        try:
+            locked_dt = datetime.fromisoformat(reset_locked_until.replace("Z", "+00:00"))
+            if locked_dt.tzinfo is None:
+                locked_dt = locked_dt.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) < locked_dt:
+                raise HTTPException(status_code=429, detail="Too many reset attempts. Please request a new code.")
+        except (ValueError, TypeError):
+            pass
+
     if not stored_code or stored_code != payload.code.strip():
+        # Increment per-user attempt counter
+        new_attempts = user.get("password_reset_attempts", 0) + 1
+        attempt_update: Dict[str, Any] = {"password_reset_attempts": new_attempts}
+        if new_attempts >= 5:
+            lock_until = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+            attempt_update["password_reset_locked_until"] = lock_until
+            await db.users.update_one({"id": user["id"]}, {"$set": attempt_update})
+            raise HTTPException(status_code=429, detail="Too many reset attempts. Please request a new code in 15 minutes.")
+        await db.users.update_one({"id": user["id"]}, {"$set": attempt_update})
         raise HTTPException(status_code=400, detail="Invalid or expired reset code")
 
     if expires_str:
@@ -1564,7 +1584,8 @@ async def reset_password(payload: ResetPasswordRequest):
         {"id": user["id"]},
         {
             "$set": {"password_hash": hashed, "updated_at": now_iso()},
-            "$unset": {"password_reset_code": "", "password_reset_expires": ""},
+            "$unset": {"password_reset_code": "", "password_reset_expires": "",
+                       "password_reset_attempts": "", "password_reset_locked_until": ""},
             "$inc": {"token_version": 1},
         },
     )

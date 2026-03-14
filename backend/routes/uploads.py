@@ -73,7 +73,11 @@ async def upload_file(file: UploadFile = File(...), user: dict = Depends(get_cur
 @router.get("/{upload_id}")
 async def get_upload(upload_id: str, user: dict = Depends(get_current_user)):
     db = _db()
-    doc = db.file_uploads.find_one({"id": upload_id}, {"_id": 0})
+    # Enforce tenant isolation: user may only download files belonging to their own tenant
+    doc = db.file_uploads.find_one(
+        {"id": upload_id, "tenant_id": user.get("tenant_id", "")},
+        {"_id": 0}
+    )
     if not doc:
         raise HTTPException(404, detail="File not found")
     content = base64.b64decode(doc["data_b64"])
