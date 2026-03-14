@@ -426,7 +426,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                   {field.locked && <Lock size={10} className="text-amber-500 shrink-0" />}
                   <span className="text-[10px] text-slate-400 bg-slate-50 border border-slate-200 px-1.5 rounded font-mono">{field.type}</span>
                   {field.required && <span className="text-[10px] text-red-500">required</span>}
-                  {field.show_when && <Eye size={10} className="text-blue-400 shrink-0" title="Has visibility rule" />}
+                  {field.show_when && <span title="Has visibility rule"><Eye size={10} className="text-blue-400 shrink-0" /></span>}
                   {field.locked && (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${field.enabled ? "text-emerald-700 bg-emerald-50" : "text-slate-400 bg-slate-100"}`}>
                       {field.enabled ? "shown" : "hidden"}
@@ -688,7 +688,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                       </div>
                     )}
                     {/* Visibility rule — not for locked/signature fields */}
-                    {!field.locked && field.type !== "signature" && (
+                    {!field.locked && (field.type as string) !== "signature" && (
                       <VisibilityRuleEditor
                         rule={field.show_when}
                         onChange={r => updateField(field.id, { show_when: r })}
