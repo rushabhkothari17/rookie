@@ -21,6 +21,9 @@ SENSITIVE_KEYS: frozenset[str] = frozenset({
     "stripe_secret_key",
     "stripe_publishable_key",
     "gocardless_access_token",
+    "gocardless_webhook_secret",
+    "stripe_webhook_secret",
+    "zoho_client_secret",
 })
 
 # Fields within oauth_connections.credentials that are sensitive

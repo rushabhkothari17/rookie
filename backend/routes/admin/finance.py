@@ -192,6 +192,11 @@ async def refresh_zoho_books(admin: Dict[str, Any] = Depends(get_tenant_admin)):
         {"tenant_id": tid, "provider": "zoho_books"},
         {"_id": 0}
     )
+    if creds and creds.get("credentials"):
+        from services.encryption_service import decrypt_credentials
+        creds = {**creds, "credentials": decrypt_credentials(creds["credentials"])}
+        # flatten for backward compat
+        creds = {**creds, **creds.get("credentials", {})}
     
     if not creds or not creds.get("access_token"):
         return {"success": False, "message": "No access token configured"}

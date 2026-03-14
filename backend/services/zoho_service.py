@@ -32,16 +32,20 @@ class ZohoOAuthService:
         self.dc_config = ZOHO_DATACENTERS.get(self.datacenter, ZOHO_DATACENTERS["US"])
     
     async def get_credentials(self, service: str = "mail") -> Optional[Dict[str, Any]]:
-        """Get stored OAuth credentials for a service (mail or crm)."""
+        """Get stored OAuth credentials for a service (mail or crm), decrypting sensitive fields."""
+        from services.encryption_service import decrypt_credentials
         key = f"zoho_{service}"
-        creds = await db.integrations.find_one(
+        doc = await db.integrations.find_one(
             {"tenant_id": self.tenant_id, "service": key},
             {"_id": 0}
         )
-        return creds
+        if doc and doc.get("credentials"):
+            doc = {**doc, "credentials": decrypt_credentials(doc["credentials"])}
+        return doc
     
     async def store_credentials(self, service: str, credentials: Dict[str, Any]) -> None:
-        """Store OAuth credentials for a service."""
+        """Store OAuth credentials for a service (sensitive fields encrypted at rest)."""
+        from services.encryption_service import encrypt_credentials
         key = f"zoho_{service}"
         await db.integrations.update_one(
             {"tenant_id": self.tenant_id, "service": key},
@@ -49,7 +53,7 @@ class ZohoOAuthService:
                 "tenant_id": self.tenant_id,
                 "service": key,
                 "datacenter": self.datacenter,
-                "credentials": credentials,
+                "credentials": encrypt_credentials(credentials),
                 "updated_at": datetime.utcnow().isoformat()
             }},
             upsert=True

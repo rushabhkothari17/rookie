@@ -376,7 +376,10 @@ async def refresh_zoho_mail_token(admin: Dict[str, Any] = Depends(get_tenant_adm
     
     if not integration or not integration.get("credentials"):
         raise HTTPException(status_code=400, detail="Zoho Mail not configured")
-    
+
+    from services.encryption_service import decrypt_credentials
+    integration = {**integration, "credentials": decrypt_credentials(integration.get("credentials", {}))}
+
     oauth = ZohoOAuthService(tid, integration.get("datacenter", "US"))
     
     try:
@@ -393,7 +396,7 @@ async def refresh_zoho_mail_token(admin: Dict[str, Any] = Depends(get_tenant_adm
         })
         
         await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="token_refreshed", actor=admin.get("email", "admin"), details={})
-        return {"success": True, "access_token": new_tokens.get("access_token")}
+        return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

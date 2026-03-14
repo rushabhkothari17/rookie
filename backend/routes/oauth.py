@@ -784,9 +784,10 @@ async def validate_connection(
                     access_token = token_resp.json().get("access_token", "")
                     # Token refresh succeeded — credentials are valid
                     result = {"success": True, "message": "Zoho WorkDrive connected successfully"}
+                    from services.encryption_service import encrypt_secret
                     await db.oauth_connections.update_one(
                         {"tenant_id": tid, "provider": provider},
-                        {"$set": {"credentials.access_token": access_token}}
+                        {"$set": {"credentials.access_token": encrypt_secret(access_token)}}
                     )
 
             else:
