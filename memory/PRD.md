@@ -283,15 +283,26 @@ Build a white-label service commerce platform with:
 - **Partner Signup Migration**: Added `_migrate_partner_signup_schema` function to inject `admin_email`/`admin_password` locked fields into old partner signup schemas. Called in both GET /website-settings endpoints
 - Tested via iteration_280 — **6/6 frontend + 11/11 backend PASS (100%)**
 
+### Phase 15: New Partner Onboarding Overhaul (Mar 2026)
+- **Address Validation**: `address.region` is now mandatory if any other primary address field is provided during partner registration
+- **Auto-create Partner Subscription + Order**: `verify-partner-email` now creates `partner_subscription` + `partner_order` for the free/default plan on partner signup
+- **Dynamic Product Currency**: Sample product now uses partner's selected `base_currency` instead of hardcoded GBP
+- **Placeholder Content**: Sample product seeded with `tagline`, `description_long`, `bullets`, `faqs`, `card_description` placeholder text
+- **Default Website Settings**: `register_subtitle`, `signup_form_subtitle` now populated with sensible defaults; `email_from_name` defaults to org name
+- **Email Templates Enabled**: `order_placed` and `subscription_created` templates now `is_enabled: True` by default for new tenants; all templates created via `ensure_seeded()` at signup
+- **Favicon Upload**: New UI in Admin > Branding with `POST /api/admin/upload-favicon`; favicon applied to browser tab via DOM; stored as base64 in `app_settings`; exposed in `/settings/public` and `/admin/settings`
+- Bug Fix: `UnboundLocalError` in `verify-partner-email` — removed duplicate `from datetime import timezone` inside conditional blocks that shadowed the module-level import
+- Tested via iteration_284 — **19/19 tests PASS (100%)**
+
 ### P0 — Critical (None currently)
 
 ### P1 — High Priority
 - New landing page (needs design prompt from user)
 - Radio filters for Role & Status columns in Users table
+- Resend API Key UI (allow tenants to enter/save Resend API key when provider = Resend)
 
 ### P2 — Medium Priority
 - Spacing on Resources and My Profile pages (minor UI inconsistency)
-- Resend API Key UI (allow tenants to enter/save Resend API key when provider = Resend)
 - Centralize Email Settings
 
 ### P3 — Future / Backlog

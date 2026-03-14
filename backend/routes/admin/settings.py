@@ -61,11 +61,13 @@ async def get_app_settings(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tid = tenant_id_of(admin)
     settings = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0})
     if not settings:
-        return {"settings": {}}
+        return {"settings": {"favicon_url": None, "logo_url": None}}
     masked = {**settings}
     for key in ["resend_api_key"]:
         if masked.get(key) and not masked[key].startswith("••"):
             masked[key] = "••••••••" + masked[key][-4:]
+    masked.setdefault("favicon_url", None)
+    masked.setdefault("logo_url", None)
     return {"settings": masked}
 
 
