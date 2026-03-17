@@ -164,6 +164,8 @@ async def update_plan(plan_id: str, payload: PlanUpdate, admin: Dict[str, Any] =
                            actor=admin.get("email", "admin"),
                            details={"changes": {k: v for k, v in updates.items() if k != "updated_at"},
                                     "tenants_propagated": result.modified_count})
+    import asyncio as _asyncio
+
     _asyncio.ensure_future(auto_sync_to_zoho_crm("platform", "plans", updated_plan, "update"))
     return {"plan": updated_plan, "tenants_propagated": result.modified_count}
 
