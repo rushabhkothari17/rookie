@@ -34,7 +34,7 @@ router = APIRouter(prefix="/api", tags=["partner-billing"])
 PARTNER_ORDER_STATUSES = ["pending", "unpaid", "paid", "cancelled", "refunded"]
 PARTNER_SUB_STATUSES = ["pending", "active", "unpaid", "paused", "cancelled"]
 BILLING_INTERVALS = ["monthly", "quarterly", "annual"]
-PAYMENT_METHODS = ["card", "bank_transfer", "manual", "offline"]
+PAYMENT_METHODS = ["card", "bank_transfer", "manual"]
 
 
 async def _get_platform_stripe_key() -> Optional[str]:
@@ -240,6 +240,8 @@ async def create_partner_order(
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {PARTNER_ORDER_STATUSES}")
     if payload.payment_method not in PAYMENT_METHODS:
         raise HTTPException(status_code=400, detail=f"Invalid payment method. Allowed: {PAYMENT_METHODS}")
+    if not payload.plan_id:
+        raise HTTPException(status_code=400, detail="plan_id is required")
 
     # Resolve plan name if plan_id provided
     plan_name = None
@@ -525,6 +527,8 @@ async def create_partner_subscription(
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {PARTNER_SUB_STATUSES}")
     if payload.payment_method not in PAYMENT_METHODS:
         raise HTTPException(status_code=400, detail=f"Invalid payment_method. Allowed: {PAYMENT_METHODS}")
+    if not payload.plan_id:
+        raise HTTPException(status_code=400, detail="plan_id is required")
 
     plan_name = None
     if payload.plan_id:

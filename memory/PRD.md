@@ -579,6 +579,18 @@ Build a white-label service commerce platform with:
 - **Phase 2**: Keyboard navigation fixed for Ctrl+K command palette (ArrowUp/Down/Enter/Escape). Table row hover accent bars (aa-table-row), semantic status badges (aa-badge-*), skeleton loaders (aa-skel), and empty states (aa-empty-geo) across all admin tabs (Products, Users, Enquiries, Resources, Orders, Subscriptions, Customers). Input focus glow ring. Tested: 13/13 PASS.
 - **Dark Mode**: Moon/Sun toggle in sidebar, `html.aa-dark` CSS variable overrides (GitHub Dark palette), localStorage persistence, FOUC prevention inline script. Tested: 17/17 PASS.
 
+### Phase 25: Partner Orders/Subscriptions Billing Enhancements (Mar 2026)
+**8 features/fixes implemented:**
+1. **`offline` → `manual`**: Removed `"offline"` from all payment method lists across `PartnerOrdersTab.tsx`, `PartnerSubscriptionsTab.tsx`, `OrdersTab.tsx`, `SubscriptionsTab.tsx`, and `backend/routes/admin/partner_billing.py`. Backend now rejects `"offline"` with 400. `backend/routes/admin/orders.py` uses `"manual"` for all auto-created orders.
+2. **Mandatory Plan field**: Both `PartnerOrdersTab.tsx` and `PartnerSubscriptionsTab.tsx` forms now show `Plan *` (required asterisk), frontend validates and blocks save without a plan, and backend `create_partner_order` / `create_partner_subscription` enforce `plan_id` with a 400 error.
+3. **Dynamic Tax Dropdown**: When tax module is enabled (`/api/admin/taxes/settings`), both forms load all tax entries (`/api/admin/taxes/tables`) and show a "Quick-fill from Tax Table" dropdown filtered by the selected partner's country/region. Selecting an entry auto-populates `tax_name` and `tax_rate` inputs. Manual override always available.
+4. **`partially_refunded` badge fix**: Replaced `<Badge>` component with `<span>` using STATUS_COLORS map (including `partially_refunded: "bg-orange-100 text-orange-700"`) — eliminates the Tailwind specificity issue.
+5. **Status read-only for refunded states**: Status `<Select>` in Partner Orders edit dialog is `disabled` when `form.status === "refunded" || form.status === "partially_refunded"`, with helper text explaining it's set by the refund process.
+6. **Outstanding Amount column**: New column in Partner Orders table — shows `amount - refunded_amount` in amber for non-zero values; `—` for paid/refunded/cancelled orders.
+7. **Enhanced Invoice PDF** (`invoice_service.py`): Header now shows platform address + contact info. Totals section shows Subtotal, Tax (with name+rate), **TOTAL**, Refunded (if any), and **BALANCE DUE** (red) or **PAID** (green). Pay Now hyperlink section for unpaid/pending orders with a payment URL.
+8. **Invoice download for refunded orders**: Download button shown for `paid`, `partially_refunded`, and `refunded` orders. Backend endpoint updated to allow these 3 statuses.
+- **Tested**: iteration_307 — 93% backend pass, 95% frontend pass. Backend plan_id and offline validations confirmed via curl tests.
+
 ### P2 — Medium Priority
 - Spacing on Resources and My Profile pages (minor UI inconsistency)
 - Centralize Email Settings
