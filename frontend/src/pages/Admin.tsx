@@ -56,6 +56,7 @@ const TAB_ICONS: Record<string, React.ElementType> = {
   currencies: Coins, "plan-billing": Wallet,
   "my-subscriptions": Repeat2, "my-orders": Package,
   "my-submissions": ClipboardList,
+  usage: Activity,
   users: Users, customers: UserRound,
   catalog: Store, filters: SlidersHorizontal,
   subscriptions: Repeat2, orders: ShoppingBag,
@@ -385,6 +386,7 @@ export default function Admin() {
                     {authUser?.role === "platform_super_admin" && (
                       <SideTab value="currencies" testId="admin-tab-currencies" label="Supported Currencies" />
                     )}
+                    <SideTab value="usage" testId="admin-tab-usage" label="Usage &amp; Limits" />
                   </>
                 )}
               </>
