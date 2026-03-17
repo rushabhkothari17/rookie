@@ -26,17 +26,19 @@ export default function SlideOver({ open, onClose, title, description, children,
         onClick={onClose}
       />
       <div
-        className={`fixed right-0 top-0 h-full w-[520px] max-w-full bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed right-0 top-0 h-full w-[520px] max-w-full shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        style={{ background: "var(--aa-card)", border: "1px solid var(--aa-border)" }}
         data-testid="slideover-panel"
       >
-        <div className="flex items-start justify-between px-6 py-5 border-b border-slate-200 shrink-0">
+        <div className="flex items-start justify-between px-6 py-5 shrink-0" style={{ borderBottom: "1px solid var(--aa-border)" }}>
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-            {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
+            <h2 className="text-base font-semibold" style={{ color: "var(--aa-text)" }}>{title}</h2>
+            {description && <p className="text-xs mt-0.5" style={{ color: "var(--aa-muted)" }}>{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-4 shrink-0"
+            className="p-1.5 rounded-lg transition-colors ml-4 shrink-0"
+            style={{ color: "var(--aa-muted)" }}
             data-testid="slideover-close"
           >
             <X size={18} />
@@ -48,11 +50,12 @@ export default function SlideOver({ open, onClose, title, description, children,
         </div>
 
         {onSave && (
-          <div className="px-6 py-4 border-t border-slate-200 shrink-0 bg-white">
+          <div className="px-6 py-4 shrink-0" style={{ borderTop: "1px solid var(--aa-border)", background: "var(--aa-card)" }}>
             <Button
               onClick={onSave}
               disabled={saving}
-              className="w-full bg-slate-900 hover:bg-slate-800"
+              className="w-full"
+              style={{ background: "var(--aa-primary)", color: "var(--aa-primary-text, #fff)" }}
               data-testid="slideover-save"
             >
               {saving ? "Saving..." : "Save Changes"}

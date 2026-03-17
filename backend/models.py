@@ -778,7 +778,11 @@ class WebsiteSettingsUpdate(BaseModel):
             "social_twitter", "social_linkedin", "social_facebook",
             "social_instagram", "social_youtube",
         }
+        # Only validate fields declared in this model (extra fields are ignored by Pydantic)
+        declared = set(cls.model_fields.keys())
         for key, val in values.items():
+            if key not in declared:
+                continue
             if not isinstance(val, str) or not val:
                 continue
             if key in json_fields:

@@ -558,9 +558,11 @@ html.aa-dark {
   --aa-warning: #d29922;
   --aa-glow: rgba(79, 142, 247, 0.3);
   /* Footer stays dark in dark mode */
-  --aa-footer-text:       #e6edf3;
-  --aa-footer-text-muted: #8b949e;
-  --aa-footer-border:     rgba(255,255,255,0.08);
+  /* Dark mode: footer sits on --aa-primary (bright blue in dark), so use white-based text */
+  --aa-footer-text:       #ffffff;
+  --aa-footer-text-muted: rgba(255, 255, 255, 0.72);
+  --aa-footer-text-dim:   rgba(255, 255, 255, 0.42);
+  --aa-footer-border:     rgba(255, 255, 255, 0.12);
   /* ── Tailwind/shadcn base vars ── */
   --background: 216 28% 7%;
   --foreground: 210 40% 90%;
