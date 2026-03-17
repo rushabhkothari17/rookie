@@ -214,7 +214,7 @@ export const DEFAULT_ADDRESS_CONFIG: AddressConfig = {
   line1:   { enabled: true, required: true  },
   line2:   { enabled: true, required: false },
   city:    { enabled: true, required: true  },
-  state:   { enabled: true, required: false },
+  state:   { enabled: true, required: true  },
   postal:  { enabled: true, required: true  },
   country: { enabled: true, required: true  },
 };

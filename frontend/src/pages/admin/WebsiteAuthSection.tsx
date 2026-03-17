@@ -13,7 +13,7 @@ const SIGNUP_DEFAULT_SCHEMA = JSON.stringify([
   { id: "sf_job_title",    key: "job_title",    label: "Job Title",    type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 4 },
   { id: "sf_phone",        key: "phone",        label: "Phone",        type: "tel",  required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 5 },
   { id: "sf_address",      key: "address",      label: "Address",      type: "address", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 6,
-    address_config: { line1: {enabled:true,required:true}, line2: {enabled:true,required:false}, city: {enabled:true,required:true}, state: {enabled:true,required:false}, postal: {enabled:true,required:true}, country: {enabled:true,required:true} } },
+    address_config: { line1: {enabled:true,required:true}, line2: {enabled:true,required:false}, city: {enabled:true,required:true}, state: {enabled:true,required:true}, postal: {enabled:true,required:true}, country: {enabled:true,required:true} } },
 ]);
 
 function getFieldCount(schema: string): number {

@@ -35,7 +35,7 @@ _DEFAULT_ADDRESS_CONFIG = {
     "line1":   {"enabled": True, "required": True},
     "line2":   {"enabled": True, "required": False},
     "city":    {"enabled": True, "required": True},
-    "state":   {"enabled": True, "required": False},
+    "state":   {"enabled": True, "required": True},
     "postal":  {"enabled": True, "required": True},
     "country": {"enabled": True, "required": True},
 }
@@ -121,6 +121,29 @@ def _migrate_signup_schema(schema_str: str) -> str:
 
         if has_old_country or not has_address or changed or shift > 0:
             fields.sort(key=lambda f: f.get("order", 0))
+            return json.dumps(fields)
+    except Exception:
+        pass
+    return schema_str
+
+
+def _migrate_state_required(schema_str: str) -> str:
+    """Ensure state sub-field is required=True in every address field's address_config."""
+    try:
+        fields = json.loads(schema_str) if schema_str else []
+        if not fields:
+            return schema_str
+        changed = False
+        for f in fields:
+            if f.get("type") == "address":
+                cfg = f.get("address_config") or {}
+                state_cfg = cfg.get("state") or {}
+                if not state_cfg.get("required", False):
+                    if "address_config" not in f:
+                        f["address_config"] = dict(_DEFAULT_ADDRESS_CONFIG)
+                    f["address_config"]["state"] = {**state_cfg, "required": True, "enabled": state_cfg.get("enabled", True)}
+                    changed = True
+        if changed:
             return json.dumps(fields)
     except Exception:
         pass
@@ -420,6 +443,12 @@ async def get_website_settings_public(
         settings["partner_signup_form_schema"] = _migrate_partner_signup_schema(settings.get("partner_signup_form_schema", "[]"))
     except Exception:
         pass
+    # Migrate: ensure state/province is required in all address fields
+    try:
+        settings["signup_form_schema"] = _migrate_state_required(settings.get("signup_form_schema", "[]"))
+        settings["partner_signup_form_schema"] = _migrate_state_required(settings.get("partner_signup_form_schema", "[]"))
+    except Exception:
+        pass
     return {"settings": settings}
 
 
@@ -469,6 +498,12 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
     # Migrate: ensure partner signup schema has admin_email and admin_password
     try:
         merged["partner_signup_form_schema"] = _migrate_partner_signup_schema(merged.get("partner_signup_form_schema", "[]"))
+    except Exception:
+        pass
+    # Migrate: ensure state/province is required in all address fields
+    try:
+        merged["signup_form_schema"] = _migrate_state_required(merged.get("signup_form_schema", "[]"))
+        merged["partner_signup_form_schema"] = _migrate_state_required(merged.get("partner_signup_form_schema", "[]"))
     except Exception:
         pass
     return {"settings": merged}

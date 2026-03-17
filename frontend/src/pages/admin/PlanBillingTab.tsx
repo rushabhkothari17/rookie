@@ -13,6 +13,7 @@ import {
   XCircle, AlertCircle, Zap, Tag, Gift,
 } from "lucide-react";
 import { UsageDashboard } from "./UsageDashboard";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Plan {
   id: string;
@@ -482,6 +483,8 @@ function UpgradePlansModal({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function PlanBillingTab() {
+  const { user } = useAuth();
+  const isPlatformAdmin = !!(user?.role && ["platform_admin", "platform_super_admin"].includes(user.role));
   const [data, setData] = useState<PlanData | null>(null);
   const [rates, setRates] = useState<Rate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -814,10 +817,12 @@ export function PlanBillingTab() {
         </div>
       )}
 
-      {/* Usage */}
-      <div className="border-t border-slate-200 pt-6">
-        <UsageDashboard />
-      </div>
+      {/* Usage — platform admins only */}
+      {isPlatformAdmin && (
+        <div className="border-t border-slate-200 pt-6">
+          <UsageDashboard />
+        </div>
+      )}
 
       {/* Upgrade Plans Modal */}
       {showUpgradeModal && (

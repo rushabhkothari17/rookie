@@ -1,0 +1,94 @@
+{
+  "summary": "Tested all 5 fixes: Address Line 2 label rename, State/Province required field, City no-numbers, Usage & Limits RBAC, and Partner Sign-Up tile visibility. Tests 1-4, 6 and 7 all PASS. Test 5 (Platform Admin sees Usage in Plan & Billing) reveals an architectural issue - platform admins cannot access the Plan & Billing tab at all (it is guarded by isPartnerAdmin check in Admin.tsx), making the isPlatformAdmin branch in PlanBillingTab dead code.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Platform Admin - Plan & Billing - Usage & Limits",
+        "issue": "PlanBillingTab uses `{isPlatformAdmin && <UsageDashboard>}` but the plan-billing TabsContent in Admin.tsx is wrapped in `{isPartnerAdmin && ...}`, so platform admins can never reach Plan & Billing tab. The isPlatformAdmin branch in PlanBillingTab.tsx (line 820-825) is dead code. Test scenario 'Platform Admin sees Usage & Limits in Plan & Billing' cannot be verified.",
+        "affected_selectors": ["[data-testid='plan-billing-tab']"],
+        "priority": "MEDIUM"
+      }
+    ],
+    "design_issues": []
+  },
+  "test_results": {
+    "test_1_address_line2_partner_signup": {
+      "status": "PASS",
+      "details": "Partner signup page (/signup?type=partner) shows 'ADDRESS LINE 2' label. No 'Suite / Unit' or 'Suite No' text found."
+    },
+    "test_2_state_province_required": {
+      "status": "PASS",
+      "details": "State / Province field shows required asterisk (*). Label HTML contains <span class='text-red-400 ml-0.5'> * </span>."
+    },
+    "test_3_city_no_numbers": {
+      "status": "PASS",
+      "details": "Typing '123' in city field (data-testid='addr-city-*') results in empty string. Digits are immediately stripped via .replace(/[0-9]/g, '') onChange handler."
+    },
+    "test_4_partner_admin_no_usage_limits": {
+      "status": "PASS",
+      "details": "Created test partner admin (testpartneradmin@test.com / TestPass123!) with tenant code 'testpartner'. Partner admin accesses Plan & Billing tab via MY BILLING section. Plan billing content shows 'CURRENT PLAN' only - no 'Usage' text found. UsageDashboard not rendered for partner admin."
+    },
+    "test_5_platform_admin_sees_usage": {
+      "status": "ARCHITECTURAL_ISSUE",
+      "details": "Platform admin (admin@automateaccounts.local) cannot access Plan & Billing tab via sidebar (My Billing section only shown to isPartnerAdmin). Direct URL navigation (?tab=plan-billing) also shows empty content because TabsContent is wrapped in {isPartnerAdmin && ...}. The {isPlatformAdmin && <UsageDashboard>} in PlanBillingTab.tsx is correct but unreachable for platform admins."
+    },
+    "test_6a_platform_admin_sees_partner_signup_tile": {
+      "status": "PASS",
+      "details": "Platform admin sees Partner Sign-Up Page tile in Admin > Website > Auth & Pages. Tiles: login, signup, verify-email, partner-signup (data-testid='auth-tile-partner-signup'), 404."
+    },
+    "test_6b_partner_admin_no_partner_signup_tile": {
+      "status": "PASS",
+      "details": "Partner admin does NOT see Partner Sign-Up Page tile in Auth & Pages. Tiles shown: login, signup, verify-email, 404. No auth-tile-partner-signup in DOM."
+    },
+    "test_7_customer_signup_address_line2": {
+      "status": "PASS",
+      "details": "Customer signup (/signup) shows 'Address Line 2' label. No 'Suite / Unit' text found."
+    }
+  },
+  "test_report_links": ["/app/test_reports/iteration_304.json"],
+  "action_items": [
+    "ACTION REQUIRED: Test 5 architectural issue - The 'Plan & Billing' tab (TabsContent value='plan-billing') in Admin.tsx is wrapped with {isPartnerAdmin && ...}, so platform admins cannot access it. The {isPlatformAdmin && <UsageDashboard>} inside PlanBillingTab.tsx (line 820-825) is dead code. If platform admins need to see Usage & Limits in Plan & Billing, either: (a) remove the isPartnerAdmin guard around the plan-billing TabsContent OR (b) add the plan-billing tab to platform admin sidebar OR (c) the test requirement should be removed (platform admins already have access to usage via other means)"
+  ],
+  "critical_code_review_comments": [
+    "PlanBillingTab.tsx line 820-825: {isPlatformAdmin && <UsageDashboard>} - this code is CORRECT but UNREACHABLE for platform admins because Admin.tsx line 641 wraps TabsContent 'plan-billing' with {isPartnerAdmin && ...}. Platform admins cannot access the plan-billing tab via any route (sidebar or URL). This is either a design oversight or the test requirement for platform admin was added in error.",
+    "Admin.tsx line 636-639: {!isPlatformAdmin && <TabsContent value='usage'>} renders a 'usage' tab that shows UsageDashboard for all non-platform-admins (partner admins, customers). This means partner admins can see UsageDashboard via the 'usage' tab. Is this intentional? There's no sidebar link to this 'usage' tab so it's currently only accessible via direct URL (?tab=usage)."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "frontend": "86% (6/7 tests pass, 1 architectural issue)"
+  },
+  "test_credentials": {
+    "platform_super_admin": {
+      "partner_code": "automate-accounts",
+      "email": "admin@automateaccounts.local",
+      "password": "ChangeMe123!"
+    },
+    "test_partner_admin": {
+      "partner_code": "testpartner",
+      "email": "testpartneradmin@test.com",
+      "password": "TestPass123!",
+      "note": "Created for RBAC testing - test tenant 'test-partner-org', code 'testpartner'"
+    }
+  },
+  "seed_data_creation": "Created test tenant (id: 'test-partner-org', code: 'testpartner') and test partner admin user (testpartneradmin@test.com / TestPass123!) for RBAC testing. These can be cleaned up after testing.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All 5 fixes verified working EXCEPT one architectural issue with test 5 (platform admin seeing Usage in Plan & Billing). The Plan & Billing tab in Admin.tsx is restricted to isPartnerAdmin only ({isPartnerAdmin && <TabsContent value='plan-billing'>}), so platform admins can't access it. The code inside PlanBillingTab.tsx correctly shows UsageDashboard for isPlatformAdmin but it's dead code. Fix: Either remove the isPartnerAdmin guard or add platform admin access to the tab. Test partner admin created: email=testpartneradmin@test.com, pw=TestPass123!, code=testpartner. Platform admin: email=admin@automateaccounts.local, pw=ChangeMe123!, code=automate-accounts.",
+  "rca_of_the_issue": {
+    "test_5_architectural_issue": {
+      "bug": "Platform Admin cannot see Usage & Limits in Plan & Billing tab",
+      "root_cause": "Admin.tsx line 641: `{isPartnerAdmin && <TabsContent value='plan-billing'><PlanBillingTab /></TabsContent>}` - The plan-billing TabsContent is only rendered when isPartnerAdmin is true. Platform admins are not partner admins (isPlatformAdmin=true, isPartnerAdmin=false), so they cannot access this tab at all.",
+      "fix_code_inside_tab": "PlanBillingTab.tsx line 820-825 correctly uses {isPlatformAdmin && <UsageDashboard>} but this code is never executed for platform admins",
+      "fix_options": [
+        "Option A: Change Admin.tsx line 641 from `{isPartnerAdmin && ...}` to `{(isPartnerAdmin || isPlatformAdmin) && ...}` to allow platform admins to see the tab",
+        "Option B: Remove the isPartnerAdmin guard entirely since PlanBillingTab already handles role-based rendering internally",
+        "Option C: Accept that platform admins don't need to see Plan & Billing tab and remove the test requirement"
+      ]
+    }
+  }
+}

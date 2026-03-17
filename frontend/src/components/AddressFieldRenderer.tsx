@@ -112,12 +112,14 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
       {/* Line 2 */}
       {cfg.line2.enabled && (
         <div className="flex flex-col gap-2">
-          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Suite / Unit</label>
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
+            Address Line 2{cfg.line2.required && <span className="text-red-400 ml-0.5"> *</span>}
+          </label>
           <input
             className={pillInput(false, compact)}
             value={value.line2 || ""}
             onChange={e => set("line2", e.target.value)}
-            placeholder="e.g. Suite 400"
+            placeholder="e.g. Suite 400, Apt 2B"
             data-testid={`addr-line2-${field.key}`}
           />
         </div>
@@ -132,7 +134,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
           <input
             className={pillInput(false, compact)}
             value={value.city || ""}
-            onChange={e => set("city", e.target.value)}
+            onChange={e => set("city", e.target.value.replace(/[0-9]/g, ""))}
             placeholder="e.g. Toronto"
             required={cfg.city.required}
             data-testid={`addr-city-${field.key}`}
@@ -170,7 +172,9 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
       {/* State / Province — after Country */}
       {cfg.state.enabled && (
         <div className="flex flex-col gap-2">
-          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">State / Province</label>
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
+            State / Province{cfg.state.required && <span className="text-red-400 ml-0.5"> *</span>}
+          </label>
           {provinces.length > 0 ? (
             <Select value={value.region || ""} onValueChange={v => set("region", v)}>
               <SelectTrigger className={pillSelect(compact)} data-testid={`addr-region-${field.key}`}>
