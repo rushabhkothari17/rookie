@@ -68,7 +68,7 @@ const STATUS_COLORS: Record<string, string> = {
   refunded: "bg-purple-100 text-purple-700",
 };
 
-const STATUSES = ["pending", "unpaid", "paid", "cancelled", "refunded"];
+const STATUSES = ["pending", "unpaid", "paid", "partially_refunded", "refunded", "cancelled"];
 const PAYMENT_METHODS = ["manual", "offline", "bank_transfer", "card"];
 
 function downloadInvoice(orderId: string, orderNumber: string, endpoint: string) {

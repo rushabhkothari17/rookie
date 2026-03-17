@@ -28,6 +28,15 @@ Build a white-label service commerce platform with:
 - Database fully reset (all 46 collections dropped + reseeded via backend startup)
 - Seeded data: platform_super_admin user, automate-accounts tenant, Free Trial plan
 
+### Session: Mar 2026 - Tax/Refund for Partner Orders/Subscriptions + Customer Manual Order Tax
+**Features added:**
+1. **Tax fields on Partner Orders**: `tax_name`, `tax_rate` inputs + auto-calculated tax amount display. Backend `PartnerOrderCreate`/`PartnerOrderUpdate` support all 3 fields. Tax saved to DB.
+2. **Tax fields on Partner Subscriptions**: Same fields added to form and `PartnerSubscriptionCreate`/`PartnerSubscriptionUpdate`
+3. **Tax fields on Customer Manual Order**: Added `tax_name`, `tax_rate` to manual order form in `OrdersTab.tsx` and `ManualOrderCreate` model
+4. **Refund functionality for Partner Orders**: Matches customer orders UX — `RotateCcw` button for paid/partially_refunded orders, refund dialog with amount/reason/provider, partial → `partially_refunded`, full → `refunded`. Backend: `POST /admin/partner-orders/{id}/refund` + `GET /admin/partner-orders/{id}/refund-providers`
+5. **Paid date conditional visibility**: `paid_at` field hidden when status ≠ "paid"; auto-clears when status changes away from "paid"
+6. **`partially_refunded` status**: Added to `STATUSES` array and `STATUS_COLORS` (orange badge) in PartnerOrdersTab
+
 ### Session: Mar 2026 - Partner Orders/Subscriptions Validation + Free Plan Downgrade
 **Issues fixed:**
 1. **Validation messages**: Per-field specific errors instead of generic "Partner, description and amount are required"
