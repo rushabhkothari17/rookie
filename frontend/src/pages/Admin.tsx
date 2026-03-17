@@ -379,6 +379,7 @@ export default function Admin() {
                   <>
                     <SideTab value="tenants" testId="admin-tab-tenants" label="Partner Orgs" />
                     <SideTab value="plans" testId="admin-tab-plans" label="Plans" />
+                    <SideTab value="usage" testId="admin-tab-usage" label="Usage &amp; Limits" />
                     <SideTab value="partner-subscriptions" testId="admin-tab-partner-subscriptions" label="Partner Subscriptions" />
                     <SideTab value="partner-orders" testId="admin-tab-partner-orders" label="Partner Orders" />
                     <SideTab value="partner-submissions" testId="admin-tab-partner-submissions" label="Partner Submissions" />
@@ -386,7 +387,6 @@ export default function Admin() {
                     {authUser?.role === "platform_super_admin" && (
                       <SideTab value="currencies" testId="admin-tab-currencies" label="Supported Currencies" />
                     )}
-                    <SideTab value="usage" testId="admin-tab-usage" label="Usage &amp; Limits" />
                   </>
                 )}
               </>
@@ -399,6 +399,7 @@ export default function Admin() {
                 {expandedSection === "my-billing" && (
                   <>
                     <SideTab value="plan-billing" testId="admin-tab-plan-billing" label="Plan &amp; Billing" />
+                    <SideTab value="usage" testId="admin-tab-usage" label="Usage &amp; Limits" />
                     <SideTab value="my-subscriptions" testId="admin-tab-my-subscriptions" label="My Subscriptions" />
                     <SideTab value="my-orders" testId="admin-tab-my-orders" label="My Orders" />
                     <SideTab value="my-submissions" testId="admin-tab-my-submissions" label="My Submissions" />
@@ -635,7 +636,7 @@ export default function Admin() {
               <CurrenciesTab />
             </TabsContent>
           )}
-          {isPlatformAdmin && (
+          {(isPlatformAdmin || isPartnerAdmin) && (
             <TabsContent value="usage" className="space-y-4">
               <UsageDashboard />
             </TabsContent>
