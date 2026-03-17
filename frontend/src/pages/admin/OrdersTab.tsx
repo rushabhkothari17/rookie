@@ -446,7 +446,7 @@ export function OrdersTab() {
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
                   <Select value={selectedOrder.status || ""} onValueChange={v => setSelectedOrder({ ...selectedOrder, status: v })} data-testid="admin-order-status-select">
                     <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
-                    <SelectContent>{orderStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{orderStatuses.filter(s => s !== "refunded" && s !== "partially_refunded").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 {/* Payment Method */}

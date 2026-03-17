@@ -69,6 +69,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUSES = ["pending", "unpaid", "paid", "partially_refunded", "refunded", "cancelled"];
+const EDITABLE_STATUSES = STATUSES.filter(s => s !== "refunded" && s !== "partially_refunded");
 const PAYMENT_METHODS = ["manual", "offline", "bank_transfer", "card"];
 
 function downloadInvoice(orderId: string, orderNumber: string, endpoint: string) {
@@ -247,7 +248,7 @@ function OrderFormModal({
               <label className="text-xs font-medium text-slate-600">Status</label>
               <Select value={form.status} onValueChange={v => set("status", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{EDITABLE_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
