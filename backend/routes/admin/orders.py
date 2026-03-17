@@ -230,6 +230,11 @@ async def create_manual_order(
         "currency": payload.currency or "USD",
         "payment_method": "offline",
         "internal_note": payload.internal_note or "",
+        "tax_rate": payload.tax_rate,
+        "tax_name": payload.tax_name,
+        "tax_amount": round_cents(payload.tax_amount) if payload.tax_amount is not None else None,
+        "order_date": payload.order_date,
+        "payment_date": payload.payment_date,
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
     }

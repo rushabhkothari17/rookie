@@ -79,6 +79,9 @@ class PartnerOrderCreate(BaseModel):
     due_date: Optional[str] = None
     paid_at: Optional[str] = None
     internal_note: Optional[str] = None
+    tax_name: Optional[str] = None
+    tax_rate: Optional[float] = None
+    tax_amount: Optional[float] = None
 
 
 class PartnerOrderUpdate(BaseModel):
@@ -92,6 +95,9 @@ class PartnerOrderUpdate(BaseModel):
     due_date: Optional[str] = None
     paid_at: Optional[str] = None
     internal_note: Optional[str] = None
+    tax_name: Optional[str] = None
+    tax_rate: Optional[float] = None
+    tax_amount: Optional[float] = None
 
 
 class PartnerSubscriptionCreate(BaseModel):
@@ -107,10 +113,13 @@ class PartnerSubscriptionCreate(BaseModel):
     start_date: Optional[str] = None
     next_billing_date: Optional[str] = None
     internal_note: Optional[str] = None
-    term_months: Optional[int] = None  # None/0 = cancel anytime; 1-999 = locked term
+    term_months: Optional[int] = None
     auto_cancel_on_termination: bool = False
-    reminder_days: Optional[int] = None  # None = use org default
+    reminder_days: Optional[int] = None
     contract_end_date: Optional[str] = None
+    tax_name: Optional[str] = None
+    tax_rate: Optional[float] = None
+    tax_amount: Optional[float] = None
 
 
 class PartnerSubscriptionUpdate(BaseModel):
@@ -124,10 +133,13 @@ class PartnerSubscriptionUpdate(BaseModel):
     start_date: Optional[str] = None
     next_billing_date: Optional[str] = None
     internal_note: Optional[str] = None
-    term_months: Optional[int] = None  # -1 sentinel to clear term
+    term_months: Optional[int] = None
     auto_cancel_on_termination: Optional[bool] = None
-    reminder_days: Optional[int] = None  # -1 to clear (set to null)
+    reminder_days: Optional[int] = None
     contract_end_date: Optional[str] = None
+    tax_name: Optional[str] = None
+    tax_rate: Optional[float] = None
+    tax_amount: Optional[float] = None
 
 
 class PartnerCheckoutRequest(BaseModel):
@@ -256,6 +268,10 @@ async def create_partner_order(
         "internal_note": payload.internal_note or "",
         "created_by": admin.get("email", "admin"),
         "payment_url": None,
+        "tax_name": payload.tax_name,
+        "tax_rate": payload.tax_rate,
+        "tax_amount": payload.tax_amount,
+        "refunded_amount": 0,
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }
@@ -352,6 +368,66 @@ async def delete_partner_order(order_id: str, admin: Dict[str, Any] = Depends(re
         actor=admin.get("email", "admin"), details={"order_number": order.get("order_number")},
     )
     return {"message": "Order deleted"}
+
+
+class PartnerOrderRefund(BaseModel):
+    amount: Optional[float] = None  # None = full refund
+    reason: str = "requested_by_customer"
+
+
+@router.get("/admin/partner-orders/{order_id}/refund-providers")
+async def get_partner_order_refund_providers(
+    order_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)
+):
+    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0, "payment_method": 1, "processor_id": 1, "status": 1})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    providers = []
+    if order.get("payment_method") == "card" and order.get("processor_id"):
+        providers.append({"id": "stripe", "name": "Stripe", "available": True, "is_original": True})
+    providers.append({"id": "manual", "name": "Manual (Record Only)", "available": True, "is_original": False})
+    return {"providers": providers}
+
+
+@router.post("/admin/partner-orders/{order_id}/refund")
+async def refund_partner_order(
+    order_id: str, payload: PartnerOrderRefund, admin: Dict[str, Any] = Depends(require_platform_admin)
+):
+    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.get("status") not in ("paid", "partially_refunded"):
+        raise HTTPException(status_code=400, detail="Only paid orders can be refunded")
+
+    total_cents = int(round(order["amount"] * 100))
+    already_refunded_cents = int(round((order.get("refunded_amount") or 0) * 100))
+    available_cents = total_cents - already_refunded_cents
+    if available_cents <= 0:
+        raise HTTPException(status_code=400, detail="Order is already fully refunded")
+
+    if payload.amount is not None:
+        refund_cents = int(round(payload.amount * 100))
+        if refund_cents <= 0:
+            raise HTTPException(status_code=400, detail="Refund amount must be positive")
+        if refund_cents > available_cents:
+            raise HTTPException(status_code=400, detail=f"Exceeds available balance. Max: {available_cents / 100:.2f}")
+    else:
+        refund_cents = available_cents
+
+    new_refunded_cents = already_refunded_cents + refund_cents
+    new_status = "refunded" if new_refunded_cents >= total_cents else "partially_refunded"
+
+    await db.partner_orders.update_one(
+        {"id": order_id},
+        {"$set": {"refunded_amount": round(new_refunded_cents / 100, 2), "status": new_status, "updated_at": now_iso()}},
+    )
+    await create_audit_log(
+        entity_type="partner_order", entity_id=order_id, action="refunded",
+        actor=admin.get("email", "admin"),
+        details={"amount": round(refund_cents / 100, 2), "reason": payload.reason, "currency": order.get("currency", "")},
+    )
+    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0})
+    return {"order": order, "refunded_amount": round(refund_cents / 100, 2)}
 
 
 # ---------------------------------------------------------------------------
@@ -494,6 +570,9 @@ async def create_partner_subscription(
         "internal_note": payload.internal_note or "",
         "created_by": admin.get("email", "admin"),
         "payment_url": None,
+        "tax_name": payload.tax_name,
+        "tax_rate": payload.tax_rate,
+        "tax_amount": payload.tax_amount,
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }

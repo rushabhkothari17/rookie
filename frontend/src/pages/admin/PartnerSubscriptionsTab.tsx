@@ -111,7 +111,7 @@ type SubFormData = {
   currency: string; billing_interval: string; status: string; payment_method: string;
   processor_id: string; start_date: string; next_billing_date: string; internal_note: string;
   term_months: string; auto_cancel_on_termination: boolean; reminder_days: string;
-  contract_end_date: string;
+  contract_end_date: string; tax_name: string; tax_rate: string;
 };
 
 const emptyForm = (): SubFormData => ({
@@ -119,6 +119,7 @@ const emptyForm = (): SubFormData => ({
   currency: "GBP", billing_interval: "monthly", status: "pending",
   payment_method: "manual", processor_id: "", start_date: "", next_billing_date: "", internal_note: "",
   term_months: "", auto_cancel_on_termination: false, reminder_days: "", contract_end_date: "",
+  tax_name: "", tax_rate: "",
 });
 
 
@@ -166,6 +167,7 @@ function SubFormModal({
       auto_cancel_on_termination: sub.auto_cancel_on_termination || false,
       reminder_days: (sub as any).reminder_days != null ? String((sub as any).reminder_days) : "",
       contract_end_date: sub.contract_end_date ? sub.contract_end_date.slice(0, 10) : "",
+      tax_name: (sub as any).tax_name || "", tax_rate: (sub as any).tax_rate != null ? String((sub as any).tax_rate) : "",
     } : emptyForm()
   );
   const [saving, setSaving] = useState(false);
@@ -218,6 +220,9 @@ function SubFormModal({
         auto_cancel_on_termination: form.auto_cancel_on_termination,
         reminder_days: form.reminder_days !== "" ? parseInt(form.reminder_days) : null,
         contract_end_date: form.contract_end_date || null,
+        tax_name: form.tax_name.trim() || null,
+        tax_rate: form.tax_rate ? parseFloat(form.tax_rate) : null,
+        tax_amount: (form.tax_rate && amt) ? parseFloat((amt * parseFloat(form.tax_rate) / 100).toFixed(2)) : null,
       };
       if (isEdit) {
         await api.put(`/admin/partner-subscriptions/${sub.id}`, payload);
@@ -346,6 +351,23 @@ function SubFormModal({
               {form.internal_note.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.internal_note.length > 4750 ? "text-red-500" : form.internal_note.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.internal_note.length}/5000</span>}
             </div>
             <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} maxLength={5000} />
+          </div>
+          {/* Tax fields */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1 col-span-2">
+              <label className="text-xs font-medium text-slate-600">Tax Name</label>
+              <Input value={form.tax_name} onChange={e => set("tax_name", e.target.value)} placeholder="e.g. GST, HST, VAT" data-testid="sub-tax-name-input" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Tax Rate (%)</label>
+              <Input type="number" min={0} max={100} step="0.01" value={form.tax_rate} onChange={e => set("tax_rate", e.target.value)} placeholder="e.g. 13" data-testid="sub-tax-rate-input" />
+            </div>
+            {form.tax_rate && form.amount && (
+              <div className="col-span-3 text-xs text-slate-500">
+                Tax Amount: <span className="font-semibold text-slate-700">{form.currency} {(parseFloat(form.amount || "0") * parseFloat(form.tax_rate) / 100).toFixed(2)}</span>
+                &nbsp;· Total incl. tax: <span className="font-semibold text-slate-700">{form.currency} {(parseFloat(form.amount || "0") * (1 + parseFloat(form.tax_rate) / 100)).toFixed(2)}</span>
+              </div>
+            )}
           </div>
           {/* Contract term */}
           <div className="grid grid-cols-2 gap-3">

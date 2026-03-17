@@ -19,7 +19,7 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { Copy, ExternalLink, RefreshCw, Plus, Pencil, Trash2, Download } from "lucide-react";
+import { Copy, ExternalLink, RefreshCw, Plus, Pencil, Trash2, Download, RotateCcw } from "lucide-react";
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { ColHeader } from "@/components/shared/ColHeader";
@@ -45,6 +45,10 @@ type PartnerOrder = {
   paid_at?: string;
   internal_note?: string;
   payment_url?: string;
+  tax_name?: string;
+  tax_rate?: number;
+  tax_amount?: number;
+  refunded_amount?: number;
   created_at: string;
 };
 
@@ -102,12 +106,14 @@ type OrderFormData = {
   partner_id: string; plan_id: string; description: string; amount: string;
   currency: string; status: string; payment_method: string; processor_id: string;
   invoice_date: string; due_date: string; paid_at: string; internal_note: string;
+  tax_name: string; tax_rate: string;
 };
 
 const emptyForm = (): OrderFormData => ({
   partner_id: "", plan_id: "", description: "", amount: "",
   currency: "GBP", status: "unpaid", payment_method: "manual",
   processor_id: "", invoice_date: "", due_date: "", paid_at: "", internal_note: "",
+  tax_name: "", tax_rate: "",
 });
 
 function OrderFormModal({
@@ -128,13 +134,18 @@ function OrderFormModal({
       payment_method: order.payment_method, processor_id: order.processor_id || "",
       invoice_date: order.invoice_date || "", due_date: order.due_date || "",
       paid_at: order.paid_at || "", internal_note: order.internal_note || "",
+      tax_name: order.tax_name || "", tax_rate: order.tax_rate != null ? String(order.tax_rate) : "",
     } : emptyForm()
   );
   const [saving, setSaving] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState(order?.payment_url || "");
 
-  const set = (k: keyof OrderFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: keyof OrderFormData, v: string) => setForm(f => {
+    const update: Partial<OrderFormData> = { [k]: v };
+    if (k === "status" && v !== "paid") update.paid_at = "";
+    return { ...f, ...update };
+  });
 
   const handleSave = async () => {
     if (!form.partner_id) { toast.error("Partner is required"); return; }
@@ -167,8 +178,11 @@ function OrderFormModal({
         processor_id: form.processor_id || null,
         invoice_date: form.invoice_date || null,
         due_date: form.due_date || null,
-        paid_at: form.paid_at || null,
+        paid_at: form.status === "paid" ? (form.paid_at || null) : null,
         internal_note: form.internal_note || "",
+        tax_name: form.tax_name.trim() || null,
+        tax_rate: form.tax_rate ? parseFloat(form.tax_rate) : null,
+        tax_amount: (form.tax_rate && amt) ? parseFloat((amt * parseFloat(form.tax_rate) / 100).toFixed(2)) : null,
       };
       if (isEdit) {
         await api.put(`/admin/partner-orders/${order.id}`, payload);
@@ -272,12 +286,31 @@ function OrderFormModal({
               <label className="text-xs font-medium text-slate-600">Due Date</label>
               <Input type="date" value={form.due_date} onChange={e => set("due_date", e.target.value)} />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">
-                Paid At{form.status === "paid" && <span className="text-red-400 ml-0.5"> *</span>}
-              </label>
-              <Input type="date" value={form.paid_at ? form.paid_at.slice(0, 10) : ""} onChange={e => set("paid_at", e.target.value)} />
+            {form.status === "paid" && (
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">
+                  Paid At <span className="text-red-400">*</span>
+                </label>
+                <Input type="date" value={form.paid_at ? form.paid_at.slice(0, 10) : ""} onChange={e => set("paid_at", e.target.value)} data-testid="order-paid-at-input" />
+              </div>
+            )}
+          </div>
+          {/* Tax fields */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1 col-span-2">
+              <label className="text-xs font-medium text-slate-600">Tax Name</label>
+              <Input value={form.tax_name} onChange={e => set("tax_name", e.target.value)} placeholder="e.g. GST, HST, VAT" data-testid="order-tax-name-input" />
             </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Tax Rate (%)</label>
+              <Input type="number" min={0} max={100} step="0.01" value={form.tax_rate} onChange={e => set("tax_rate", e.target.value)} placeholder="e.g. 13" data-testid="order-tax-rate-input" />
+            </div>
+            {form.tax_rate && form.amount && (
+              <div className="col-span-3 text-xs text-slate-500">
+                Tax Amount: <span className="font-semibold text-slate-700">{form.currency} {(parseFloat(form.amount || "0") * parseFloat(form.tax_rate) / 100).toFixed(2)}</span>
+                &nbsp;· Total incl. tax: <span className="font-semibold text-slate-700">{form.currency} {(parseFloat(form.amount || "0") * (1 + parseFloat(form.tax_rate) / 100)).toFixed(2)}</span>
+              </div>
+            )}
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-600">Processor ID (Stripe/GC reference)</label>
@@ -331,6 +364,11 @@ export function PartnerOrdersTab() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({ partner_id: "", plan_id: "" });
+  const [refundOrder, setRefundOrder] = useState<PartnerOrder | null>(null);
+  const [refundForm, setRefundForm] = useState({ amount: "", reason: "requested_by_partner", provider: "manual" });
+  const [refundProviders, setRefundProviders] = useState<{ id: string; name: string; available: boolean; is_original?: boolean }[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [processingRefund, setProcessingRefund] = useState(false);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [colFilters, setColFilters] = useState({
     orderNumbers: [] as string[], partnerNames: [] as string[],
@@ -414,6 +452,31 @@ export function PartnerOrdersTab() {
     } catch (e: any) { toast.error(e.response?.data?.detail || "Delete failed"); }
   };
 
+  const openRefund = async (order: PartnerOrder) => {
+    setRefundOrder(order);
+    setRefundForm({ amount: "", reason: "requested_by_partner", provider: "manual" });
+    setLoadingProviders(true);
+    try {
+      const res = await api.get(`/admin/partner-orders/${order.id}/refund-providers`);
+      setRefundProviders(res.data.providers || [{ id: "manual", name: "Manual (Record Only)", available: true }]);
+    } catch { setRefundProviders([{ id: "manual", name: "Manual (Record Only)", available: true }]); }
+    finally { setLoadingProviders(false); }
+  };
+
+  const handleRefund = async () => {
+    if (!refundOrder) return;
+    setProcessingRefund(true);
+    try {
+      const payload: Record<string, any> = { reason: refundForm.reason };
+      if (refundForm.amount) payload.amount = parseFloat(refundForm.amount);
+      await api.post(`/admin/partner-orders/${refundOrder.id}/refund`, payload);
+      toast.success("Refund processed successfully");
+      setRefundOrder(null);
+      load();
+    } catch (e: any) { toast.error(e.response?.data?.detail || "Refund failed"); }
+    finally { setProcessingRefund(false); }
+  };
+
   const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString() : "—";
   const fmtAmt = (amount: number, currency: string) =>
     new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount);
@@ -491,6 +554,9 @@ export function PartnerOrdersTab() {
                     {order.status === "paid" && (
                       <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
                     )}
+                    {(order.status === "paid" || order.status === "partially_refunded") && (
+                      <Button size="sm" variant="ghost" className="text-amber-600 hover:text-amber-700" onClick={() => openRefund(order)} title="Refund" data-testid={`refund-order-${order.id}`}><RotateCcw className="h-4 w-4" /></Button>
+                    )}
                     <Button size="sm" variant="ghost" onClick={() => setEditOrder(order)} data-testid={`edit-order-${order.id}`}><Pencil className="h-4 w-4" /></Button>
                     <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => setDeleteOrder(order)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
@@ -526,6 +592,74 @@ export function PartnerOrdersTab() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      {/* Refund Dialog */}
+      {refundOrder && (
+        <Dialog open onOpenChange={() => setRefundOrder(null)}>
+          <DialogContent className="max-w-md" data-testid="partner-order-refund-dialog">
+            <DialogHeader><DialogTitle>Process Refund — {refundOrder.order_number}</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="bg-slate-50 rounded-lg p-3 text-sm">
+                <div className="flex justify-between mb-1">
+                  <span className="text-slate-500">Order Total</span>
+                  <span className="font-medium">{fmtAmt(refundOrder.amount, refundOrder.currency)}</span>
+                </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-slate-500">Already Refunded</span>
+                  <span className="font-medium text-amber-600">{fmtAmt(refundOrder.refunded_amount || 0, refundOrder.currency)}</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
+                  <span className="text-slate-700 font-medium">Available to Refund</span>
+                  <span className="font-bold text-emerald-600">{fmtAmt(refundOrder.amount - (refundOrder.refunded_amount || 0), refundOrder.currency)}</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Refund Amount</label>
+                <Input type="number" step="0.01" min={0} placeholder={`Max: ${fmtAmt(refundOrder.amount - (refundOrder.refunded_amount || 0), refundOrder.currency)} — leave empty for full refund`} value={refundForm.amount} onChange={e => setRefundForm(f => ({ ...f, amount: e.target.value }))} data-testid="partner-refund-amount-input" />
+                <p className="text-[10px] text-slate-400">Leave empty to refund the full available balance</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Reason</label>
+                <Select value={refundForm.reason} onValueChange={v => setRefundForm(f => ({ ...f, reason: v }))}>
+                  <SelectTrigger data-testid="partner-refund-reason-select"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="requested_by_partner">Requested by Partner</SelectItem>
+                    <SelectItem value="duplicate">Duplicate Payment</SelectItem>
+                    <SelectItem value="service_issue">Service Issue</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Refund Method</label>
+                {loadingProviders ? (
+                  <div className="text-xs text-slate-400 py-2">Loading providers…</div>
+                ) : (
+                  <Select value={refundForm.provider} onValueChange={v => setRefundForm(f => ({ ...f, provider: v }))}>
+                    <SelectTrigger data-testid="partner-refund-provider-select"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {refundProviders.map(p => (
+                        <SelectItem key={p.id} value={p.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{p.name}</span>
+                            {p.is_original && <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Original</span>}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRefundOrder(null)}>Cancel</Button>
+              <Button onClick={handleRefund} disabled={processingRefund} className="bg-amber-600 hover:bg-amber-700" data-testid="confirm-partner-refund-btn">
+                {processingRefund ? "Processing…" : "Process Refund"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

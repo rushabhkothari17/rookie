@@ -1,0 +1,74 @@
+{
+  "summary": "Tested tax and refund functionality for partner orders/subscriptions and customer manual orders. All 9 features from the review request were verified. All 11 backend tests PASS. All UI flows functional with 2 design/functional issues found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "PartnerOrdersTab - Status Badge",
+        "issue": "'partially_refunded' status is missing from STATUS_COLORS in PartnerOrdersTab.tsx. Badge renders with fallback bg-slate-100 (white/light-gray, no distinct color), making it hard to distinguish from an empty/blank badge visually.",
+        "selector": "text=partially_refunded",
+        "priority": "MEDIUM",
+        "fix": "Add `partially_refunded: 'bg-orange-100 text-orange-700'` to STATUS_COLORS in PartnerOrdersTab.tsx"
+      },
+      {
+        "component": "PartnerOrdersTab - Edit Order Status Dropdown",
+        "issue": "'partially_refunded' is NOT in the STATUSES array (`['pending', 'unpaid', 'paid', 'cancelled', 'refunded']`). When editing a partially_refunded order, the status combobox shows blank, unable to display or preserve the current status. The user could accidentally overwrite it.",
+        "selector": "[data-testid='order-status-select']",
+        "priority": "HIGH",
+        "fix": "Add 'partially_refunded' to STATUSES array and add display label for it in PartnerOrdersTab.tsx"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Partner Orders table",
+        "issues": [
+          "HTML hydration console error: <span> as child of <tbody> and <tr> as child of <span> - caused by conditional rendering inside table bodies. This is a React rendering anti-pattern that can cause hydration mismatches."
+        ]
+      },
+      {
+        "screen": "Customer Orders refund dialog (OrdersTab.tsx)",
+        "issues": [
+          "In the customer orders refund dialog, 'Already Refunded' is shown as `(selectedOrder.refunded_amount || 0) / 100`, dividing by 100 - implying customer orders store refunded_amount in cents. Verify this is intentional and consistent with how refunded_amount is stored in customer orders backend."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter306_partner_tax_refund.py",
+    "/app/test_reports/pytest/pytest_iter306_partner_tax_refund.xml"
+  ],
+  "action_items": [
+    "HIGH: Add 'partially_refunded' to STATUSES array in PartnerOrdersTab.tsx so that edit mode can display and preserve the status",
+    "MEDIUM: Add 'partially_refunded: bg-orange-100 text-orange-700' to STATUS_COLORS in PartnerOrdersTab.tsx for proper badge coloring",
+    "LOW: Fix HTML table structure warning - conditional rendering wrapping <tr>/<tbody> with <span> causes hydration errors. Use Fragment or fix conditional rendering pattern.",
+    "VERIFY: Confirm whether customer orders store refunded_amount in cents (requires /100) or dollars - the division by 100 in OrdersTab.tsx refund dialog may be a bug if stored in dollars"
+  ],
+  "critical_code_review_comments": [
+    "PartnerOrdersTab.tsx: STATUSES = ['pending', 'unpaid', 'paid', 'cancelled', 'refunded'] is missing 'partially_refunded'. This means the edit dialog status dropdown is blank for partially_refunded orders - a functional bug that could lead to accidental status overwrites.",
+    "PartnerOrdersTab.tsx: STATUS_COLORS missing 'partially_refunded' key - renders as unstyled badge.",
+    "PartnerOrdersTab.tsx/PartnerSubscriptionsTab.tsx: <span> rendered as child of <tbody> from conditional loading/empty state rendering - causes React hydration console errors."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter306_partner_tax_refund.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests pass)",
+    "frontend": "90% (2 design/functional issues found, all core flows work)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123! (partner code: automate-accounts, platform admin)",
+  "seed_data_creation": "Created test partner orders: TEST Tax Order UI (paid, HST 13%), TEST_Tax Order, TEST_Paid Order For Refund (fully refunded), TEST_RefundExceed Order, TEST_Unpaid Order No Refund. Created TEST_Tax Subscription via backend tests.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Tax fields (tax_name, tax_rate, tax_amount) work correctly for partner orders, partner subscriptions, and customer manual orders. Refund flow works end-to-end: paid order gets RotateCcw button, refund dialog shows order total/already refunded/available to refund/amount input/reason select/provider select, partial refund → partially_refunded status, full refund → refunded status. API validation (400 for overpayment/unpaid orders) works. Two issues: (1) 'partially_refunded' missing from STATUSES array in PartnerOrdersTab.tsx causing blank status in edit mode, (2) 'partially_refunded' missing from STATUS_COLORS causing unstyled badge.",
+  "rca_of_issues": {
+    "partially_refunded_missing_from_statuses": {
+      "description": "When a refund is processed via the refund dialog, the backend correctly sets status to 'partially_refunded'. However, the frontend PartnerOrdersTab.tsx STATUSES constant does not include 'partially_refunded'. When opening the edit dialog for such an order, the Select component cannot match the current value to any option, resulting in a blank display.",
+      "reproduction": "1. Create a paid partner order. 2. Click the refund button and process a partial refund. 3. Click the edit (pencil) button on the now-partially_refunded order. 4. Observe the Status dropdown is blank.",
+      "mitigation": "Add 'partially_refunded' to the STATUSES array in PartnerOrdersTab.tsx and add a corresponding entry to STATUS_COLORS."
+    }
+  }
+}

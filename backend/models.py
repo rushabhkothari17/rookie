@@ -383,6 +383,11 @@ class ManualOrderCreate(BaseModel):
     status: str = Field("paid", max_length=100)
     currency: str = Field("USD", max_length=10)
     internal_note: Optional[str] = Field("", max_length=5_000)
+    tax_rate: Optional[float] = Field(None, ge=0, le=100)
+    tax_name: Optional[str] = Field(None, max_length=50)
+    tax_amount: Optional[float] = None
+    order_date: Optional[str] = None
+    payment_date: Optional[str] = None
 
 
 class ManualSubscriptionCreate(BaseModel):
