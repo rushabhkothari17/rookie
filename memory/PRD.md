@@ -591,7 +591,13 @@ Build a white-label service commerce platform with:
 8. **Invoice download for refunded orders**: Download button shown for `paid`, `partially_refunded`, and `refunded` orders. Backend endpoint updated to allow these 3 statuses.
 - **Tested**: iteration_307 — 93% backend pass, 95% frontend pass. Backend plan_id and offline validations confirmed via curl tests.
 
-### P2 — Medium Priority
+### Phase 26: Billing Bug Fixes & Invoice Improvements (Mar 2026)
+- **Free Trial plan** — Set `is_public: True` in seed and migrated existing DB record so partners can self-sign up on the Free Trial plan
+- **Invoice download for unpaid** — Download invoice button now shown for ALL statuses except `cancelled`; backend endpoint updated accordingly
+- **Refund max validation** — Partner Orders & Customer Orders: refund button now only shows when there is a positive available balance (`amount - refunded_amount > 0`); `max` attribute and front-end validation prevent submitting more than the available amount
+- **Tax country mapping** — Added `resolveCountryCode()` helper mapping full country names (e.g. "Canada", "United Kingdom") to ISO codes (e.g. "CA", "GB") so tax table lookups work correctly; also removed the `taxEnabled` gate on the quick-fill dropdown (it now shows whenever matching entries exist, not just when the tax module is enabled)
+
+
 - Spacing on Resources and My Profile pages (minor UI inconsistency)
 - Centralize Email Settings
 

@@ -25,6 +25,25 @@ import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { ColHeader } from "@/components/shared/ColHeader";
 
+// Maps common country names to ISO 2-letter codes (for tax table matching)
+const COUNTRY_NAME_TO_ISO: Record<string, string> = {
+  "canada": "CA", "united kingdom": "GB", "england": "GB", "scotland": "GB",
+  "wales": "GB", "northern ireland": "GB", "united states": "US",
+  "united states of america": "US", "usa": "US", "australia": "AU",
+  "new zealand": "NZ", "ireland": "IE", "germany": "DE", "france": "FR",
+  "spain": "ES", "italy": "IT", "netherlands": "NL", "belgium": "BE",
+  "sweden": "SE", "norway": "NO", "denmark": "DK", "finland": "FI",
+  "switzerland": "CH", "austria": "AT", "portugal": "PT", "poland": "PL",
+  "india": "IN", "japan": "JP", "china": "CN", "south africa": "ZA",
+  "singapore": "SG", "brazil": "BR", "mexico": "MX",
+};
+function resolveCountryCode(country?: string): string {
+  if (!country) return "";
+  const trimmed = country.trim();
+  if (trimmed.length === 2) return trimmed.toUpperCase();
+  return COUNTRY_NAME_TO_ISO[trimmed.toLowerCase()] || trimmed.toUpperCase();
+}
+
 /** Small reusable button that sends a test renewal reminder for a partner subscription. */
 function TestReminderButton({ subId }: { subId: string }) {
   const [sending, setSending] = useState(false);
@@ -182,15 +201,15 @@ function SubFormModal({
 
   // Derive filtered tax options for the selected partner
   const selectedTenant = tenants.find(t => t.id === form.partner_id);
-  const partnerCountry = selectedTenant?.address?.country?.toUpperCase();
+  const partnerCountry = resolveCountryCode(selectedTenant?.address?.country);
   const partnerRegion = selectedTenant?.address?.region?.toUpperCase();
   const filteredTaxOptions = useMemo(() => {
-    if (!taxEnabled || !partnerCountry || !taxEntries.length) return [];
+    if (!partnerCountry || !taxEntries.length) return [];
     return taxEntries.filter(e =>
       e.country_code.toUpperCase() === partnerCountry &&
       (!e.state_code || !partnerRegion || e.state_code.toUpperCase() === partnerRegion)
     );
-  }, [taxEnabled, partnerCountry, partnerRegion, taxEntries]);
+  }, [partnerCountry, partnerRegion, taxEntries]);
 
   const handleTaxSelect = (value: string) => {
     if (!value) return;
@@ -377,7 +396,7 @@ function SubFormModal({
             <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} maxLength={5000} />
           </div>
           {/* Tax fields */}
-          {taxEnabled && filteredTaxOptions.length > 0 && (
+          {filteredTaxOptions.length > 0 && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-500">Quick-fill from Tax Table</label>
               <Select onValueChange={handleTaxSelect}>

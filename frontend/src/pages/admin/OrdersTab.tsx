@@ -386,7 +386,8 @@ export function OrdersTab() {
                       {order.status === "unpaid" && (
                         <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => setConfirmChargeId(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
                       )}
-                      {(order.status === "paid" || order.status === "partially_refunded") && (
+                      {(order.status === "paid" || order.status === "partially_refunded") &&
+                        (order.total - (order.refunded_amount || 0) / 100) > 0 && (
                         <Button size="sm" variant="outline" className="h-6 px-2 text-[11px] text-amber-600 border-amber-200 hover:bg-amber-50" onClick={async () => {
                           setSelectedOrder(order);
                           setLoadingProviders(true);
@@ -691,10 +692,12 @@ export function OrdersTab() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Refund Amount ($)</label>
+                <label className="text-xs font-medium text-slate-600">Refund Amount</label>
                 <Input
                   type="number"
                   step="0.01"
+                  min={0}
+                  max={selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100}
                   placeholder={`Max: ${selectedOrder.currency || "USD"} ${(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}`}
                   value={refundForm.amount}
                   onChange={(e) => setRefundForm({ ...refundForm, amount: e.target.value })}
@@ -762,6 +765,15 @@ export function OrdersTab() {
               <Button
                 onClick={async () => {
                   if (!selectedOrder) return;
+                  const available = selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100;
+                  if (refundForm.amount) {
+                    const amt = parseFloat(refundForm.amount);
+                    if (isNaN(amt) || amt <= 0) { toast.error("Enter a valid refund amount"); return; }
+                    if (amt > available) {
+                      toast.error(`Refund cannot exceed available balance of ${selectedOrder.currency || "USD"} ${available.toFixed(2)}`);
+                      return;
+                    }
+                  }
                   setProcessingRefund(true);
                   try {
                     const res = await api.post(`/admin/orders/${selectedOrder.id}/refund`, {

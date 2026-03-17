@@ -416,19 +416,19 @@ async def _seed_free_trial_plan() -> None:
     }
     existing = await db.plans.find_one({"is_default": True})
     if existing:
-        # Ensure limits are up-to-date
-        await db.plans.update_one({"_id": existing["_id"]}, {"$set": {**FREE_TRIAL_LIMITS, "is_public": False}})
+        # Ensure limits are up-to-date and make Free Trial public
+        await db.plans.update_one({"_id": existing["_id"]}, {"$set": {**FREE_TRIAL_LIMITS, "is_public": True}})
         return
     existing_by_name = await db.plans.find_one({"name": "Free Trial"})
     if existing_by_name:
-        await db.plans.update_one({"_id": existing_by_name["_id"]}, {"$set": {**FREE_TRIAL_LIMITS, "is_default": True, "is_public": False}})
+        await db.plans.update_one({"_id": existing_by_name["_id"]}, {"$set": {**FREE_TRIAL_LIMITS, "is_default": True, "is_public": True}})
         return
     await db.plans.insert_one({
         "id": make_id(),
         "name": "Free Trial",
         "description": "Default plan for new partner organisations. All modules limited to 10 items.",
         "is_active": True,
-        "is_public": False,
+        "is_public": True,
         "is_default": True,
         "warning_threshold_pct": 80,
         **FREE_TRIAL_LIMITS,

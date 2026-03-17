@@ -60,6 +60,25 @@ type Stats = {
   revenue_paid: Record<string, number>;
 };
 
+// Maps common country names to ISO 2-letter codes (for tax table matching)
+const COUNTRY_NAME_TO_ISO: Record<string, string> = {
+  "canada": "CA", "united kingdom": "GB", "england": "GB", "scotland": "GB",
+  "wales": "GB", "northern ireland": "GB", "united states": "US",
+  "united states of america": "US", "usa": "US", "australia": "AU",
+  "new zealand": "NZ", "ireland": "IE", "germany": "DE", "france": "FR",
+  "spain": "ES", "italy": "IT", "netherlands": "NL", "belgium": "BE",
+  "sweden": "SE", "norway": "NO", "denmark": "DK", "finland": "FI",
+  "switzerland": "CH", "austria": "AT", "portugal": "PT", "poland": "PL",
+  "india": "IN", "japan": "JP", "china": "CN", "south africa": "ZA",
+  "singapore": "SG", "brazil": "BR", "mexico": "MX",
+};
+function resolveCountryCode(country?: string): string {
+  if (!country) return "";
+  const trimmed = country.trim();
+  if (trimmed.length === 2) return trimmed.toUpperCase();
+  return COUNTRY_NAME_TO_ISO[trimmed.toLowerCase()] || trimmed.toUpperCase();
+}
+
 const STATUS_COLORS: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-700",
   unpaid: "bg-amber-100 text-amber-700",
@@ -147,15 +166,15 @@ function OrderFormModal({
 
   // Derive filtered tax options for the selected partner
   const selectedTenant = tenants.find(t => t.id === form.partner_id);
-  const partnerCountry = selectedTenant?.address?.country?.toUpperCase();
+  const partnerCountry = resolveCountryCode(selectedTenant?.address?.country);
   const partnerRegion = selectedTenant?.address?.region?.toUpperCase();
   const filteredTaxOptions = useMemo(() => {
-    if (!taxEnabled || !partnerCountry || !taxEntries.length) return [];
+    if (!partnerCountry || !taxEntries.length) return [];
     return taxEntries.filter(e =>
       e.country_code.toUpperCase() === partnerCountry &&
       (!e.state_code || !partnerRegion || e.state_code.toUpperCase() === partnerRegion)
     );
-  }, [taxEnabled, partnerCountry, partnerRegion, taxEntries]);
+  }, [partnerCountry, partnerRegion, taxEntries]);
 
   const handleTaxSelect = (value: string) => {
     if (!value) return;
@@ -328,7 +347,7 @@ function OrderFormModal({
             )}
           </div>
           {/* Tax fields */}
-          {taxEnabled && filteredTaxOptions.length > 0 && (
+          {filteredTaxOptions.length > 0 && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-500">Quick-fill from Tax Table</label>
               <Select onValueChange={handleTaxSelect}>
@@ -523,6 +542,15 @@ export function PartnerOrdersTab() {
 
   const handleRefund = async () => {
     if (!refundOrder) return;
+    const maxRefund = refundOrder.amount - (refundOrder.refunded_amount || 0);
+    if (refundForm.amount) {
+      const amt = parseFloat(refundForm.amount);
+      if (isNaN(amt) || amt <= 0) { toast.error("Enter a valid refund amount"); return; }
+      if (amt > maxRefund) {
+        toast.error(`Refund cannot exceed available balance of ${fmtAmt(maxRefund, refundOrder.currency)}`);
+        return;
+      }
+    }
     setProcessingRefund(true);
     try {
       const payload: Record<string, any> = { reason: refundForm.reason };
@@ -621,10 +649,10 @@ export function PartnerOrdersTab() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-1">
-                    {(order.status === "paid" || order.status === "partially_refunded" || order.status === "refunded") && (
+                    {(["paid", "partially_refunded", "refunded", "unpaid", "pending"].includes(order.status)) && (
                       <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
                     )}
-                    {(order.status === "paid" || order.status === "partially_refunded") && (
+                    {(order.status === "paid" || order.status === "partially_refunded") && (order.amount - (order.refunded_amount || 0)) > 0 && (
                       <Button size="sm" variant="ghost" className="text-amber-600 hover:text-amber-700" onClick={() => openRefund(order)} title="Refund" data-testid={`refund-order-${order.id}`}><RotateCcw className="h-4 w-4" /></Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => setEditOrder(order)} data-testid={`edit-order-${order.id}`}><Pencil className="h-4 w-4" /></Button>
@@ -686,7 +714,7 @@ export function PartnerOrdersTab() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600">Refund Amount</label>
-                <Input type="number" step="0.01" min={0} placeholder={`Max: ${fmtAmt(refundOrder.amount - (refundOrder.refunded_amount || 0), refundOrder.currency)} — leave empty for full refund`} value={refundForm.amount} onChange={e => setRefundForm(f => ({ ...f, amount: e.target.value }))} data-testid="partner-refund-amount-input" />
+                <Input type="number" step="0.01" min={0} max={refundOrder.amount - (refundOrder.refunded_amount || 0)} placeholder={`Max: ${fmtAmt(refundOrder.amount - (refundOrder.refunded_amount || 0), refundOrder.currency)} — leave empty for full refund`} value={refundForm.amount} onChange={e => setRefundForm(f => ({ ...f, amount: e.target.value }))} data-testid="partner-refund-amount-input" />
                 <p className="text-[10px] text-slate-400">Leave empty to refund the full available balance</p>
               </div>
               <div className="space-y-1">
