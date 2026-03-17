@@ -93,7 +93,7 @@ export function OrdersTab() {
   const [manualOrder, setManualOrder] = useState({
     customer_email: "", product_id: "", quantity: 1,
     subtotal: 0, discount: 0, fee: 0, status: "paid", currency: "USD", internal_note: "",
-    tax_rate: "" as string | number, tax_name: "",
+    tax_rate: "" as string | number, tax_name: "", order_date: "", payment_date: "",
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmChargeId, setConfirmChargeId] = useState<string | null>(null);
@@ -243,7 +243,7 @@ export function OrdersTab() {
       await api.post("/admin/orders/manual", manualOrder);
       toast.success("Manual order created");
       setShowManualDialog(false);
-      setManualOrder({ customer_email: "", product_id: "", quantity: 1, subtotal: 0, discount: 0, fee: 0, status: "paid", currency: "USD", internal_note: "", tax_rate: "", tax_name: "" });
+      setManualOrder({ customer_email: "", product_id: "", quantity: 1, subtotal: 0, discount: 0, fee: 0, status: "paid", currency: "USD", internal_note: "", tax_rate: "", tax_name: "", order_date: "", payment_date: "" });
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create order"); }
     finally { setCreatingOrder(false); }
@@ -636,6 +636,17 @@ export function OrdersTab() {
                   Tax Amount: <span className="font-semibold text-slate-700">{manualOrder.currency} {(manualOrder.subtotal * Number(manualOrder.tax_rate) / 100).toFixed(2)}</span>
                 </div>
               )}
+            </div>
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Order Date</label>
+                <Input type="date" value={manualOrder.order_date || ""} onChange={e => setManualOrder({ ...manualOrder, order_date: e.target.value })} data-testid="manual-order-order-date" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Payment Date</label>
+                <Input type="date" value={manualOrder.payment_date || ""} onChange={e => setManualOrder({ ...manualOrder, payment_date: e.target.value })} data-testid="manual-order-payment-date" />
+              </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Internal Note</label>

@@ -731,6 +731,25 @@ export function SubscriptionsTab() {
                 <Input type="number" min={1} max={365} step={1} placeholder="blank = no reminders" value={manualSub.reminder_days as string} onChange={e => setManualSub({ ...manualSub, reminder_days: e.target.value })} data-testid="manual-sub-reminder-days" />
               </div>
             </div>
+            {/* Status and Internal Note */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Status</label>
+                <Select value={manualSub.status} onValueChange={v => setManualSub({ ...manualSub, status: v })}>
+                  <SelectTrigger data-testid="manual-sub-status-select"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Internal Note</label>
+              <Textarea placeholder="Optional note" value={manualSub.internal_note} onChange={e => setManualSub({ ...manualSub, internal_note: e.target.value })} rows={2} data-testid="manual-sub-internal-note" />
+            </div>
             <Button onClick={handleCreateManual} disabled={creating} className="w-full">
               {creating ? "Creating…" : "Create Subscription"}
             </Button>
