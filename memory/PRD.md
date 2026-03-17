@@ -28,6 +28,17 @@ Build a white-label service commerce platform with:
 - Database fully reset (all 46 collections dropped + reseeded via backend startup)
 - Seeded data: platform_super_admin user, automate-accounts tenant, Free Trial plan
 
+### Session: Mar 2026 - Partner Orders/Subscriptions Validation + Free Plan Downgrade
+**Issues fixed:**
+1. **Validation messages**: Per-field specific errors instead of generic "Partner, description and amount are required"
+2. **Negative amount**: Blocked in both orders and subscriptions (validates `amt < 0`)
+3. **Space-only description**: `.trim()` check before validation + description trimmed on save
+4. **Plan not retained in edit**: `plan_id: order.plan_id || ""` (was hardcoded `""`)
+5. **Date validations (orders)**: Due date ≥ invoice date; Paid date required when status=paid; Paid date forbidden with non-paid status; Paid date cannot be future
+6. **Paid At required indicator**: Red asterisk shown on Paid At label when status is "paid"
+7. **Free plan downgrade**: Backend `plan_management.py` now includes `is_default` plans in `visible_plans` — Free Trial always appears as downgrade option
+8. **TypeScript fix**: Added `plan_id?: string` to `PartnerOrder` type (was missing, caused compile error)
+
 ### Session: Mar 2026 - Address Field Fixes + RBAC Hardening
 **Issues fixed:**
 1. **Address Line 2 label**: `AddressFieldRenderer.tsx` hardcoded "Suite / Unit" renamed to "Address Line 2" — applies consistently across all user-facing forms (customer signup, partner signup, profile, checkout, add-customer)
