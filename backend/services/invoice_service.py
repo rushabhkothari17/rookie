@@ -98,6 +98,19 @@ def generate_partner_invoice_pdf(
     description = order.get("description") or "Subscription billing"
     plan_name = order.get("plan_name", "")
     order_status = (order.get("status") or "").upper()
+    payment_url = order.get("payment_url") or ""
+
+    # Tax
+    tax_amount = float(order.get("tax_amount") or 0)
+    tax_name = order.get("tax_name") or "Tax"
+    tax_rate = float(order.get("tax_rate") or 0)
+
+    # Refund
+    refunded_amount = float(order.get("refunded_amount") or 0)
+
+    # Totals
+    invoice_total = round(amount + tax_amount, 2)
+    balance_due = max(0.0, round(invoice_total - refunded_amount, 2))
 
     partner_name = partner_org.get("name", order.get("partner_name", "—"))
     partner_addr = partner_org.get("address") or {}
@@ -120,10 +133,17 @@ def generate_partner_invoice_pdf(
 
     # ── Header row: INVOICE title + company name/logo ─────────────────────────
     logo_img = _fetch_logo(logo_url) if logo_url else None
-    company_cell = logo_img if logo_img else Paragraph(platform_name, h3)
+    company_cell_lines = [logo_img if logo_img else Paragraph(platform_name, h3)]
+    if logo_img:
+        company_cell_lines.append(Paragraph(f'<para alignment="right"><font size="8" color="#64748b">{platform_name}</font></para>', body))
+    if company_address:
+        company_cell_lines.append(Paragraph(f'<para alignment="right"><font size="7" color="#94a3b8">{company_address}</font></para>', body))
+    contact_line = " · ".join(filter(None, [company_email, company_phone]))
+    if contact_line:
+        company_cell_lines.append(Paragraph(f'<para alignment="right"><font size="7" color="#94a3b8">{contact_line}</font></para>', body))
 
     header_data = [
-        [Paragraph("INVOICE", h1), company_cell],
+        [Paragraph("INVOICE", h1), company_cell_lines],
     ]
     header_tbl = Table(header_data, colWidths=[W * 0.6, W * 0.4])
     header_tbl.setStyle(TableStyle([
@@ -131,9 +151,6 @@ def generate_partner_invoice_pdf(
         ("ALIGN", (1, 0), (1, 0), "RIGHT"),
     ]))
     story.append(header_tbl)
-    # Show company name below logo if logo present
-    if logo_img:
-        story.append(Paragraph(f'<para alignment="right"><font size="8" color="#64748b">{platform_name}</font></para>', body))
     story.append(HRFlowable(width=W, thickness=2, color=ACCENT, spaceAfter=6))
 
     # ── Invoice meta + Bill To ─────────────────────────────────────────────────
@@ -214,18 +231,53 @@ def generate_partner_invoice_pdf(
     # ── Totals ─────────────────────────────────────────────────────────────────
     totals_data = [
         [Paragraph("Subtotal", right), Paragraph(f"{currency} {amount:,.2f}", right)],
-        [Paragraph("Tax", right), Paragraph("—", right)],
-        [Paragraph("<b>TOTAL DUE</b>", right_bold), Paragraph(f"<b>{currency} {amount:,.2f}</b>", right_bold)],
     ]
+    if tax_amount > 0:
+        tax_label = f"{tax_name}"
+        if tax_rate > 0:
+            tax_label += f" ({tax_rate:g}%)"
+        totals_data.append([Paragraph(tax_label, right), Paragraph(f"{currency} {tax_amount:,.2f}", right)])
+    totals_data.append([Paragraph("<b>TOTAL</b>", right_bold), Paragraph(f"<b>{currency} {invoice_total:,.2f}</b>", right_bold)])
+
+    if refunded_amount > 0:
+        totals_data.append([Paragraph("Refunded", right), Paragraph(f"<font color='#c2410c'>- {currency} {refunded_amount:,.2f}</font>", right)])
+
+    if balance_due > 0:
+        totals_data.append([
+            Paragraph("<b>BALANCE DUE</b>", right_bold),
+            Paragraph(f"<b><font color='#dc2626'>{currency} {balance_due:,.2f}</font></b>", right_bold),
+        ])
+    else:
+        totals_data.append([
+            Paragraph("<b>BALANCE DUE</b>", right_bold),
+            Paragraph("<b><font color='#16a34a'>PAID</font></b>", right_bold),
+        ])
+
     totals_tbl = Table(totals_data, colWidths=[W * 0.75, W * 0.25])
+    n = len(totals_data)
+    total_row_idx = 1 + (1 if tax_amount > 0 else 0)
     totals_tbl.setStyle(TableStyle([
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("LINEABOVE", (0, 2), (-1, 2), 1, colors.HexColor("#0f172a")),
-        ("BACKGROUND", (0, 2), (-1, 2), LIGHT_BG),
+        ("LINEABOVE", (0, total_row_idx), (-1, total_row_idx), 0.5, BORDER),
+        ("BACKGROUND", (0, total_row_idx), (-1, total_row_idx), LIGHT_BG),
+        ("LINEABOVE", (0, n - 1), (-1, n - 1), 1, colors.HexColor("#0f172a")),
+        ("BACKGROUND", (0, n - 1), (-1, n - 1), LIGHT_BG),
     ]))
     story.append(totals_tbl)
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 16))
+
+    # ── Pay Now section (for unpaid/pending orders) ───────────────────────────
+    if order.get("status") in ("unpaid", "pending") and payment_url:
+        story.append(Paragraph(
+            f'<para alignment="center"><b>Pay Now: </b><a href="{payment_url}"><u>{payment_url}</u></a></para>',
+            ParagraphStyle("pay_link", parent=styles["Normal"], fontSize=9,
+                           backColor=colors.HexColor("#0f172a"), textColor=colors.white,
+                           borderPadding=(10, 12, 10, 12), spaceAfter=4),
+        ))
+        story.append(Spacer(1, 8))
+
+    story.append(Spacer(1, 4))
 
     # ── Payment terms + footer ─────────────────────────────────────────────────
     story.append(HRFlowable(width=W, thickness=0.5, color=BORDER, spaceAfter=8))

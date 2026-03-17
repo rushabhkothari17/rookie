@@ -56,7 +56,7 @@ const getProcessorLink = (id: string | undefined): string | null => {
 };
 
 const SUB_STATUSES_FALLBACK = ["active", "unpaid", "paused", "canceled_pending", "cancelled", "pending_direct_debit_setup", "offline_manual"];
-const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "offline", "manual"];
+const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "manual"];
 
 // ISO_CURRENCIES imported from @/lib/constants
 const BILLING_INTERVALS = [

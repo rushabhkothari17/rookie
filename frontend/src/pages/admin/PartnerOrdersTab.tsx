@@ -5,7 +5,6 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -24,8 +23,9 @@ import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { ColHeader } from "@/components/shared/ColHeader";
 
-type Tenant = { id: string; name: string };
+type Tenant = { id: string; name: string; address?: { country?: string; region?: string; city?: string } };
 type Plan = { id: string; name: string; is_active: boolean };
+type TaxEntry = { country_code: string; state_code?: string; label: string; rate: number };
 
 type PartnerOrder = {
   id: string;
@@ -66,11 +66,12 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "bg-blue-100 text-blue-900 border-blue-300",
   cancelled: "bg-slate-100 text-slate-500",
   refunded: "bg-purple-100 text-purple-700",
+  partially_refunded: "bg-orange-100 text-orange-700",
 };
 
 const STATUSES = ["pending", "unpaid", "paid", "partially_refunded", "refunded", "cancelled"];
 const EDITABLE_STATUSES = STATUSES.filter(s => s !== "refunded" && s !== "partially_refunded");
-const PAYMENT_METHODS = ["manual", "offline", "bank_transfer", "card"];
+const PAYMENT_METHODS = ["manual", "bank_transfer", "card"];
 
 function downloadInvoice(orderId: string, orderNumber: string, endpoint: string) {
   const token = localStorage.getItem("aa_token") || "";
@@ -118,11 +119,13 @@ const emptyForm = (): OrderFormData => ({
 });
 
 function OrderFormModal({
-  order, tenants, plans, onClose, onSaved,
+  order, tenants, plans, taxEntries, taxEnabled, onClose, onSaved,
 }: {
   order: PartnerOrder | null;
   tenants: Tenant[];
   plans: Plan[];
+  taxEntries: TaxEntry[];
+  taxEnabled: boolean;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -142,6 +145,26 @@ function OrderFormModal({
   const [generatingLink, setGeneratingLink] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState(order?.payment_url || "");
 
+  // Derive filtered tax options for the selected partner
+  const selectedTenant = tenants.find(t => t.id === form.partner_id);
+  const partnerCountry = selectedTenant?.address?.country?.toUpperCase();
+  const partnerRegion = selectedTenant?.address?.region?.toUpperCase();
+  const filteredTaxOptions = useMemo(() => {
+    if (!taxEnabled || !partnerCountry || !taxEntries.length) return [];
+    return taxEntries.filter(e =>
+      e.country_code.toUpperCase() === partnerCountry &&
+      (!e.state_code || !partnerRegion || e.state_code.toUpperCase() === partnerRegion)
+    );
+  }, [taxEnabled, partnerCountry, partnerRegion, taxEntries]);
+
+  const handleTaxSelect = (value: string) => {
+    if (!value) return;
+    const parts = value.split("|");
+    if (parts.length >= 4) {
+      setForm(f => ({ ...f, tax_name: parts[2], tax_rate: parts[3] }));
+    }
+  };
+
   const set = (k: keyof OrderFormData, v: string) => setForm(f => {
     const update: Partial<OrderFormData> = { [k]: v };
     if (k === "status" && v !== "paid") update.paid_at = "";
@@ -150,6 +173,7 @@ function OrderFormModal({
 
   const handleSave = async () => {
     if (!form.partner_id) { toast.error("Partner is required"); return; }
+    if (!form.plan_id) { toast.error("Plan is required"); return; }
     if (!form.description.trim()) { toast.error("Description is required"); return; }
     if (!form.amount) { toast.error("Amount is required"); return; }
     const amt = parseFloat(form.amount);
@@ -234,22 +258,29 @@ function OrderFormModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Plan (optional)</label>
+              <label className="text-xs font-semibold text-slate-700">Plan <span className="text-red-500">*</span></label>
               <SearchableSelect
                 value={form.plan_id || undefined}
-                onValueChange={v => set("plan_id", v === "" ? "" : v)}
-                options={[{ value: "", label: "— None —" }, ...plans.map(p => ({ value: p.id, label: p.name }))]}
-                placeholder="No plan"
+                onValueChange={v => set("plan_id", v)}
+                options={plans.filter(p => p.is_active).map(p => ({ value: p.id, label: p.name }))}
+                placeholder="Select plan…"
                 searchPlaceholder="Search plans…"
                 data-testid="order-plan-select"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Status</label>
-              <Select value={form.status} onValueChange={v => set("status", v)}>
+              <Select
+                value={form.status}
+                onValueChange={v => set("status", v)}
+                disabled={form.status === "refunded" || form.status === "partially_refunded"}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{EDITABLE_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
+              {(form.status === "refunded" || form.status === "partially_refunded") && (
+                <p className="text-[10px] text-slate-500">Status is set by the refund process and cannot be changed manually.</p>
+              )}
             </div>
           </div>
           <div className="space-y-1">
@@ -297,6 +328,26 @@ function OrderFormModal({
             )}
           </div>
           {/* Tax fields */}
+          {taxEnabled && filteredTaxOptions.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">Quick-fill from Tax Table</label>
+              <Select onValueChange={handleTaxSelect}>
+                <SelectTrigger className="h-8 text-sm" data-testid="order-tax-quick-fill">
+                  <SelectValue placeholder="Select a tax rule to auto-fill…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredTaxOptions.map((e, i) => (
+                    <SelectItem
+                      key={i}
+                      value={`${e.country_code}|${e.state_code || ""}|${e.label}|${e.rate}`}
+                    >
+                      {e.label} — {e.rate}%{e.state_code ? ` (${e.state_code})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-slate-600">Tax Name</label>
@@ -361,6 +412,8 @@ export function PartnerOrdersTab() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [taxEntries, setTaxEntries] = useState<TaxEntry[]>([]);
+  const [taxEnabled, setTaxEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -437,9 +490,13 @@ export function PartnerOrdersTab() {
     Promise.all([
       api.get("/admin/tenants"),
       api.get("/admin/plans"),
-    ]).then(([t, p]) => {
+      api.get("/admin/taxes/settings").catch(() => ({ data: { enabled: false } })),
+      api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
+    ]).then(([t, p, ts, te]) => {
       setTenants((t.data.tenants || []).filter((x: any) => x.code !== "automate-accounts"));
       setPlans((p.data.plans || []).filter((x: Plan) => x.is_active));
+      setTaxEnabled(ts.data?.tax_settings?.enabled === true);
+      setTaxEntries(te.data?.entries || []);
     }).catch(() => {});
   }, []);
 
@@ -528,18 +585,23 @@ export function PartnerOrdersTab() {
               <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={orderPartnerOpts} />
               <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.description} onFilter={v => setCF("description", v)} onClearFilter={() => setCF("description", "")} />
               <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"]]} />
+              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"], ["partially_refunded", "Partially Refunded"]]} />
               <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
+              <th className="px-4 py-3 text-xs font-medium uppercase text-slate-500">Outstanding</th>
               <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="text-center py-8 text-slate-400">Loading…</td></tr>
+              <tr><td colSpan={9} className="text-center py-8 text-slate-400">Loading…</td></tr>
             ) : displayOrders.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-8 text-slate-400">No orders found.</td></tr>
-            ) : displayOrders.map(order => (
+              <tr><td colSpan={9} className="text-center py-8 text-slate-400">No orders found.</td></tr>
+            ) : displayOrders.map(order => {
+              const outstandingAmt = (order.status === "paid" || order.status === "refunded" || order.status === "cancelled")
+                ? 0
+                : order.amount - (order.refunded_amount || 0);
+              return (
               <tr key={order.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{order.order_number}</td>
                 <td className="px-4 py-3 font-medium">{order.partner_name}</td>
@@ -547,12 +609,19 @@ export function PartnerOrdersTab() {
                 <td className="px-4 py-3 font-semibold">{fmtAmt(order.amount, order.currency)}</td>
                 <td className="px-4 py-3 text-slate-500 capitalize">{order.payment_method.replace("_", " ")}</td>
                 <td className="px-4 py-3">
-                  <Badge className={`text-[11px] ${STATUS_COLORS[order.status] || "bg-slate-100"}`}>{order.status}</Badge>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[order.status] || "bg-slate-100 text-slate-600"}`}>
+                    {order.status.replace(/_/g, " ")}
+                  </span>
                 </td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(order.invoice_date)}</td>
+                <td className="px-4 py-3 font-semibold text-sm">
+                  {outstandingAmt > 0
+                    ? <span className="text-amber-700">{fmtAmt(outstandingAmt, order.currency)}</span>
+                    : <span className="text-slate-400">—</span>}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-1">
-                    {order.status === "paid" && (
+                    {(order.status === "paid" || order.status === "partially_refunded" || order.status === "refunded") && (
                       <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
                     )}
                     {(order.status === "paid" || order.status === "partially_refunded") && (
@@ -563,7 +632,7 @@ export function PartnerOrdersTab() {
                   </div>
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>
@@ -577,8 +646,8 @@ export function PartnerOrdersTab() {
         </div>
       )}
 
-      {showCreate && <OrderFormModal order={null} tenants={tenants} plans={plans} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
-      {editOrder && <OrderFormModal order={editOrder} tenants={tenants} plans={plans} onClose={() => setEditOrder(null)} onSaved={() => { setEditOrder(null); load(); }} />}
+      {showCreate && <OrderFormModal order={null} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editOrder && <OrderFormModal order={editOrder} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setEditOrder(null)} onSaved={() => { setEditOrder(null); load(); }} />}
 
       {deleteOrder && (
         <AlertDialog open onOpenChange={() => setDeleteOrder(null)}>

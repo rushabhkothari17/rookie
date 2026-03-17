@@ -1,6 +1,6 @@
 # Automate Accounts — API Reference
 
-**Base URL:** `https://permission-gates.preview.emergentagent.com`  
+**Base URL:** `https://invoice-upgrades.preview.emergentagent.com`  
 **All endpoints are prefixed with `/api`.**
 
 ---
@@ -2809,7 +2809,7 @@ For `422` errors, additional detail is available:
 ## Quick-Start Test Script
 
 ```bash
-API_URL="https://permission-gates.preview.emergentagent.com"
+API_URL="https://invoice-upgrades.preview.emergentagent.com"
 
 # 1. Login as platform admin
 TOKEN=$(curl -s -X POST "$API_URL/api/auth/login" \

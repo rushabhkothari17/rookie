@@ -228,7 +228,7 @@ async def create_manual_order(
         "fee": round_cents(payload.fee),
         "total": total,
         "currency": payload.currency or "USD",
-        "payment_method": "offline",
+        "payment_method": "manual",
         "internal_note": payload.internal_note or "",
         "tax_rate": payload.tax_rate,
         "tax_name": payload.tax_name,
@@ -267,7 +267,7 @@ async def create_manual_order(
         entity_id=order_id,
         action="created_manual",
         actor=f"admin:{admin['id']}",
-        details={"status": payload.status, "total": total, "payment_method": "offline"},
+        details={"status": payload.status, "total": total, "payment_method": "manual"},
     )
 
     # Webhook: order.created
@@ -287,7 +287,7 @@ async def create_manual_order(
         "customer_name": customer.get("full_name", ""),
         "product_names": product.get("name", payload.product_id) if product else payload.product_id,
         "items_count": 1,
-        "payment_method": "offline",
+        "payment_method": "manual",
         "created_at": order_doc["created_at"],
     }, tenant_id_of(admin))
 

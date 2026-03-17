@@ -971,8 +971,8 @@ async def admin_download_partner_invoice(
     order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    if order.get("status") != "paid":
-        raise HTTPException(status_code=400, detail="Invoice is only available for paid orders")
+    if order.get("status") not in ("paid", "partially_refunded", "refunded"):
+        raise HTTPException(status_code=400, detail="Invoice is only available for paid, partially refunded, or refunded orders")
 
     partner_id = order.get("partner_id", "")
     partner_org = await db.tenants.find_one({"id": partner_id}, {"_id": 0}) or {}

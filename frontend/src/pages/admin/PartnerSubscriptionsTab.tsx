@@ -45,8 +45,9 @@ function TestReminderButton({ subId }: { subId: string }) {
   );
 }
 
-type Tenant = { id: string; name: string };
+type Tenant = { id: string; name: string; address?: { country?: string; region?: string } };
 type Plan = { id: string; name: string; is_active: boolean };
+type TaxEntry = { country_code: string; state_code?: string; label: string; rate: number };
 
 type PartnerSubscription = {
   id: string;
@@ -93,7 +94,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUSES = ["pending", "active", "unpaid", "paused", "cancelled"];
-const PAYMENT_METHODS = ["manual", "offline", "bank_transfer", "card"];
+const PAYMENT_METHODS = ["manual", "bank_transfer", "card"];
 const BILLING_INTERVALS = ["monthly", "quarterly", "annual"];
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
@@ -145,11 +146,13 @@ function addMonthsPreserveDay(dateStr: string, months: number): string {
 const INTERVAL_MONTHS: Record<string, number> = { monthly: 1, quarterly: 3, annual: 12 };
 
 function SubFormModal({
-  sub, tenants, plans, onClose, onSaved,
+  sub, tenants, plans, taxEntries, taxEnabled, onClose, onSaved,
 }: {
   sub: PartnerSubscription | null;
   tenants: Tenant[];
   plans: Plan[];
+  taxEntries: TaxEntry[];
+  taxEnabled: boolean;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -177,6 +180,26 @@ function SubFormModal({
   const [nbtManual, setNbtManual] = useState(isEdit && !!sub?.next_billing_date);
   const [expManual, setExpManual] = useState(isEdit && !!sub?.contract_end_date);
 
+  // Derive filtered tax options for the selected partner
+  const selectedTenant = tenants.find(t => t.id === form.partner_id);
+  const partnerCountry = selectedTenant?.address?.country?.toUpperCase();
+  const partnerRegion = selectedTenant?.address?.region?.toUpperCase();
+  const filteredTaxOptions = useMemo(() => {
+    if (!taxEnabled || !partnerCountry || !taxEntries.length) return [];
+    return taxEntries.filter(e =>
+      e.country_code.toUpperCase() === partnerCountry &&
+      (!e.state_code || !partnerRegion || e.state_code.toUpperCase() === partnerRegion)
+    );
+  }, [taxEnabled, partnerCountry, partnerRegion, taxEntries]);
+
+  const handleTaxSelect = (value: string) => {
+    if (!value) return;
+    const parts = value.split("|");
+    if (parts.length >= 4) {
+      setForm(f => ({ ...f, tax_name: parts[2], tax_rate: parts[3] }));
+    }
+  };
+
   const set = (k: keyof SubFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   // Auto-calculate Next Billing Date when start_date or billing_interval changes
@@ -201,6 +224,7 @@ function SubFormModal({
 
   const handleSave = async () => {
     if (!form.partner_id) { toast.error("Partner is required"); return; }
+    if (!form.plan_id) { toast.error("Plan is required"); return; }
     if (!form.amount) { toast.error("Amount is required"); return; }
     const amt = parseFloat(form.amount);
     if (isNaN(amt) || amt < 0) { toast.error("Amount must be a positive number"); return; }
@@ -273,12 +297,12 @@ function SubFormModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Plan (optional)</label>
+              <label className="text-xs font-semibold text-slate-700">Plan <span className="text-red-500">*</span></label>
               <SearchableSelect
                 value={form.plan_id || undefined}
-                onValueChange={v => set("plan_id", v === "" ? "" : v)}
-                options={[{ value: "", label: "— None —" }, ...plans.map(p => ({ value: p.id, label: p.name }))]}
-                placeholder="No plan"
+                onValueChange={v => set("plan_id", v)}
+                options={plans.filter(p => p.is_active).map(p => ({ value: p.id, label: p.name }))}
+                placeholder="Select plan…"
                 searchPlaceholder="Search plans…"
               />
             </div>
@@ -353,6 +377,26 @@ function SubFormModal({
             <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} maxLength={5000} />
           </div>
           {/* Tax fields */}
+          {taxEnabled && filteredTaxOptions.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">Quick-fill from Tax Table</label>
+              <Select onValueChange={handleTaxSelect}>
+                <SelectTrigger className="h-8 text-sm" data-testid="sub-tax-quick-fill">
+                  <SelectValue placeholder="Select a tax rule to auto-fill…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredTaxOptions.map((e, i) => (
+                    <SelectItem
+                      key={i}
+                      value={`${e.country_code}|${e.state_code || ""}|${e.label}|${e.rate}`}
+                    >
+                      {e.label} — {e.rate}%{e.state_code ? ` (${e.state_code})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-slate-600">Tax Name</label>
@@ -445,6 +489,8 @@ export function PartnerSubscriptionsTab() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [taxEntries, setTaxEntries] = useState<TaxEntry[]>([]);
+  const [taxEnabled, setTaxEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -524,9 +570,13 @@ export function PartnerSubscriptionsTab() {
     Promise.all([
       api.get("/admin/tenants"),
       api.get("/admin/plans"),
-    ]).then(([t, p]) => {
+      api.get("/admin/taxes/settings").catch(() => ({ data: { enabled: false } })),
+      api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
+    ]).then(([t, p, ts, te]) => {
       setTenants((t.data.tenants || []).filter((x: any) => x.code !== "automate-accounts"));
       setPlans((p.data.plans || []).filter((x: Plan) => x.is_active));
+      setTaxEnabled(ts.data?.tax_settings?.enabled === true);
+      setTaxEntries(te.data?.entries || []);
     }).catch(() => {});
   }, []);
 
@@ -599,7 +649,7 @@ export function PartnerSubscriptionsTab() {
               <ColHeader label="Plan" colKey="plan" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planNames} onFilter={v => setCF("planNames", v)} onClearFilter={() => setCF("planNames", [])} statusOptions={planOpts} />
               <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <ColHeader label="Interval" colKey="interval" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.intervals} onFilter={v => setCF("intervals", v)} onClearFilter={() => setCF("intervals", [])} statusOptions={[["monthly", "Monthly"], ["quarterly", "Quarterly"], ["annual", "Annual"]]} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
               <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["active", "Active"], ["unpaid", "Unpaid"], ["paused", "Paused"], ["cancelled", "Cancelled"]]} />
               <ColHeader label="Next Billing" colKey="next_billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.nextBilling} onFilter={v => setCF("nextBilling", v)} onClearFilter={() => setCF("nextBilling", { from: "", to: "" })} />
               <ColHeader label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
@@ -660,8 +710,8 @@ export function PartnerSubscriptionsTab() {
       )}
 
       {/* Modals */}
-      {showCreate && <SubFormModal sub={null} tenants={tenants} plans={plans} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
-      {editSub && <SubFormModal sub={editSub} tenants={tenants} plans={plans} onClose={() => setEditSub(null)} onSaved={() => { setEditSub(null); load(); }} />}
+      {showCreate && <SubFormModal sub={null} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editSub && <SubFormModal sub={editSub} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setEditSub(null)} onSaved={() => { setEditSub(null); load(); }} />}
 
       {/* Cancel Confirmation */}
       {cancelSub && (

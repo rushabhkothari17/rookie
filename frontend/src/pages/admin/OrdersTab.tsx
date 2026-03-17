@@ -33,7 +33,7 @@ const getProcessorLink = (id: string | undefined): string | null => {
 };
 
 const ORDER_STATUSES_FALLBACK = ["paid", "unpaid", "completed", "pending", "pending_payment", "pending_direct_debit_setup", "awaiting_bank_transfer", "scope_requested", "scope_pending", "canceled_pending", "cancelled", "refunded", "disputed"];
-const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "offline", "manual"];
+const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "manual"];
 
 export function OrdersTab() {
   const { user: authUser } = useAuth();
@@ -370,8 +370,8 @@ export function OrdersTab() {
                   <TableCell><span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{order.currency || "USD"}</span></TableCell>
                   <TableCell className="whitespace-nowrap">{order.payment_date?.slice(0, 10) || "—"}</TableCell>
                   <TableCell>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : order.payment_method === "offline" ? "bg-gray-100 text-gray-700" : "bg-green-100 text-green-700"}`}>
-                      {order.payment_method === "bank_transfer" ? "Bank" : order.payment_method === "offline" ? "Manual" : "Card"}
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : order.payment_method === "manual" ? "bg-gray-100 text-gray-700" : "bg-green-100 text-green-700"}`}>
+                      {order.payment_method === "bank_transfer" ? "Bank" : order.payment_method === "manual" ? "Manual" : "Card"}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -457,7 +457,6 @@ export function OrdersTab() {
                     <SelectContent>
                       <SelectItem value="card">Card</SelectItem>
                       <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                      <SelectItem value="offline">Offline / Manual</SelectItem>
                       <SelectItem value="manual">Manual</SelectItem>
                     </SelectContent>
                   </Select>
