@@ -198,14 +198,17 @@ function SubFormModal({
   }, [form.start_date, form.term_months]);
 
   const handleSave = async () => {
-    if (!form.partner_id || !form.amount) {
-      toast.error("Partner and amount are required"); return;
-    }
+    if (!form.partner_id) { toast.error("Partner is required"); return; }
+    if (!form.amount) { toast.error("Amount is required"); return; }
+    const amt = parseFloat(form.amount);
+    if (isNaN(amt) || amt < 0) { toast.error("Amount must be a positive number"); return; }
+
     setSaving(true);
     try {
     const payload: Record<string, any> = {
         ...form,
-        amount: parseFloat(form.amount),
+        description: form.description.trim(),
+        amount: amt,
         plan_id: form.plan_id || null,
         processor_id: form.processor_id || null,
         start_date: form.start_date || null,

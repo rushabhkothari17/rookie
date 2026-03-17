@@ -99,7 +99,7 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
 
     visible_plans = []
     for plan in all_active_plans:
-        is_visible = plan.get("is_public", False)
+        is_visible = plan.get("is_public", False) or plan.get("is_default", False)
         if not is_visible:
             rules = plan.get("visibility_rules") or []
             is_visible = _tenant_matches_any_rule(tenant or {}, rules)

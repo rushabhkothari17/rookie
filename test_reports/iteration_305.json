@@ -1,0 +1,98 @@
+{
+  "summary": "Tested all 8 bug fixes in Partner Orders & Subscriptions admin tabs + Free plan downgrade in Plan & Billing. Fixed a critical TypeScript compile error (missing plan_id field in PartnerOrder type) that was blocking the app. All 12 test scenarios pass after the fix.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "bug1_specific_description_validation": {
+      "status": "PASS",
+      "details": "Filling Partner + Amount but leaving Description empty shows 'Description is required' (not the generic message)"
+    },
+    "bug2_negative_amount": {
+      "status": "PASS",
+      "details": "Entering -50 in Amount shows 'Amount must be a positive number'"
+    },
+    "bug3_space_only_description": {
+      "status": "PASS",
+      "details": "Description with only spaces '   ' is rejected with 'Description is required' (uses .trim() check)"
+    },
+    "bug4_plan_retained_in_edit": {
+      "status": "PASS",
+      "details": "Edited PO-2026-0002 (created with plan 'test2'): Plan field correctly shows 'test2' in edit mode. Fix: added plan_id?: string to PartnerOrder type in PartnerOrdersTab.tsx (was missing, causing TypeScript error at line 125)"
+    },
+    "bug5_due_date_before_invoice": {
+      "status": "PASS",
+      "details": "Invoice Date=2026-03-20, Due Date=2026-03-15 shows 'Due date cannot be before invoice date'"
+    },
+    "bug6_paid_date_mandatory": {
+      "status": "PASS",
+      "details": "Status='paid' with empty Paid At shows 'Paid date is required when status is Paid'"
+    },
+    "bug6b_paid_at_red_asterisk": {
+      "status": "PASS",
+      "details": "When status is 'paid', the Paid At label shows red asterisk (*) via <span class='text-red-400 ml-0.5'> *</span>"
+    },
+    "bug7_paid_date_wrong_status": {
+      "status": "PASS",
+      "details": "Setting Paid At with status='unpaid' shows 'Paid date can only be set when status is Paid'"
+    },
+    "bug8_future_paid_date": {
+      "status": "PASS",
+      "details": "Setting Paid At=2099-12-31 with status='paid' shows 'Paid date cannot be a future date'"
+    },
+    "subscription_amount_required": {
+      "status": "PASS",
+      "details": "New Partner Subscription: filling Partner but leaving Amount empty shows 'Amount is required'"
+    },
+    "subscription_negative_amount": {
+      "status": "PASS",
+      "details": "New Partner Subscription: entering -50 in Amount shows 'Amount must be a positive number'"
+    },
+    "free_plan_downgrade": {
+      "status": "PASS",
+      "details": "Plan & Billing tab for partner_super_admin on 'test' plan ($9/mo) shows 'Free Trial — USD 0.00/mo' in downgrade options. Backend fix (is_visible = is_public OR is_default) correctly includes is_default plans. UI shows Request Downgrade dialog with both 'Free Trial — USD 0.00/mo' and 'test2 — USD 0.73/mo' options."
+    }
+  },
+  "critical_fix_applied": {
+    "file": "frontend/src/pages/admin/PartnerOrdersTab.tsx",
+    "issue": "TypeScript compile error TS2339: Property 'plan_id' does not exist on type 'PartnerOrder'",
+    "fix": "Added 'plan_id?: string' field to PartnerOrder type definition (line 35)",
+    "impact": "App was showing webpack compile error overlay, blocking all functionality"
+  },
+  "test_report_links": ["/app/test_reports/iteration_305.json"],
+  "action_items": [
+    "mayank@automateaccounts.com credential does not exist in the database (only 3 users: admin@automateaccounts.local, testpartneradmin@test.com, rushabh0996@gmail.com). Review request credentials may be stale or mayank needs to be created.",
+    "CLEANUP: testpartneradmin@test.com was upgraded from partner_admin to partner_super_admin for testing. Revert if needed.",
+    "CLEANUP: testpartner tenant (test-partner-org) license.plan_id was set to 'test' plan for downgrade testing. Reset if needed.",
+    "CLEANUP: 3 test orders were created (PO-2026-0001, PO-2026-0002, PO-2026-0003) during testing"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/admin/PartnerOrdersTab.tsx"
+  ],
+  "success_rate": {
+    "frontend": "100% (12/12 tests pass)"
+  },
+  "test_credentials": {
+    "platform_super_admin": {
+      "email": "admin@automateaccounts.local",
+      "password": "ChangeMe123!",
+      "partner_code": "automate-accounts"
+    },
+    "partner_super_admin_for_plan_billing": {
+      "email": "testpartneradmin@test.com",
+      "password": "TestPass123!",
+      "partner_code": "testpartner",
+      "note": "Upgraded to partner_super_admin role for testing; testpartner tenant has 'test' plan set"
+    }
+  },
+  "seed_data_creation": "Set testpartner (test-partner-org) license.plan_id to 'test' plan (a53deee5-f681-4219-8d27-66d887df069b) for downgrade test. Upgraded testpartneradmin@test.com role to partner_super_admin. Created 3 test orders during testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 8 order validation bugs + subscription validations + Free Trial downgrade = all 12 tests PASS. TypeScript compile error fixed by adding plan_id?: string to PartnerOrder type. testpartneradmin@test.com is now partner_super_admin (was partner_admin) with testpartner on 'test' plan for downgrade testing. Note: mayank@automateaccounts.com from credentials does not exist in the DB."
+}

@@ -32,6 +32,7 @@ type PartnerOrder = {
   order_number: string;
   partner_id: string;
   partner_name: string;
+  plan_id?: string;
   plan_name?: string;
   description: string;
   amount: number;
@@ -122,7 +123,7 @@ function OrderFormModal({
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [form, setForm] = useState<OrderFormData>(
     order ? {
-      partner_id: order.partner_id, plan_id: "", description: order.description,
+      partner_id: order.partner_id, plan_id: order.plan_id || "", description: order.description,
       amount: String(order.amount), currency: order.currency, status: order.status,
       payment_method: order.payment_method, processor_id: order.processor_id || "",
       invoice_date: order.invoice_date || "", due_date: order.due_date || "",
@@ -136,14 +137,32 @@ function OrderFormModal({
   const set = (k: keyof OrderFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
-    if (!form.partner_id || !form.description || !form.amount) {
-      toast.error("Partner, description and amount are required"); return;
+    if (!form.partner_id) { toast.error("Partner is required"); return; }
+    if (!form.description.trim()) { toast.error("Description is required"); return; }
+    if (!form.amount) { toast.error("Amount is required"); return; }
+    const amt = parseFloat(form.amount);
+    if (isNaN(amt) || amt < 0) { toast.error("Amount must be a positive number"); return; }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (form.invoice_date && form.due_date && form.due_date < form.invoice_date) {
+      toast.error("Due date cannot be before invoice date"); return;
     }
+    if (form.status === "paid" && !form.paid_at) {
+      toast.error("Paid date is required when status is 'Paid'"); return;
+    }
+    if (form.paid_at && form.status !== "paid") {
+      toast.error("Paid date can only be set when status is 'Paid'"); return;
+    }
+    if (form.paid_at && form.paid_at > today) {
+      toast.error("Paid date cannot be a future date"); return;
+    }
+
     setSaving(true);
     try {
       const payload: Record<string, any> = {
         ...form,
-        amount: parseFloat(form.amount),
+        description: form.description.trim(),
+        amount: amt,
         plan_id: form.plan_id || null,
         processor_id: form.processor_id || null,
         invoice_date: form.invoice_date || null,
@@ -254,7 +273,9 @@ function OrderFormModal({
               <Input type="date" value={form.due_date} onChange={e => set("due_date", e.target.value)} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Paid At</label>
+              <label className="text-xs font-medium text-slate-600">
+                Paid At{form.status === "paid" && <span className="text-red-400 ml-0.5"> *</span>}
+              </label>
               <Input type="date" value={form.paid_at ? form.paid_at.slice(0, 10) : ""} onChange={e => set("paid_at", e.target.value)} />
             </div>
           </div>
