@@ -269,7 +269,25 @@ function OrderFormModal({
               <RequiredLabel className="text-slate-600">Partner</RequiredLabel>
               <SearchableSelect
                 value={form.partner_id || undefined}
-                onValueChange={v => set("partner_id", v)}
+                onValueChange={v => {
+                  set("partner_id", v);
+                  // Auto-populate tax when exactly one rule matches partner's address
+                  const tenant = tenants.find(t => t.id === v);
+                  const country = resolveCountryCode(tenant?.address?.country);
+                  const region = tenant?.address?.region?.toUpperCase();
+                  if (country) {
+                    const matches = taxEntries.filter(e =>
+                      e.country_code.toUpperCase() === country &&
+                      (!e.state_code || !region || e.state_code.toUpperCase() === region)
+                    );
+                    if (matches.length >= 1) {
+                      // pick the most specific match (state-level preferred over country-level)
+                      const best = matches.find(m => m.state_code && region && m.state_code.toUpperCase() === region) || matches[0];
+                      const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
+                      setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
+                    }
+                  }
+                }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}
                 placeholder="Select partner…"
                 searchPlaceholder="Search partners…"
@@ -355,14 +373,17 @@ function OrderFormModal({
                   <SelectValue placeholder="Select a tax rule to auto-fill…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredTaxOptions.map((e, i) => (
-                    <SelectItem
-                      key={i}
-                      value={`${e.country_code}|${e.state_code || ""}|${e.label}|${e.rate}`}
-                    >
-                      {e.label} — {e.rate}%{e.state_code ? ` (${e.state_code})` : ""}
-                    </SelectItem>
-                  ))}
+                  {filteredTaxOptions.map((e, i) => {
+                    const ratePercent = e.rate < 1 ? parseFloat((e.rate * 100).toFixed(4)) : e.rate;
+                    return (
+                      <SelectItem
+                        key={i}
+                        value={`${e.country_code}|${e.state_code || ""}|${e.label}|${ratePercent}`}
+                      >
+                        {e.label} — {ratePercent}%{e.state_code ? ` (${e.state_code})` : ""}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
