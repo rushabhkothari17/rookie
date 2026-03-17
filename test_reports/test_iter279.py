@@ -14,7 +14,7 @@ Tests 8 features:
 import asyncio
 import sys
 
-BASE_URL = "https://layout-polish-11.preview.emergentagent.com"
+BASE_URL = "https://permission-gates.preview.emergentagent.com"
 results = {}
 
 async def login(page):
