@@ -28,6 +28,14 @@ Build a white-label service commerce platform with:
 - Database fully reset (all 46 collections dropped + reseeded via backend startup)
 - Seeded data: platform_super_admin user, automate-accounts tenant, Free Trial plan
 
+### Session: Mar 2026 - Address Field Fixes + RBAC Hardening
+**Issues fixed:**
+1. **Address Line 2 label**: `AddressFieldRenderer.tsx` hardcoded "Suite / Unit" renamed to "Address Line 2" — applies consistently across all user-facing forms (customer signup, partner signup, profile, checkout, add-customer)
+2. **State/Province mandatory**: Default address config updated to `state.required: True` in backend, `FormSchemaBuilder.tsx`, `WebsiteAuthSection.tsx`. Required asterisk `*` now shows on form. Migration function `_migrate_state_required()` applies to existing tenants
+3. **City blocks numeric input**: `AddressFieldRenderer.tsx` city `onChange` strips digits via `.replace(/[0-9]/g, "")`
+4. **Usage & Limits RBAC**: `UsageDashboard` hidden from partner admins in `PlanBillingTab.tsx` and `Admin.tsx` usage tab
+5. **Partner Sign-Up Page tile**: Confirmed hidden from partner admins via `{isPlatformAdmin}` check
+
 ### Session: Mar 2026 - Platform Admin Permission Fixes
 - Fixed store empty products for platform admin (uses DEFAULT_TENANT_ID not None)
 - Fixed IntakeFormPage 403 for admin users (redirect to admin panel)

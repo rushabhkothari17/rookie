@@ -633,7 +633,7 @@ export default function Admin() {
               <CurrenciesTab />
             </TabsContent>
           )}
-          {!isPlatformAdmin && (
+          {isPlatformAdmin && (
             <TabsContent value="usage" className="space-y-4">
               <UsageDashboard />
             </TabsContent>
