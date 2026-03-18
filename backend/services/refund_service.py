@@ -237,10 +237,10 @@ async def record_refund(
         current_refunded = order.get("refunded_amount", 0)
         new_refunded = current_refunded + amount_cents
         
-        # Determine new status
-        total = order.get("total", 0)
+        # Determine new status (refunded_amount stored in cents, total in currency units)
+        total_cents = int(order.get("total", 0) * 100)
         new_status = order.get("status")
-        if new_refunded >= total:
+        if new_refunded >= total_cents:
             new_status = "refunded"
         elif new_refunded > 0:
             new_status = "partially_refunded"

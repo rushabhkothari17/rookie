@@ -19,6 +19,7 @@ import { Download, ExternalLink, Upload} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ColHeader } from "@/components/shared/ColHeader";
 import { computeTax, TaxSubject, TaxEntry, OverrideRule } from "@/utils/taxUtils";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 const getProcessorLink = (id: string | undefined): string | null => {
   if (!id) return null;
@@ -100,6 +101,10 @@ export function OrdersTab() {
   const [confirmChargeId, setConfirmChargeId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [creatingOrder, setCreatingOrder] = useState(false);
+  // Refund history
+  const [showRefundHistoryDialog, setShowRefundHistoryDialog] = useState(false);
+  const [refundHistory, setRefundHistory] = useState<any[]>([]);
+  const [loadingRefundHistory, setLoadingRefundHistory] = useState(false);
 
   // Build lookup maps
   const userMap: Record<string, any> = {};
@@ -114,6 +119,8 @@ export function OrdersTab() {
   const [taxEntries, setTaxEntries] = useState<TaxEntry[]>([]);
   const [overrideRules, setOverrideRules] = useState<OverrideRule[]>([]);
   const [orgAddress, setOrgAddress] = useState<{ country?: string; region?: string }>({});
+  // Supported currencies
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
 
   const getCustomerUser = (customerId: string) => {
     const c = custMap[customerId];
@@ -207,6 +214,14 @@ export function OrdersTab() {
 
   const handleEdit = async () => {
     if (!selectedOrder) return;
+    // Validation #7: payment_date required when status = paid
+    if (selectedOrder.status === "paid" && !selectedOrder.payment_date) {
+      toast.error("Payment date is required when status is 'paid'"); return;
+    }
+    // Validation #8: total must not be negative
+    if (selectedOrder.total < 0) {
+      toast.error("Total cannot be negative"); return;
+    }
     setSaving(true);
     try {
       await api.put(`/admin/orders/${selectedOrder.id}`, {
@@ -253,6 +268,14 @@ export function OrdersTab() {
     if (!manualOrder.product_id) { toast.error("Product is required"); return; }
     if (!manualOrder.currency) { toast.error("Currency is required"); return; }
     if (!manualOrder.status) { toast.error("Status is required"); return; }
+    // Validation #6: subtotal must be ≥ 0
+    if (manualOrder.subtotal < 0) { toast.error("Subtotal cannot be negative"); return; }
+    // Validation #5: quantity must be ≥ 1
+    if (manualOrder.quantity < 1) { toast.error("Quantity must be at least 1"); return; }
+    // Validation #4: discount cannot exceed subtotal
+    if (manualOrder.discount > manualOrder.subtotal) { toast.error("Discount cannot exceed subtotal"); return; }
+    // Validation #3: payment_date required when status = paid
+    if (manualOrder.status === "paid" && !manualOrder.payment_date) { toast.error("Payment date is required when status is 'paid'"); return; }
     setCreatingOrder(true);
     try {
       await api.post("/admin/orders/manual", manualOrder);
@@ -333,6 +356,7 @@ export function OrdersTab() {
               <ColHeader label="Fee" colKey="fee" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
               <ColHeader label="Tax" colKey="tax" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
               <ColHeader label="Total" colKey="total" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Refunded</th>
               <ColHeader label="Currency" colKey="currency" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
               <ColHeader label="Pay Date" colKey="pay_date" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="date-range" filterValue={{ from: payDateFrom, to: payDateTo }} onFilter={v => { setPayDateFrom(v.from || ""); setPayDateTo(v.to || ""); }} onClearFilter={() => { setPayDateFrom(""); setPayDateTo(""); }} />
               <ColHeader label="Method" colKey="method" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={payMethodFilter} onFilter={v => setPayMethodFilter(v)} onClearFilter={() => setPayMethodFilter([])} statusOptions={paymentMethods.map(m => [m, m] as [string, string])} />
@@ -382,6 +406,11 @@ export function OrdersTab() {
                     )}
                   </TableCell>
                   <TableCell className="font-semibold">{order.currency || "USD"} {order.total?.toFixed(2)}</TableCell>
+                  <TableCell data-testid={`order-refunded-${order.id}`}>
+                    {(order.refunded_amount || 0) > 0
+                      ? <span className="text-purple-700 text-xs font-medium">{order.currency || "USD"} {((order.refunded_amount) / 100).toFixed(2)}</span>
+                      : <span className="text-slate-300">—</span>}
+                  </TableCell>
                   <TableCell><span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{order.currency || "USD"}</span></TableCell>
                   <TableCell className="whitespace-nowrap">{order.payment_date?.slice(0, 10) || "—"}</TableCell>
                   <TableCell>
@@ -400,6 +429,18 @@ export function OrdersTab() {
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedOrder({ ...order, order_date_edit: order.created_at?.slice(0, 10) }); setShowEditDialog(true); }} data-testid={`admin-order-edit-${order.id}`}>Edit</Button>
                       {order.status === "unpaid" && (
                         <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => setConfirmChargeId(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
+                      )}
+                      {(order.status === "refunded" || order.status === "partially_refunded") && (
+                        <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-purple-600" onClick={async () => {
+                          setSelectedOrder(order);
+                          setLoadingRefundHistory(true);
+                          setShowRefundHistoryDialog(true);
+                          try {
+                            const res = await api.get(`/admin/orders/${order.id}/refunds`);
+                            setRefundHistory(res.data.refunds || []);
+                          } catch { setRefundHistory([]); }
+                          finally { setLoadingRefundHistory(false); }
+                        }} data-testid={`admin-order-refund-history-${order.id}`}>Refunds</Button>
                       )}
                       {(order.status === "paid" || order.status === "partially_refunded") &&
                         (order.total - (order.refunded_amount || 0) / 100) > 0 && (
@@ -460,7 +501,12 @@ export function OrdersTab() {
                 {/* Status */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
-                  <Select value={selectedOrder.status || ""} onValueChange={v => setSelectedOrder({ ...selectedOrder, status: v })} data-testid="admin-order-status-select">
+                  <Select value={selectedOrder.status || ""} onValueChange={v => {
+                    const updated: any = { ...selectedOrder, status: v };
+                    // Auto-clear payment_date when status changes away from paid (#17)
+                    if (v !== "paid") updated.payment_date = "";
+                    setSelectedOrder(updated);
+                  }} data-testid="admin-order-status-select">
                     <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent>{orderStatuses.filter(s => s !== "refunded" && s !== "partially_refunded").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
@@ -638,9 +684,9 @@ export function OrdersTab() {
               />
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Subtotal</RequiredLabel><Input type="number" step="0.01" value={manualOrder.subtotal} onChange={e => setManualOrder({ ...manualOrder, subtotal: parseFloat(e.target.value) || 0 })} /></div>
-              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Discount</RequiredLabel><Input type="number" step="0.01" value={manualOrder.discount} onChange={e => setManualOrder({ ...manualOrder, discount: parseFloat(e.target.value) || 0 })} /></div>
-              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Fee</RequiredLabel><Input type="number" step="0.01" value={manualOrder.fee} onChange={e => setManualOrder({ ...manualOrder, fee: parseFloat(e.target.value) || 0 })} /></div>
+              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Subtotal</RequiredLabel><Input type="number" min={0} step="0.01" value={manualOrder.subtotal} onChange={e => setManualOrder({ ...manualOrder, subtotal: parseFloat(e.target.value) || 0 })} /></div>
+              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Discount</RequiredLabel><Input type="number" min={0} max={manualOrder.subtotal || undefined} step="0.01" value={manualOrder.discount} onChange={e => setManualOrder({ ...manualOrder, discount: parseFloat(e.target.value) || 0 })} /></div>
+              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Fee</RequiredLabel><Input type="number" min={0} step="0.01" value={manualOrder.fee} onChange={e => setManualOrder({ ...manualOrder, fee: parseFloat(e.target.value) || 0 })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -648,7 +694,7 @@ export function OrdersTab() {
                 <Select value={manualOrder.currency} onValueChange={v => setManualOrder({ ...manualOrder, currency: v })}>
                   <SelectTrigger className="w-full bg-white" data-testid="manual-order-currency-select"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {(supportedCurrencies.length ? supportedCurrencies : ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -673,11 +719,17 @@ export function OrdersTab() {
                 <label className="text-xs text-slate-500">Tax Rate (%)</label>
                 <Input type="number" min={0} max={100} step="0.01" value={manualOrder.tax_rate} onChange={e => setManualOrder({ ...manualOrder, tax_rate: e.target.value })} placeholder="e.g. 13" />
               </div>
-              {manualOrder.tax_rate && manualOrder.subtotal > 0 && (
-                <div className="col-span-3 text-xs text-slate-500">
-                  Tax Amount: <span className="font-semibold text-slate-700">{manualOrder.currency} {(manualOrder.subtotal * Number(manualOrder.tax_rate) / 100).toFixed(2)}</span>
-                </div>
-              )}
+              {(() => {
+                const taxAmt = manualOrder.subtotal > 0 && Number(manualOrder.tax_rate) > 0
+                  ? manualOrder.subtotal * Number(manualOrder.tax_rate) / 100 : 0;
+                const orderTotal = Math.max(0, manualOrder.subtotal - manualOrder.discount + manualOrder.fee + taxAmt);
+                return (
+                  <div className="col-span-3 flex items-center justify-between rounded bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
+                    <span>{taxAmt > 0 ? `Tax (${manualOrder.tax_rate}%): ${manualOrder.currency} ${taxAmt.toFixed(2)}` : "No tax"}</span>
+                    <span className="font-semibold text-slate-800">Total: {manualOrder.currency} {orderTotal.toFixed(2)}</span>
+                  </div>
+                );
+              })()}
             </div>
             {/* Dates */}
             <div className="grid grid-cols-2 gap-3">
@@ -723,7 +775,7 @@ export function OrdersTab() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Already Refunded</span>
-                  <span className="font-medium text-amber-600">${((selectedOrder.refunded_amount || 0) / 100).toFixed(2)}</span>
+                  <span className="font-medium text-amber-600">{selectedOrder.currency || "USD"} {((selectedOrder.refunded_amount || 0) / 100).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
                   <span className="text-slate-700 font-medium">Available to Refund</span>
@@ -826,10 +878,11 @@ export function OrdersTab() {
                     });
                     // Show detailed success message with provider response
                     const providerMsg = res.data.provider_response?.message;
+                    const cur = selectedOrder?.currency || "USD";
                     if (providerMsg) {
-                      toast.success(`Refund of $${res.data.amount?.toFixed(2)} processed. ${providerMsg}`);
+                      toast.success(`Refund of ${cur} ${res.data.amount?.toFixed(2)} processed. ${providerMsg}`);
                     } else {
-                      toast.success(`Refund of $${res.data.amount?.toFixed(2)} processed successfully`);
+                      toast.success(`Refund of ${cur} ${res.data.amount?.toFixed(2)} processed successfully`);
                     }
                     setShowRefundDialog(false);
                     setSelectedOrder(null);
@@ -848,6 +901,34 @@ export function OrdersTab() {
               >
                 {processingRefund ? "Processing..." : "Process Refund"}
               </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Refund History Dialog */}
+      <Dialog open={showRefundHistoryDialog} onOpenChange={(open) => { setShowRefundHistoryDialog(open); if (!open) { setRefundHistory([]); setSelectedOrder(null); } }}>
+        <DialogContent className="max-w-lg" data-testid="refund-history-dialog">
+          <DialogHeader><DialogTitle>Refund History — {selectedOrder?.order_number}</DialogTitle></DialogHeader>
+          {loadingRefundHistory ? (
+            <p className="text-sm text-slate-400 py-4 text-center">Loading refunds…</p>
+          ) : refundHistory.length === 0 ? (
+            <p className="text-sm text-slate-400 py-4 text-center">No refunds recorded.</p>
+          ) : (
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              {refundHistory.map((r: any) => (
+                <div key={r.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-semibold text-slate-800">{selectedOrder?.currency || "USD"} {(r.amount / 100).toFixed(2)}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>{r.status}</span>
+                  </div>
+                  <div className="text-slate-500 text-xs flex justify-between">
+                    <span>{r.reason?.replace(/_/g, " ")} · via {r.provider}</span>
+                    <span>{r.created_at?.slice(0, 10)}</span>
+                  </div>
+                  {r.provider_refund_id && <div className="text-[10px] text-slate-400 font-mono mt-1">{r.provider_refund_id}</div>}
+                </div>
+              ))}
             </div>
           )}
         </DialogContent>

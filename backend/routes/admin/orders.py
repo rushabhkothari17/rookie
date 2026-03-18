@@ -121,6 +121,7 @@ async def admin_orders(
     payment_method_filter: Optional[str] = None,
     pay_date_from: Optional[str] = None,
     pay_date_to: Optional[str] = None,
+    partner_filter: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     skip = (page - 1) * per_page
@@ -132,7 +133,8 @@ async def admin_orders(
     if order_number_filter:
         query["order_number"] = {"$regex": _re.escape(order_number_filter), "$options": "i"}
     if status_filter:
-        query["status"] = status_filter
+        statuses = [s.strip() for s in status_filter.split(",") if s.strip()]
+        query["status"] = {"$in": statuses} if len(statuses) > 1 else statuses[0]
     if sub_number_filter:
         query["subscription_number"] = {"$regex": _re.escape(sub_number_filter), "$options": "i"}
     if processor_id_filter:
@@ -143,6 +145,13 @@ async def admin_orders(
         query.setdefault("payment_date", {})["$gte"] = pay_date_from
     if pay_date_to:
         query.setdefault("payment_date", {})["$lte"] = pay_date_to + "T23:59:59"
+    # Partner filter: resolve partner codes → tenant IDs (platform admin only)
+    if partner_filter and is_platform_admin(admin):
+        codes = [c.strip().lower() for c in partner_filter.split(",") if c.strip()]
+        if codes:
+            partner_tenants = await db.tenants.find({"code": {"$in": codes}}, {"_id": 0, "id": 1}).to_list(200)
+            partner_tenant_ids = [t["id"] for t in partner_tenants]
+            query["tenant_id"] = {"$in": partner_tenant_ids} if partner_tenant_ids else {"$in": []}
 
     sort_direction = -1 if sort_order == "desc" else 1
     orders = await db.orders.find(query, {"_id": 0}).sort(sort_by, sort_direction).skip(skip).limit(per_page).to_list(per_page)
@@ -214,7 +223,11 @@ async def create_manual_order(
 
     order_id = make_id()
     order_number = f"AA-{order_id.split('-')[0].upper()}"
-    total = round_cents(payload.subtotal - payload.discount + payload.fee)
+    # Tax amount: prefer explicitly provided value, fall back to calculated
+    tax_amount = round_cents(payload.tax_amount) if payload.tax_amount is not None else (
+        round_cents(payload.subtotal * float(payload.tax_rate) / 100) if payload.tax_rate else 0
+    )
+    total = round_cents(payload.subtotal - payload.discount + payload.fee + tax_amount)
 
     order_doc = {
         "id": order_id,
@@ -341,6 +354,11 @@ async def update_order(
 
     if payload.subtotal is not None:
         update_fields["subtotal"] = payload.subtotal
+        # Auto-recalculate tax_amount when subtotal changes (preserves existing tax_rate)
+        existing_tax_rate = order.get("tax_rate")
+        if existing_tax_rate is not None:
+            new_tax = round_cents(payload.subtotal * float(existing_tax_rate) / 100)
+            update_fields["tax_amount"] = new_tax
     if payload.fee is not None:
         update_fields["fee"] = payload.fee
     if payload.total is not None:
