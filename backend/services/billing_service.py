@@ -113,15 +113,20 @@ def calculate_upgrade_flat(old_monthly: float, new_monthly: float) -> float:
 
 def advance_billing_date(current_date: "date | datetime | str", billing_interval: str = "monthly") -> str:
     """
-    Advance a billing date by one billing interval, always landing on the 1st of the target month.
+    Advance a billing date by one billing interval.
 
+    weekly    → +7 days
     monthly   → +1 month  (1st of next month)
     quarterly → +3 months (1st of month 3 months later)
+    biannual  → +6 months
     annual    → +12 months (1st of same month next year)
     """
-    _INTERVAL_MONTHS = {"monthly": 1, "quarterly": 3, "annual": 12}
-    months = _INTERVAL_MONTHS.get(billing_interval, 1)
     ref = _ensure_date(current_date)
+    if billing_interval == "weekly":
+        from datetime import timedelta as _td
+        return (ref + _td(days=7)).isoformat()
+    _INTERVAL_MONTHS = {"monthly": 1, "quarterly": 3, "biannual": 6, "annual": 12}
+    months = _INTERVAL_MONTHS.get(billing_interval, 1)
     new_month = ref.month + months
     new_year = ref.year + (new_month - 1) // 12
     new_month = (new_month - 1) % 12 + 1

@@ -244,7 +244,7 @@ TEMPLATES: Dict[str, List[str]] = {
         "currency", "status", "payment_mode", "partner_map_id", "notes",
     ],
     "subscriptions": [
-        "id", "customer_id", "product_id", "product_name", "billing_cycle",
+        "id", "customer_id", "product_id", "product_name", "billing_interval",
         "amount", "currency", "status", "start_date", "end_date", "next_billing_date",
         "stripe_subscription_id", "notes",
     ],
@@ -289,7 +289,7 @@ TEMPLATES: Dict[str, List[str]] = {
 
 SAMPLE_DATA: Dict[str, List[Dict[str, Any]]] = {
     "customers": [{"email": "customer@example.com", "full_name": "Jane Smith", "company_name": "Acme Ltd", "country": "GB", "currency": "GBP", "status": "active"}],
-    "subscriptions": [{"customer_id": "cust_xxx", "product_id": "prod_xxx", "product_name": "Monthly Plan", "billing_cycle": "monthly", "amount": "99.00", "currency": "GBP", "status": "active", "start_date": "2025-01-01"}],
+    "subscriptions": [{"customer_id": "cust_xxx", "product_id": "prod_xxx", "product_name": "Monthly Plan", "billing_interval": "monthly", "amount": "99.00", "currency": "GBP", "status": "active", "start_date": "2025-01-01"}],
     "orders": [{"customer_id": "cust_xxx", "status": "complete", "total_amount": "199.00", "currency": "GBP", "items": '[{"product_name":"Setup","quantity":1,"price":199.0}]'}],
     "promo-codes": [{"code": "SAVE20", "discount_type": "percentage", "discount_value": "20", "max_uses": "100", "is_active": "true", "expires_at": "2026-12-31"}],
     "bank-transactions": [{"date": "2025-01-15", "description": "Client payment", "amount": "500.00", "currency": "GBP", "type": "credit", "reference": "INV-001", "reconciled": "false"}],

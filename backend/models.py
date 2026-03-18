@@ -404,6 +404,8 @@ class ManualSubscriptionCreate(BaseModel):
     term_months: Optional[int] = Field(None, ge=0, le=300)
     auto_cancel_on_termination: bool = False
     reminder_days: Optional[int] = None
+    billing_interval: str = Field("monthly", max_length=50)   # Fix #4
+    payment_method: str = Field("offline", max_length=50)     # Fix #8
 
 
 class AdminCreateUserRequest(BaseModel):
@@ -454,6 +456,8 @@ class SubscriptionUpdate(BaseModel):
     term_months: Optional[int] = Field(None, ge=-1, le=300)  # -1 sentinel to clear term
     auto_cancel_on_termination: Optional[bool] = None
     reminder_days: Optional[int] = None  # -1 sentinel to clear (set to null)
+    billing_interval: Optional[str] = Field(None, max_length=50)   # Fix #9
+    currency: Optional[str] = Field(None, max_length=10)           # Fix #9
 
 
 class CustomerUpdate(BaseModel):

@@ -141,6 +141,7 @@ export function SubscriptionsTab() {
     customer_email: "", product_id: "", quantity: 1, amount: 0, currency: "GBP",
     start_date: today,
     billing_interval: "monthly",
+    payment_method: "offline",
     renewal_date: computeNextBillingDate(today, "monthly"),
     status: "active", internal_note: "",
     term_months: "" as string | number,
@@ -279,6 +280,8 @@ export function SubscriptionsTab() {
         contract_end_date: selectedSub.contract_end_date, amount: selectedSub.amount,
         plan_name: selectedSub.plan_name, customer_id: selectedSub.customer_id,
         status: selectedSub.status, payment_method: selectedSub.payment_method,
+        billing_interval: selectedSub.billing_interval,   // Fix #15
+        currency: selectedSub.currency,                   // Fix #9
         processor_id: selectedSub.processor_id !== undefined ? selectedSub.processor_id : undefined,
         new_note: selectedSub.new_note || undefined,
         term_months: selectedSub.term_months !== undefined ? (Number(selectedSub.term_months) || -1) : undefined,
@@ -367,7 +370,21 @@ export function SubscriptionsTab() {
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
     const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
-    fetch(`${baseUrl}/api/admin/export/subscriptions`, { headers: { Authorization: `Bearer ${token}` } })
+    // Fix #12: pass all active filters to export so exported CSV matches current view
+    const params = new URLSearchParams({ t: Date.now().toString() });
+    if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
+    if (paymentFilter.length > 0) params.append("payment_method", paymentFilter.join(","));
+    if (currencyFilter.length > 0) params.append("currency_filter", currencyFilter.join(","));
+    if (subNumberFilter.length > 0) params.append("sub_number_filter", subNumberFilter.join(","));
+    if (renewalFrom) params.append("renewal_from", renewalFrom);
+    if (renewalTo) params.append("renewal_to", renewalTo);
+    if (createdFrom) params.append("created_from", createdFrom);
+    if (createdTo) params.append("created_to", createdTo);
+    if (startFrom) params.append("start_from", startFrom);
+    if (startTo) params.append("start_to", startTo);
+    if (contractEndFrom) params.append("contract_end_from", contractEndFrom);
+    if (contractEndTo) params.append("contract_end_to", contractEndTo);
+    fetch(`${baseUrl}/api/admin/export/subscriptions?${params}`, { cache: "no-store", headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `subscriptions-${new Date().toISOString().slice(0,10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
   };
@@ -410,6 +427,7 @@ export function SubscriptionsTab() {
               <ColHeader label="Amount" colKey="amount" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={amountRange} onFilter={setAmountRange} onClearFilter={() => setAmountRange({})} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <ColHeader label="Tax" colKey="tax" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={taxRange} onFilter={setTaxRange} onClearFilter={() => setTaxRange({})} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <ColHeader label="Currency" colKey="currency" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={currencyFilter} onFilter={setCurrencyFilter} onClearFilter={() => setCurrencyFilter([])} statusOptions={uniqueCurrencies.map(c => [c, c] as [string, string])} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Interval</th>
               {sortColHeader("renewal_date", "Renewal", "date-range", { filterValue: { from: renewalFrom, to: renewalTo }, onFilter: (v: any) => { setRenewalFrom(v.from || ""); setRenewalTo(v.to || ""); }, onClearFilter: () => { setRenewalFrom(""); setRenewalTo(""); } })}
               {sortColHeader("start_date", "Start", "date-range", { filterValue: { from: startFrom, to: startTo }, onFilter: (v: any) => { setStartFrom(v.from || ""); setStartTo(v.to || ""); }, onClearFilter: () => { setStartFrom(""); setStartTo(""); } })}
               {sortColHeader("contract_end_date", "Contract End", "date-range", { filterValue: { from: contractEndFrom, to: contractEndTo }, onFilter: (v: any) => { setContractEndFrom(v.from || ""); setContractEndTo(v.to || ""); }, onClearFilter: () => { setContractEndFrom(""); setContractEndTo(""); } })}
@@ -449,6 +467,7 @@ export function SubscriptionsTab() {
                   ) : <span className="text-slate-300 text-xs">—</span>}
                 </TableCell>
                 <TableCell><span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{sub.currency || "USD"}</span></TableCell>
+                <TableCell><span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700" data-testid={`admin-sub-interval-${sub.id}`}>{sub.billing_interval || "monthly"}</span></TableCell>
                 <TableCell className="whitespace-nowrap">{sub.renewal_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell className="whitespace-nowrap">{sub.start_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell className="whitespace-nowrap">{sub.contract_end_date?.slice(0, 10) || "—"}</TableCell>
@@ -460,8 +479,13 @@ export function SubscriptionsTab() {
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/subscriptions/${sub.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-subs-logs-${sub.id}`}>Logs</Button>
                     <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSubNotes(sub.notes || []); setSubNotesJson(sub.notes_json || null); setShowNotesDialog(true); }} data-testid={`admin-sub-notes-${sub.id}`}>Notes</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSub(sub); setShowEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
-                    <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmRenewId(sub.id)}>Renew</Button>
-                    {sub.status === "active" && <Button variant="destructive" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmCancelId(sub.id)}>Cancel</Button>}
+                    {/* Fix #16: Renew only for active/unpaid subscriptions */}
+                    {(sub.status === "active" || sub.status === "unpaid") && (
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmRenewId(sub.id)} data-testid={`admin-sub-renew-${sub.id}`}>Renew</Button>
+                    )}
+                    {(sub.status === "active" || sub.status === "unpaid" || sub.status === "paused") && (
+                      <Button variant="destructive" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmCancelId(sub.id)} data-testid={`admin-sub-cancel-${sub.id}`}>Cancel</Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -501,8 +525,22 @@ export function SubscriptionsTab() {
                   </div>
                 ))}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Amount ($)</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Amount ({selectedSub.currency || "USD"})</label>
                   <Input type="number" min={0} step="0.01" value={selectedSub.amount ?? ""} onChange={e => setSelectedSub({ ...selectedSub, amount: parseFloat(e.target.value) || 0 })} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Currency</label>
+                  <Select value={selectedSub.currency || "USD"} onValueChange={v => setSelectedSub({ ...selectedSub, currency: v })} data-testid="admin-sub-edit-currency">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>{(supportedCurrencies.length ? supportedCurrencies : ISO_CURRENCIES).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Billing Interval</label>
+                  <Select value={selectedSub.billing_interval || "monthly"} onValueChange={v => setSelectedSub({ ...selectedSub, billing_interval: v })} data-testid="admin-sub-edit-billing-interval">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>{BILLING_INTERVALS.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Plan Name</label>
@@ -717,6 +755,15 @@ export function SubscriptionsTab() {
               <div className="flex items-center gap-2 pt-4">
                 <input type="checkbox" id="auto_cancel" checked={manualSub.auto_cancel_on_termination} onChange={e => setManualSub({ ...manualSub, auto_cancel_on_termination: e.target.checked })} />
                 <label htmlFor="auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Payment Method</label>
+                <Select value={manualSub.payment_method} onValueChange={v => setManualSub({ ...manualSub, payment_method: v })}>
+                  <SelectTrigger data-testid="manual-sub-payment-method"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(paymentMethods.length ? paymentMethods : ["offline", "bank_transfer", "manual", "card"]).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5">

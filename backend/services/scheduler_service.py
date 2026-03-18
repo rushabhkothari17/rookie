@@ -328,11 +328,15 @@ async def create_renewal_orders() -> None:
                 "created_by": "scheduler",
             }
             await db.orders.insert_one(order_doc)
+            # Fix #6: advance subscription renewal_date (was never updated for customer subs)
+            from services.billing_service import advance_billing_date
+            billing_interval = sub.get("billing_interval", "monthly")
+            new_renewal = advance_billing_date(today_str, billing_interval)
             await db.subscriptions.update_one(
                 {"id": sub["id"]},
-                {"$set": {"auto_renewal_order_date": today_str}},
+                {"$set": {"auto_renewal_order_date": today_str, "renewal_date": new_renewal}},
             )
-            logger.info(f"[Scheduler] Created renewal order {order_number} for sub {sub.get('subscription_number')}")
+            logger.info(f"[Scheduler] Created renewal order {order_number} for sub {sub.get('subscription_number')} — next renewal: {new_renewal}")
         except Exception as exc:
             logger.error(f"[Scheduler] Failed to create renewal order for sub {sub.get('id')}: {exc}")
 

@@ -217,13 +217,13 @@ async def admin_subscriptions(
     })
     pipeline.append({"$unwind": {"path": "$user_data", "preserveNullAndEmptyArrays": True}})
     
-    # Add email filter if provided
+    # Add email filter if provided — Fix #10: support multi-email comma-separated
     if email:
-        pipeline.append({
-            "$match": {
-                "user_data.email": {"$regex": _re.escape(email), "$options": "i"}
-            }
-        })
+        emails = [e.strip().lower() for e in email.split(",") if e.strip()]
+        if len(emails) > 1:
+            pipeline.append({"$match": {"user_data.email": {"$in": emails}}})
+        else:
+            pipeline.append({"$match": {"user_data.email": {"$regex": _re.escape(emails[0]), "$options": "i"}}})
     
     # Project the fields we need (include customer email for frontend)
     pipeline.append({
@@ -326,7 +326,8 @@ async def create_manual_subscription(
         "plan_name": product["name"],
         "product_id": product["id"],
         "status": payload.status,
-        "payment_method": "offline",
+        "payment_method": payload.payment_method,           # Fix #8
+        "billing_interval": payload.billing_interval,       # Fix #4
         "amount": payload.amount,
         "currency": payload.currency or product.get("currency", "USD"),
         "renewal_date": renewal_date_dt.isoformat(),
@@ -337,15 +338,16 @@ async def create_manual_subscription(
         "notes": [],
         "term_months": payload.term_months if payload.term_months and payload.term_months > 0 else None,
         "auto_cancel_on_termination": payload.auto_cancel_on_termination,
-        "reminder_days": payload.reminder_days,  # None = use org default
+        "reminder_days": payload.reminder_days,
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
         "is_manual": True,
+        # Fix #3: only set contract_end_date when term_months > 0
         "contract_end_date": (
             datetime.fromisoformat(
                 (payload.start_date or now_iso()).replace("Z", "+00:00")
-            ).replace(tzinfo=timezone.utc) + timedelta(days=30 * (payload.term_months or 12))
-        ).isoformat(),
+            ).replace(tzinfo=timezone.utc) + timedelta(days=30 * payload.term_months)
+        ).isoformat() if payload.term_months and payload.term_months > 0 else None,
     }
     await db.subscriptions.insert_one(sub_doc)
     await _inc_monthly(_tid, "subscriptions")
@@ -411,19 +413,22 @@ async def renew_subscription_now(
         "discount_amount": 0.0,
         "fee": 0.0,
         "total": subscription["amount"],
-        "currency": "USD",
-        "payment_method": subscription.get("payment_method", "manual"),
+        "currency": subscription.get("currency", "USD"),    # Fix #1
+        "payment_method": subscription.get("payment_method", "offline"),
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
     }
     await db.orders.insert_one(order_doc)
 
+    # Fix #2: advance renewal date by actual billing interval
+    from services.billing_service import advance_billing_date
+    billing_interval = subscription.get("billing_interval", "monthly")
     current_renewal = datetime.fromisoformat(subscription["renewal_date"].replace("Z", "+00:00"))
-    next_renewal = current_renewal + timedelta(days=30)
+    next_renewal_str = advance_billing_date(current_renewal.date(), billing_interval)
 
     await db.subscriptions.update_one(
         {"id": subscription_id},
-        {"$set": {"renewal_date": next_renewal.isoformat(), "updated_at": now_iso()}},
+        {"$set": {"renewal_date": next_renewal_str, "updated_at": now_iso()}},
     )
 
     await create_audit_log(
@@ -445,7 +450,7 @@ async def renew_subscription_now(
         "message": "Renewal order created",
         "order_id": order_id,
         "order_number": order_number,
-        "next_renewal_date": next_renewal.isoformat(),
+        "next_renewal_date": next_renewal_str,
     }
 
 
@@ -464,6 +469,7 @@ async def update_subscription(
     update_fields: Dict[str, Any] = {}
     changes: Dict[str, Any] = {}
     if payload.renewal_date is not None:
+        update_fields["renewal_date"] = payload.renewal_date         # Fix #5
         changes["renewal_date"] = {"old": subscription.get("renewal_date"), "new": payload.renewal_date}
     if payload.start_date is not None:
         update_fields["start_date"] = payload.start_date
@@ -492,7 +498,12 @@ async def update_subscription(
     if payload.payment_method is not None:
         update_fields["payment_method"] = payload.payment_method
         changes["payment_method"] = {"old": subscription.get("payment_method"), "new": payload.payment_method}
-
+    if payload.billing_interval is not None:                          # Fix #9
+        update_fields["billing_interval"] = payload.billing_interval
+        changes["billing_interval"] = {"old": subscription.get("billing_interval"), "new": payload.billing_interval}
+    if payload.currency is not None:                                  # Fix #9
+        update_fields["currency"] = payload.currency
+        changes["currency"] = {"old": subscription.get("currency"), "new": payload.currency}
     if payload.processor_id is not None:
         update_fields["processor_id"] = payload.processor_id
         changes["processor_id"] = {"old": subscription.get("processor_id"), "new": payload.processor_id}
@@ -565,7 +576,7 @@ async def admin_cancel_subscription(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    await _check(admin, "delete")
+    await _check(admin, "edit")   # Fix #11: cancel is an edit action, not delete
     subscription = await db.subscriptions.find_one({**tf, "id": subscription_id}, {"_id": 0})
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
@@ -617,14 +628,17 @@ async def admin_cancel_subscription(
         "cancelled_at": cancelled_at,
     }, tenant_id_of(admin))
 
-    # Send subscription_terminated email
-    if customer.get("email"):
+    # Fix #7: look up email via user record (customer doc has no email field directly)
+    customer = await db.customers.find_one({**tf, "id": subscription.get("customer_id", "")}, {"_id": 0}) or {}
+    user = await db.users.find_one({"id": customer.get("user_id", "")}, {"_id": 0}) or {}
+    cancel_email = user.get("email") or customer.get("email")
+    if cancel_email:
         from services.email_service import EmailService
         asyncio.create_task(EmailService.send(
             trigger="subscription_terminated",
-            recipient=customer["email"],
+            recipient=cancel_email,
             variables={
-                "recipient_name": customer.get("full_name", customer.get("email", "")),
+                "recipient_name": customer.get("full_name") or user.get("full_name") or cancel_email,
                 "subscription_number": subscription.get("subscription_number", ""),
                 "plan_name": subscription.get("plan_name", ""),
                 "cancelled_at": cancelled_at[:10],

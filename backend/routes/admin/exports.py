@@ -170,14 +170,48 @@ async def export_subscriptions_csv(
     sort_order: str = "desc",
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
+    status: Optional[str] = None,
+    payment_method: Optional[str] = None,
+    currency_filter: Optional[str] = None,
+    renewal_from: Optional[str] = None,
+    renewal_to: Optional[str] = None,
+    start_from: Optional[str] = None,
+    start_to: Optional[str] = None,
+    contract_end_from: Optional[str] = None,
+    contract_end_to: Optional[str] = None,
+    sub_number_filter: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
-):
+):  # Fix #12: respect all active filters
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
     if created_from:
         query.setdefault("created_at", {})["$gte"] = created_from
     if created_to:
         query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    if status:
+        statuses = [s.strip() for s in status.split(",") if s.strip()]
+        query["status"] = {"$in": statuses} if len(statuses) > 1 else statuses[0]
+    if payment_method:
+        methods = [m.strip() for m in payment_method.split(",") if m.strip()]
+        query["payment_method"] = {"$in": methods} if len(methods) > 1 else methods[0]
+    if currency_filter:
+        currencies = [c.strip() for c in currency_filter.split(",") if c.strip()]
+        query["currency"] = {"$in": currencies} if len(currencies) > 1 else currencies[0]
+    if renewal_from:
+        query.setdefault("renewal_date", {})["$gte"] = renewal_from
+    if renewal_to:
+        query.setdefault("renewal_date", {})["$lte"] = renewal_to + "T23:59:59"
+    if start_from:
+        query.setdefault("start_date", {})["$gte"] = start_from
+    if start_to:
+        query.setdefault("start_date", {})["$lte"] = start_to + "T23:59:59"
+    if contract_end_from:
+        query.setdefault("contract_end_date", {})["$gte"] = contract_end_from
+    if contract_end_to:
+        query.setdefault("contract_end_date", {})["$lte"] = contract_end_to + "T23:59:59"
+    if sub_number_filter:
+        import re as _re2
+        query["subscription_number"] = {"$regex": _re2.escape(sub_number_filter), "$options": "i"}
 
     sort_dir = -1 if sort_order == "desc" else 1
     subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).to_list(10000)
