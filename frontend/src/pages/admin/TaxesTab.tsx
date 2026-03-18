@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
-import { Trash2, Plus, Search, Edit2, Check, X } from "lucide-react";
+import { Trash2, Plus, Search, Edit2, Check, X, Lock } from "lucide-react";
 import api from "@/lib/api";
 import { FieldTip } from "./shared/FieldTip";
+import { resolveCountryCode as resolveISO } from "@/utils/taxUtils";
 
 const COUNTRIES = [
   { code: "AL", name: "Albania" }, { code: "DZ", name: "Algeria" }, { code: "AR", name: "Argentina" },
@@ -65,84 +66,73 @@ const OPERATORS = [
 
 // ── Tax Settings Panel ─────────────────────────────────────────────────────────
 
-// Resolve common country names to ISO 2-letter codes for tax rule matching
-function resolveISO(country?: string): string {
-  if (!country) return "";
-  const c = country.trim();
-  if (c.length === 2) return c.toUpperCase();
-  const MAP: Record<string, string> = {
-    "canada": "CA", "united states": "US", "united kingdom": "GB",
-    "australia": "AU", "new zealand": "NZ", "ireland": "IE", "india": "IN",
-    "germany": "DE", "france": "FR", "netherlands": "NL", "belgium": "BE",
-    "spain": "ES", "italy": "IT", "portugal": "PT", "sweden": "SE",
-    "norway": "NO", "denmark": "DK", "finland": "FI", "austria": "AT",
-  };
-  return MAP[c.toLowerCase()] || c.toUpperCase();
-}
-
 function TaxSettingsPanel() {
   const [settings, setSettings] = useState<any>({ enabled: false, country: "", state: "" });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [rateTableCountries, setRateTableCountries] = useState<{value:string;label:string}[]>([]);
-  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
-  const [provincesLoading, setProvincesLoading] = useState(false);
   const [taxEntries, setTaxEntries] = useState<any[]>([]);
   const [orgAddress, setOrgAddress] = useState<any>({});
 
   useEffect(() => {
     Promise.all([
       api.get("/admin/taxes/settings"),
-      api.get("/utils/countries?format=iso").catch(() => ({ data: { countries: [] } })),
       api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
-      api.get("/admin/tenants").catch(() => ({ data: { tenants: [] } })),
-    ]).then(([settingsRes, countriesRes, tablesRes, tenantsRes]) => {
+      api.get("/admin/tenants/my").catch(() => ({ data: { tenant: {} } })),
+    ]).then(([settingsRes, tablesRes, myTenantRes]) => {
       setSettings(settingsRes.data.tax_settings || {});
-      setRateTableCountries(countriesRes.data.countries || []);
       setTaxEntries(tablesRes.data.entries || []);
-      const tenants = tenantsRes.data.tenants || [];
-      // For partner admins, tenants list contains only their own org
-      // For platform admins, find the platform org (is_platform), else first tenant
-      const ownTenant = tenants.find((t: any) => t.is_platform) || tenants[0];
-      if (ownTenant?.address) setOrgAddress(ownTenant.address);
+      const addr = myTenantRes.data.tenant?.address || {};
+      setOrgAddress(addr);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
-  // Fetch provinces whenever country changes to CA or US
-  useEffect(() => {
-    const country = settings.country;
-    if (country === "CA" || country === "US") {
-      setProvincesLoading(true);
-      api.get(`/utils/provinces?country_code=${country}`)
-        .then((r) => setProvinces(r.data.regions || []))
-        .catch(() => setProvinces([]))
-        .finally(() => setProvincesLoading(false));
-    } else {
-      setProvinces([]);
-    }
-  }, [settings.country]);
-
-  const save = async () => {
-    if (settings.enabled) {
-      // Validate: must have a country selected
-      if (!settings.country) {
-        toast.error("Please select your business country before enabling tax collection.");
+  const handleToggle = (newEnabled: boolean) => {
+    if (newEnabled) {
+      const countryISO = resolveISO(orgAddress?.country || "");
+      if (!countryISO) {
+        toast.error("Please set your organization's country in Settings → Organization Info before enabling tax collection.");
         return;
       }
-      // Validate: matching tax rules must exist (settings.country is already ISO)
+      const state = orgAddress?.region || "";
       const matches = taxEntries.filter((e: any) =>
-        e.country_code === settings.country &&
-        (!settings.state || !e.state_code || e.state_code === settings.state)
+        e.country_code === countryISO &&
+        (!state || !e.state_code || e.state_code === state)
       );
       if (matches.length === 0) {
-        toast.error(`No tax rules found for ${settings.country}${settings.state ? "/" + settings.state : ""}. Please add tax rules in the Tax Table first.`);
+        toast.error(`No tax rules found for ${countryISO}${state ? "/" + state : ""}. Add rules in the Tax Table tab first.`);
         return;
       }
+      setSettings({ ...settings, enabled: true, country: countryISO, state });
+    } else {
+      setSettings({ ...settings, enabled: false });
+    }
+  };
+
+  const save = async () => {
+    let payload = { ...settings };
+    if (settings.enabled) {
+      const countryISO = resolveISO(orgAddress?.country || "");
+      if (!countryISO) {
+        toast.error("Cannot save: your organization has no country set. Update Organization Info first.");
+        return;
+      }
+      const state = orgAddress?.region || "";
+      const matches = taxEntries.filter((e: any) =>
+        e.country_code === countryISO &&
+        (!state || !e.state_code || e.state_code === state)
+      );
+      if (matches.length === 0) {
+        toast.error(`No tax rules found for ${countryISO}${state ? "/" + state : ""}. Add rules in the Tax Table tab first.`);
+        return;
+      }
+      // Always sync country/state from org address before saving
+      payload = { ...settings, country: countryISO, state };
+      setSettings(payload);
     }
     setSaving(true);
     try {
-      await api.put("/admin/taxes/settings", settings);
+      await api.put("/admin/taxes/settings", payload);
       toast.success("Tax settings saved");
     } catch {
       toast.error("Failed to save tax settings");
@@ -159,7 +149,7 @@ function TaxSettingsPanel() {
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Tax Collection</h3>
           <p className="text-xs text-slate-500 mt-1">
-            Enable to automatically calculate and add tax at checkout based on your location and customer location.
+            Enable to automatically calculate and add tax based on your organization's registered address.
           </p>
         </div>
 
@@ -169,92 +159,37 @@ function TaxSettingsPanel() {
             type="checkbox"
             data-testid="tax-enabled-toggle"
             checked={!!settings.enabled}
-            onChange={(e) => {
-              const newEnabled = e.target.checked;
-              if (newEnabled && !settings.country) {
-                // First-time enable: validate org address and pre-populate
-                const rawCountry = orgAddress?.country || "";
-                const countryISO = resolveISO(rawCountry);
-                if (!countryISO) {
-                  toast.error("Please set your organization's country in Organization Info settings before enabling tax collection.");
-                  return;
-                }
-                const state = orgAddress?.region || "";
-                const matches = taxEntries.filter((e: any) =>
-                  e.country_code === countryISO &&
-                  (!state || !e.state_code || e.state_code === state)
-                );
-                if (matches.length === 0) {
-                  toast.error(`No tax rules found for ${countryISO}${state ? "/" + state : ""}. Please add tax rules in the Tax Table first.`);
-                  return;
-                }
-                setSettings({ ...settings, enabled: true, country: countryISO, state });
-              } else {
-                setSettings({ ...settings, enabled: newEnabled });
-              }
-            }}
+            onChange={(e) => handleToggle(e.target.checked)}
             className="h-4 w-4 rounded border-slate-300 accent-slate-900"
           />
         </div>
 
         {settings.enabled && (
-          <>
-            <div className="space-y-1.5">
-              <Label className="text-sm">Your Business Country <span className="text-red-500">*</span></Label>
-              <Select
-                value={settings.country || ""}
-                onValueChange={(v) => setSettings({ ...settings, country: v })}
-              >
-                <SelectTrigger data-testid="tax-country-select">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {rateTableCountries.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-slate-400">Used to determine which tax rules apply (destination-based).</p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3" data-testid="tax-address-locked-panel">
+            <div className="flex items-center gap-2">
+              <Lock className="h-3.5 w-3.5 text-slate-400" />
+              <p className="text-xs font-medium text-slate-600">Locked to your organization's registered address</p>
             </div>
-
-            {(settings.country === "CA" || settings.country === "US") && (
-              <div className="space-y-1.5">
-                <Label className="text-sm">
-                  Your {settings.country === "CA" ? "Province" : "State"}
-                </Label>
-                {provinces.length > 0 ? (
-                  <Select
-                    value={settings.state || ""}
-                    onValueChange={(v) => setSettings({ ...settings, state: v })}
-                  >
-                    <SelectTrigger data-testid="tax-state-input" className="w-56">
-                      <SelectValue placeholder={provincesLoading ? "Loading…" : `Select ${settings.country === "CA" ? "province" : "state"}`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {provinces.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-slate-400 mb-0.5">Country</p>
+                {settings.country ? (
+                  <p className="font-medium text-slate-800" data-testid="tax-country-display">{settings.country}</p>
                 ) : (
-                  <Input
-                    data-testid="tax-state-input"
-                    placeholder={provincesLoading ? "Loading…" : (settings.country === "CA" ? "e.g. ON, BC, QC" : "e.g. CA, NY, TX")}
-                    value={settings.state || ""}
-                    onChange={(e) => setSettings({ ...settings, state: e.target.value.toUpperCase() })}
-                    maxLength={3}
-                    className="w-40"
-                    disabled={provincesLoading}
-                  />
+                  <p className="text-red-500 text-xs" data-testid="tax-country-display">Not set</p>
                 )}
-                <p className="text-xs text-slate-400">
-                  {settings.country === "CA"
-                    ? "Required for correct GST/HST/PST calculation."
-                    : "Used for nexus determination."}
-                </p>
               </div>
-            )}
-          </>
+              {settings.state && (
+                <div>
+                  <p className="text-xs text-slate-400 mb-0.5">Province / State</p>
+                  <p className="font-medium text-slate-800" data-testid="tax-state-display">{settings.state}</p>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-slate-400">
+              To change, update your address in <strong>Settings → Organization Info</strong>, then disable and re-enable.
+            </p>
+          </div>
         )}
 
         <Button data-testid="tax-settings-save-btn" onClick={save} disabled={saving}>

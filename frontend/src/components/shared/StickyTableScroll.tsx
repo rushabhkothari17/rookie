@@ -25,7 +25,8 @@ export function StickyTableScroll({ children, className = "" }: Props) {
 
     const rect = wrap.getBoundingClientRect();
     const overflows = wrap.scrollWidth > wrap.clientWidth + 1;
-    const inView = rect.top < window.innerHeight && rect.bottom > 50;
+    // Only show the sticky bar when the table's bottom (native scrollbar) is scrolled out of view
+    const inView = rect.top < window.innerHeight && rect.bottom > window.innerHeight;
 
     setVisible(overflows && inView);
     setBarStyle({ left: rect.left, width: rect.width, bottom: 0 });

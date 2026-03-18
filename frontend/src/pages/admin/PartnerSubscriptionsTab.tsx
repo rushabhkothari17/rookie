@@ -26,24 +26,7 @@ import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { ColHeader } from "@/components/shared/ColHeader";
 
-// Maps common country names to ISO 2-letter codes (for tax table matching)
-const COUNTRY_NAME_TO_ISO: Record<string, string> = {
-  "canada": "CA", "united kingdom": "GB", "england": "GB", "scotland": "GB",
-  "wales": "GB", "northern ireland": "GB", "united states": "US",
-  "united states of america": "US", "usa": "US", "australia": "AU",
-  "new zealand": "NZ", "ireland": "IE", "germany": "DE", "france": "FR",
-  "spain": "ES", "italy": "IT", "netherlands": "NL", "belgium": "BE",
-  "sweden": "SE", "norway": "NO", "denmark": "DK", "finland": "FI",
-  "switzerland": "CH", "austria": "AT", "portugal": "PT", "poland": "PL",
-  "india": "IN", "japan": "JP", "china": "CN", "south africa": "ZA",
-  "singapore": "SG", "brazil": "BR", "mexico": "MX",
-};
-function resolveCountryCode(country?: string): string {
-  if (!country) return "";
-  const trimmed = country.trim();
-  if (trimmed.length === 2) return trimmed.toUpperCase();
-  return COUNTRY_NAME_TO_ISO[trimmed.toLowerCase()] || trimmed.toUpperCase();
-}
+import { computeTax, resolveCountryCode, TaxEntry, OverrideRule, TaxSubject } from "@/utils/taxUtils";
 
 /** Small reusable button that sends a test renewal reminder for a partner subscription. */
 function TestReminderButton({ subId }: { subId: string }) {
@@ -67,7 +50,6 @@ function TestReminderButton({ subId }: { subId: string }) {
 
 type Tenant = { id: string; name: string; address?: { country?: string; region?: string } };
 type Plan = { id: string; name: string; is_active: boolean };
-type TaxEntry = { country_code: string; state_code?: string; label: string; rate: number };
 
 type PartnerSubscription = {
   id: string;
@@ -169,13 +151,15 @@ function addMonthsPreserveDay(dateStr: string, months: number): string {
 const INTERVAL_MONTHS: Record<string, number> = { monthly: 1, quarterly: 3, annual: 12 };
 
 function SubFormModal({
-  sub, tenants, plans, taxEntries, taxEnabled, onClose, onSaved,
+  sub, tenants, plans, taxEntries, taxEnabled, overrideRules, orgAddress, onClose, onSaved,
 }: {
   sub: PartnerSubscription | null;
   tenants: Tenant[];
   plans: Plan[];
   taxEntries: TaxEntry[];
   taxEnabled: boolean;
+  overrideRules: OverrideRule[];
+  orgAddress: { country?: string; region?: string };
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -203,35 +187,7 @@ function SubFormModal({
   const [nbtManual, setNbtManual] = useState(isEdit && !!sub?.next_billing_date);
   const [expManual, setExpManual] = useState(isEdit && !!sub?.contract_end_date);
 
-  // Derive filtered tax options for the selected partner
-  const selectedTenant = tenants.find(t => t.id === form.partner_id);
-  const partnerCountry = resolveCountryCode(selectedTenant?.address?.country);
-  const partnerRegion = selectedTenant?.address?.region?.toUpperCase();
-  const filteredTaxOptions = useMemo(() => {
-    if (!partnerCountry || !taxEntries.length) return [];
-    return taxEntries.filter(e =>
-      e.country_code.toUpperCase() === partnerCountry &&
-      (!e.state_code || !partnerRegion || e.state_code.toUpperCase() === partnerRegion)
-    );
-  }, [partnerCountry, partnerRegion, taxEntries]);
-
-  const handleTaxSelect = (value: string) => {
-    if (!value) return;
-    const parts = value.split("|");
-    if (parts.length >= 4) {
-      setForm(f => ({ ...f, tax_name: parts[2], tax_rate: parts[3] }));
-    }
-  };
-
   const set = (k: keyof SubFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
-
-  // Default to "No tax" / 0 when tax collection is disabled
-  useEffect(() => {
-    if (!taxEnabled && !isEdit && !form.tax_name) {
-      setForm(f => ({ ...f, tax_name: "No tax", tax_rate: "0" }));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taxEnabled]);
 
   // Auto-calculate Next Billing Date when start_date or billing_interval changes
   useEffect(() => {
@@ -325,25 +281,18 @@ function SubFormModal({
                     setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
                     return;
                   }
-                  set("partner_id", v);
+                  // Auto-populate tax: use partner address, fall back to org address
                   const tenant = tenants.find(t => t.id === v);
-                  const country = resolveCountryCode(tenant?.address?.country);
-                  const region = tenant?.address?.region?.toUpperCase();
-                  if (country) {
-                    const matches = taxEntries.filter(e =>
-                      e.country_code.toUpperCase() === country &&
-                      (!e.state_code || !region || e.state_code.toUpperCase() === region)
-                    );
-                    if (matches.length >= 1) {
-                      const best = matches.find(m => m.state_code && region && m.state_code.toUpperCase() === region) || matches[0];
-                      const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
-                      setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
-                    } else {
-                      setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
-                    }
-                  } else {
-                    setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
-                  }
+                  const addr = (tenant?.address?.country)
+                    ? tenant.address
+                    : orgAddress;
+                  const subject: TaxSubject = {
+                    country: addr?.country,
+                    region: addr?.region,
+                    company_name: tenant?.name,
+                  };
+                  const result = computeTax(subject, taxEntries, overrideRules);
+                  setForm(f => ({ ...f, partner_id: v, tax_name: result.tax_name, tax_rate: result.tax_rate }));
                 }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}
                 placeholder="Select partner…"
@@ -526,6 +475,8 @@ export function PartnerSubscriptionsTab() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [taxEntries, setTaxEntries] = useState<TaxEntry[]>([]);
   const [taxEnabled, setTaxEnabled] = useState(false);
+  const [overrideRules, setOverrideRules] = useState<OverrideRule[]>([]);
+  const [orgAddress, setOrgAddress] = useState<{ country?: string; region?: string }>({});
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -607,11 +558,15 @@ export function PartnerSubscriptionsTab() {
       api.get("/admin/plans"),
       api.get("/admin/taxes/settings").catch(() => ({ data: { enabled: false } })),
       api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
-    ]).then(([t, p, ts, te]) => {
+      api.get("/admin/taxes/overrides").catch(() => ({ data: { rules: [] } })),
+      api.get("/admin/tenants/my").catch(() => ({ data: { tenant: {} } })),
+    ]).then(([t, p, ts, te, tor, myTenant]) => {
       setTenants((t.data.tenants || []).filter((x: any) => x.code !== "automate-accounts"));
       setPlans((p.data.plans || []).filter((x: Plan) => x.is_active));
       setTaxEnabled(ts.data?.tax_settings?.enabled === true);
       setTaxEntries(te.data?.entries || []);
+      setOverrideRules(tor.data?.rules || []);
+      setOrgAddress(myTenant.data?.tenant?.address || {});
     }).catch(() => {});
   }, []);
 
@@ -749,8 +704,8 @@ export function PartnerSubscriptionsTab() {
       )}
 
       {/* Modals */}
-      {showCreate && <SubFormModal sub={null} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
-      {editSub && <SubFormModal sub={editSub} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setEditSub(null)} onSaved={() => { setEditSub(null); load(); }} />}
+      {showCreate && <SubFormModal sub={null} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} overrideRules={overrideRules} orgAddress={orgAddress} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editSub && <SubFormModal sub={editSub} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} overrideRules={overrideRules} orgAddress={orgAddress} onClose={() => setEditSub(null)} onSaved={() => { setEditSub(null); load(); }} />}
 
       {/* Cancel Confirmation */}
       {cancelSub && (

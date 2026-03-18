@@ -23,10 +23,10 @@ import { Copy, ExternalLink, RefreshCw, Plus, Pencil, Trash2, Download, RotateCc
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { ColHeader } from "@/components/shared/ColHeader";
+import { computeTax, resolveCountryCode, TaxEntry, OverrideRule, TaxSubject } from "@/utils/taxUtils";
 
 type Tenant = { id: string; name: string; address?: { country?: string; region?: string; city?: string } };
 type Plan = { id: string; name: string; is_active: boolean };
-type TaxEntry = { country_code: string; state_code?: string; label: string; rate: number };
 
 type PartnerOrder = {
   id: string;
@@ -61,24 +61,6 @@ type Stats = {
   revenue_paid: Record<string, number>;
 };
 
-// Maps common country names to ISO 2-letter codes (for tax table matching)
-const COUNTRY_NAME_TO_ISO: Record<string, string> = {
-  "canada": "CA", "united kingdom": "GB", "england": "GB", "scotland": "GB",
-  "wales": "GB", "northern ireland": "GB", "united states": "US",
-  "united states of america": "US", "usa": "US", "australia": "AU",
-  "new zealand": "NZ", "ireland": "IE", "germany": "DE", "france": "FR",
-  "spain": "ES", "italy": "IT", "netherlands": "NL", "belgium": "BE",
-  "sweden": "SE", "norway": "NO", "denmark": "DK", "finland": "FI",
-  "switzerland": "CH", "austria": "AT", "portugal": "PT", "poland": "PL",
-  "india": "IN", "japan": "JP", "china": "CN", "south africa": "ZA",
-  "singapore": "SG", "brazil": "BR", "mexico": "MX",
-};
-function resolveCountryCode(country?: string): string {
-  if (!country) return "";
-  const trimmed = country.trim();
-  if (trimmed.length === 2) return trimmed.toUpperCase();
-  return COUNTRY_NAME_TO_ISO[trimmed.toLowerCase()] || trimmed.toUpperCase();
-}
 
 const STATUS_COLORS: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-700",
@@ -139,13 +121,15 @@ const emptyForm = (): OrderFormData => ({
 });
 
 function OrderFormModal({
-  order, tenants, plans, taxEntries, taxEnabled, onClose, onSaved,
+  order, tenants, plans, taxEntries, taxEnabled, overrideRules, orgAddress, onClose, onSaved,
 }: {
   order: PartnerOrder | null;
   tenants: Tenant[];
   plans: Plan[];
   taxEntries: TaxEntry[];
   taxEnabled: boolean;
+  overrideRules: OverrideRule[];
+  orgAddress: { country?: string; region?: string };
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -164,34 +148,6 @@ function OrderFormModal({
   const [saving, setSaving] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState(order?.payment_url || "");
-
-  // Default to "No tax" / 0 when tax collection is disabled
-  useEffect(() => {
-    if (!taxEnabled && !isEdit && !form.tax_name) {
-      setForm(f => ({ ...f, tax_name: "No tax", tax_rate: "0" }));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taxEnabled]);
-
-  // Derive filtered tax options for the selected partner
-  const selectedTenant = tenants.find(t => t.id === form.partner_id);
-  const partnerCountry = resolveCountryCode(selectedTenant?.address?.country);
-  const partnerRegion = selectedTenant?.address?.region?.toUpperCase();
-  const filteredTaxOptions = useMemo(() => {
-    if (!partnerCountry || !taxEntries.length) return [];
-    return taxEntries.filter(e =>
-      e.country_code.toUpperCase() === partnerCountry &&
-      (!e.state_code || !partnerRegion || e.state_code.toUpperCase() === partnerRegion)
-    );
-  }, [partnerCountry, partnerRegion, taxEntries]);
-
-  const handleTaxSelect = (value: string) => {
-    if (!value) return;
-    const parts = value.split("|");
-    if (parts.length >= 4) {
-      setForm(f => ({ ...f, tax_name: parts[2], tax_rate: parts[3] }));
-    }
-  };
 
   const set = (k: keyof OrderFormData, v: string) => setForm(f => {
     const update: Partial<OrderFormData> = { [k]: v };
@@ -283,27 +239,18 @@ function OrderFormModal({
                     setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
                     return;
                   }
-                  set("partner_id", v);
-                  // Auto-populate tax when exactly one rule matches partner's address
+                  // Auto-populate tax: use partner address, fall back to org address
                   const tenant = tenants.find(t => t.id === v);
-                  const country = resolveCountryCode(tenant?.address?.country);
-                  const region = tenant?.address?.region?.toUpperCase();
-                  if (country) {
-                    const matches = taxEntries.filter(e =>
-                      e.country_code.toUpperCase() === country &&
-                      (!e.state_code || !region || e.state_code.toUpperCase() === region)
-                    );
-                    if (matches.length >= 1) {
-                      // pick the most specific match (state-level preferred over country-level)
-                      const best = matches.find(m => m.state_code && region && m.state_code.toUpperCase() === region) || matches[0];
-                      const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
-                      setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
-                    } else {
-                      setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
-                    }
-                  } else {
-                    setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
-                  }
+                  const addr = (tenant?.address?.country)
+                    ? tenant.address
+                    : orgAddress;
+                  const subject: TaxSubject = {
+                    country: addr?.country,
+                    region: addr?.region,
+                    company_name: tenant?.name,
+                  };
+                  const result = computeTax(subject, taxEntries, overrideRules);
+                  setForm(f => ({ ...f, partner_id: v, tax_name: result.tax_name, tax_rate: result.tax_rate }));
                 }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}
                 placeholder="Select partner…"
@@ -448,6 +395,8 @@ export function PartnerOrdersTab() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [taxEntries, setTaxEntries] = useState<TaxEntry[]>([]);
   const [taxEnabled, setTaxEnabled] = useState(false);
+  const [overrideRules, setOverrideRules] = useState<OverrideRule[]>([]);
+  const [orgAddress, setOrgAddress] = useState<{ country?: string; region?: string }>({});
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -538,11 +487,15 @@ export function PartnerOrdersTab() {
       api.get("/admin/plans"),
       api.get("/admin/taxes/settings").catch(() => ({ data: { enabled: false } })),
       api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
-    ]).then(([t, p, ts, te]) => {
+      api.get("/admin/taxes/overrides").catch(() => ({ data: { rules: [] } })),
+      api.get("/admin/tenants/my").catch(() => ({ data: { tenant: {} } })),
+    ]).then(([t, p, ts, te, tor, myTenant]) => {
       setTenants((t.data.tenants || []).filter((x: any) => x.code !== "automate-accounts"));
       setPlans((p.data.plans || []).filter((x: Plan) => x.is_active));
       setTaxEnabled(ts.data?.tax_settings?.enabled === true);
       setTaxEntries(te.data?.entries || []);
+      setOverrideRules(tor.data?.rules || []);
+      setOrgAddress(myTenant.data?.tenant?.address || {});
     }).catch(() => {});
   }, []);
 
@@ -708,8 +661,8 @@ export function PartnerOrdersTab() {
         </div>
       )}
 
-      {showCreate && <OrderFormModal order={null} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
-      {editOrder && <OrderFormModal order={editOrder} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} onClose={() => setEditOrder(null)} onSaved={() => { setEditOrder(null); load(); }} />}
+      {showCreate && <OrderFormModal order={null} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} overrideRules={overrideRules} orgAddress={orgAddress} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editOrder && <OrderFormModal order={editOrder} tenants={tenants} plans={plans} taxEntries={taxEntries} taxEnabled={taxEnabled} overrideRules={overrideRules} orgAddress={orgAddress} onClose={() => setEditOrder(null)} onSaved={() => { setEditOrder(null); load(); }} />}
 
       {deleteOrder && (
         <AlertDialog open onOpenChange={() => setDeleteOrder(null)}>

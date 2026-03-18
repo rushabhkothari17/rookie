@@ -18,6 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Download, ExternalLink, Upload} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ColHeader } from "@/components/shared/ColHeader";
+import { computeTax, TaxSubject, TaxEntry, OverrideRule } from "@/utils/taxUtils";
 
 const getProcessorLink = (id: string | undefined): string | null => {
   if (!id) return null;
@@ -108,6 +109,12 @@ export function OrdersTab() {
   const productMap: Record<string, string> = {};
   products.forEach((p) => { productMap[p.id] = p.name; });
 
+  // Tax data for auto-population
+  const [taxEnabled, setTaxEnabled] = useState(false);
+  const [taxEntries, setTaxEntries] = useState<TaxEntry[]>([]);
+  const [overrideRules, setOverrideRules] = useState<OverrideRule[]>([]);
+  const [orgAddress, setOrgAddress] = useState<{ country?: string; region?: string }>({});
+
   const getCustomerUser = (customerId: string) => {
     const c = custMap[customerId];
     return c ? userMap[c.user_id] : null;
@@ -164,10 +171,18 @@ export function OrdersTab() {
     Promise.all([
       api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
       api.get("/admin/products-all?per_page=500").catch(() => ({ data: { products: [] } })),
-    ]).then(([custRes, prodRes]) => {
+      api.get("/admin/taxes/settings").catch(() => ({ data: {} })),
+      api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
+      api.get("/admin/taxes/overrides").catch(() => ({ data: { rules: [] } })),
+      api.get("/admin/tenants/my").catch(() => ({ data: { tenant: {} } })),
+    ]).then(([custRes, prodRes, tsRes, teRes, torRes, myTenantRes]) => {
       setCustomers(custRes.data.customers || []);
       setUsers(custRes.data.users || []);
       setProducts(prodRes.data.products || []);
+      setTaxEnabled(tsRes.data?.tax_settings?.enabled === true);
+      setTaxEntries(teRes.data?.entries || []);
+      setOverrideRules(torRes.data?.rules || []);
+      setOrgAddress(myTenantRes.data?.tenant?.address || {});
     });
   }, []);
 
@@ -573,7 +588,36 @@ export function OrdersTab() {
                   label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
                 }))}
                 value={manualOrder.customer_email || undefined}
-                onValueChange={v => setManualOrder({ ...manualOrder, customer_email: v })}
+                onValueChange={v => {
+                  // Auto-populate tax when customer is selected
+                  const selectedUser = users.find((u: any) => u.email === v);
+                  const selectedCustomer = selectedUser
+                    ? customers.find((c: any) => c.user_id === selectedUser.id)
+                    : null;
+                  let newTaxName = manualOrder.tax_name;
+                  let newTaxRate = manualOrder.tax_rate;
+                  if (!taxEnabled) {
+                    newTaxName = "No tax";
+                    newTaxRate = "0";
+                  } else if (selectedCustomer?.tax_exempt) {
+                    newTaxName = "No tax";
+                    newTaxRate = "0";
+                  } else {
+                    const addr = selectedCustomer?.address?.country
+                      ? selectedCustomer.address
+                      : orgAddress;
+                    const subject: TaxSubject = {
+                      country: addr?.country,
+                      region: addr?.region,
+                      email: v,
+                      company_name: selectedCustomer?.company_name,
+                    };
+                    const result = computeTax(subject, taxEntries, overrideRules);
+                    newTaxName = result.tax_name;
+                    newTaxRate = result.tax_rate;
+                  }
+                  setManualOrder({ ...manualOrder, customer_email: v, tax_name: newTaxName, tax_rate: newTaxRate });
+                }}
                 placeholder="Select or search customer..."
                 searchPlaceholder="Search by name or email..."
                 data-testid="manual-order-customer-email"
