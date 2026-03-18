@@ -78,7 +78,9 @@ const PAYMENT_METHODS = ["manual", "bank_transfer", "card"];
 function downloadInvoice(orderId: string, orderNumber: string, endpoint: string) {
   const token = localStorage.getItem("aa_token") || "";
   const base = (window as any).__REACT_APP_BACKEND_URL__ || process.env.REACT_APP_BACKEND_URL || "";
-  fetch(`${base}/api/${endpoint}/${orderId}/download-invoice`, {
+  // cache-busting timestamp ensures fresh PDF is always fetched from DB
+  fetch(`${base}/api/${endpoint}/${orderId}/download-invoice?t=${Date.now()}`, {
+    cache: "no-store",
     headers: { Authorization: `Bearer ${token}` },
   })
     .then(r => {
@@ -274,6 +276,8 @@ function OrderFormModal({
               <Select
                 value={form.status}
                 onValueChange={v => set("status", v)}
+                // refunded/partially_refunded are excluded from EDITABLE_STATUSES — cannot be
+                // manually selected on create or edit; disabled when order is already refunded
                 disabled={form.status === "refunded" || form.status === "partially_refunded"}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -303,6 +307,13 @@ function OrderFormModal({
               </Select>
             </div>
           </div>
+          {/* Read-only refunded amount — edit mode only, shown when refund has been applied */}
+          {isEdit && (order.refunded_amount || 0) > 0 && (
+            <div className="flex items-center justify-between rounded-md bg-purple-50 border border-purple-200 px-3 py-2 text-sm" data-testid="refunded-amount-info">
+              <span className="text-purple-700 font-medium">Refunded Amount</span>
+              <span className="font-semibold text-purple-900">{form.currency} {(order.refunded_amount!).toFixed(2)}</span>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Payment Method</label>
@@ -597,15 +608,16 @@ export function PartnerOrdersTab() {
               <ColHeader label="Status" colKey="status" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"], ["partially_refunded", "Partially Refunded"]]} />
               <ColHeader label="Date" colKey="date" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
               <th className="px-3 py-2 text-xs font-medium uppercase text-slate-500">Tax</th>
+              <th className="px-3 py-2 text-xs font-medium uppercase text-slate-500">Refunded</th>
               <ColHeader label="Outstanding" colKey="outstanding" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.outstanding} onFilter={v => setCF("outstanding", v)} onClearFilter={() => setCF("outstanding", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={10} className="text-center py-8 text-slate-400">Loading…</td></tr>
+              <tr><td colSpan={11} className="text-center py-8 text-slate-400">Loading…</td></tr>
             ) : displayOrders.length === 0 ? (
-              <tr><td colSpan={10} className="text-center py-8 text-slate-400">No orders found.</td></tr>
+              <tr><td colSpan={11} className="text-center py-8 text-slate-400">No orders found.</td></tr>
             ) : displayOrders.map(order => {
               const outstandingAmt = (order.status === "paid" || order.status === "refunded" || order.status === "cancelled")
                 ? 0
@@ -627,6 +639,11 @@ export function PartnerOrdersTab() {
                 <td className="px-3 py-2 text-sm">
                   {taxAmt > 0
                     ? <span className="text-slate-600">{fmtAmt(taxAmt, order.currency)}</span>
+                    : <span className="text-slate-300">—</span>}
+                </td>
+                <td className="px-3 py-2 text-sm" data-testid={`refunded-amount-${order.id}`}>
+                  {(order.refunded_amount || 0) > 0
+                    ? <span className="text-purple-700 font-medium">{fmtAmt(order.refunded_amount!, order.currency)}</span>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-3 py-2 font-semibold text-sm">
