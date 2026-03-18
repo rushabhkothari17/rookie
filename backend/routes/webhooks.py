@@ -8,10 +8,14 @@ import os
 
 from fastapi import APIRouter, HTTPException, Request
 
+from datetime import datetime, timezone, timedelta
+
 from core.helpers import make_id, now_iso, round_cents
 from db.session import db
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
+from services.billing_service import advance_billing_date
+from services.checkout_service import get_fx_rate
 from core.constants import SERVICE_FEE_RATE
 from core.config import STRIPE_API_KEY
 
@@ -121,8 +125,81 @@ async def stripe_webhook(request: Request):
             stripe_sub_id = None
             billing_reason = ""
 
-        # "subscription_create" is the initial payment — already handled by checkout_status.
-        # Only process renewals (subscription_cycle) or any other reason except subscription_create.
+        # "subscription_create" is the initial payment — normally handled by checkout_status polling.
+        # Fix #3: Fallback — if user closed browser, create subscription from invoice.paid event.
+        if billing_reason == "subscription_create" and stripe_sub_id and order_id:
+            _fb_existing_sub = await db.subscriptions.find_one(
+                {"$or": [{"stripe_subscription_id": stripe_sub_id}, {"order_id": order_id}]}, {"_id": 0}
+            )
+            if not _fb_existing_sub:
+                _fb_order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+                if _fb_order and _fb_order.get("type") == "subscription_start":
+                    _fb_items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(5)
+                    _fb_product = None
+                    _fb_product_id = None
+                    _fb_product_name = "Subscription"
+                    if _fb_items:
+                        _fb_product = await db.products.find_one({"id": _fb_items[0]["product_id"]}, {"_id": 0})
+                        if _fb_product:
+                            _fb_product_name = _fb_product["name"]
+                            _fb_product_id = _fb_product["id"]
+                    _fb_period_start = datetime.now(timezone.utc)
+                    _fb_period_end = _fb_period_start + timedelta(days=30)
+                    _fb_contract_end = _fb_period_start + timedelta(days=365)
+                    _fb_sub_id = make_id()
+                    _fb_sub_number = f"SUB-{_fb_sub_id.split('-')[0].upper()}"
+                    _fb_billing_interval = _fb_product.get("billing_interval", "monthly") if _fb_product else "monthly"
+                    _fb_tenant_id = _fb_order.get("tenant_id", "")
+                    _fb_tx_currency = _fb_order.get("currency", "USD")
+                    _fb_base_currency = _fb_order.get("base_currency") or _fb_tx_currency
+                    _fb_fx = await get_fx_rate(_fb_tx_currency, _fb_base_currency)
+                    _fb_subtotal = _fb_order.get("subtotal", 0)
+                    _fb_base_amount = round(_fb_subtotal * _fb_fx, 2)
+                    await db.subscriptions.insert_one({
+                        "id": _fb_sub_id,
+                        "subscription_number": _fb_sub_number,
+                        "order_id": order_id,
+                        "tenant_id": _fb_tenant_id,
+                        "customer_id": _fb_order.get("customer_id"),
+                        "product_id": _fb_product_id,
+                        "plan_name": _fb_product_name,
+                        "status": "active",
+                        "stripe_subscription_id": stripe_sub_id,
+                        "processor_id": stripe_invoice_id,
+                        "billing_interval": _fb_billing_interval,
+                        "current_period_start": _fb_period_start.isoformat(),
+                        "current_period_end": _fb_period_end.isoformat(),
+                        "start_date": _fb_period_start.isoformat(),
+                        "renewal_date": _fb_period_end.isoformat(),
+                        "contract_end_date": _fb_contract_end.isoformat(),
+                        "cancel_at_period_end": False,
+                        "canceled_at": None,
+                        "amount": _fb_subtotal,
+                        "currency": _fb_tx_currency,
+                        "base_currency": _fb_base_currency,
+                        "base_currency_amount": _fb_base_amount,
+                        "tax_amount": _fb_order.get("tax_amount", 0.0),
+                        "tax_rate": _fb_order.get("tax_rate", 0.0),
+                        "tax_name": _fb_order.get("tax_name"),
+                        "payment_method": "card",
+                        "notes": [],
+                        "internal_note": "",
+                        "created_at": now_iso(),
+                        "updated_at": now_iso(),
+                    })
+                    await db.orders.update_one(
+                        {"id": order_id},
+                        {"$set": {"subscription_id": _fb_sub_id, "subscription_number": _fb_sub_number, "status": "paid"}},
+                    )
+                    await create_audit_log(
+                        entity_type="subscription",
+                        entity_id=_fb_sub_id,
+                        action="created_via_invoice_paid_fallback",
+                        actor="stripe_webhook",
+                        details={"plan_name": _fb_product_name, "stripe_sub_id": stripe_sub_id, "order_id": order_id},
+                    )
+
+        # Process renewals (subscription_cycle) or any other non-create billing reason.
         if billing_reason != "subscription_create" and stripe_sub_id:
             existing_renewal = await db.orders.find_one({"stripe_invoice_id": stripe_invoice_id}, {"_id": 0})
             if not existing_renewal:
@@ -140,6 +217,11 @@ async def stripe_webhook(request: Request):
                     renewal_tax = subscription.get("tax_amount", 0.0)
                     renewal_fee = round_cents(renewal_amount * fee_rate)
                     renewal_total = round_cents(renewal_amount + renewal_fee + renewal_tax)
+                    # Fix #9 (FX): compute correct base_currency_amount
+                    _renewal_tx_currency = subscription.get("currency", "USD")
+                    _renewal_base_currency = subscription.get("base_currency") or _renewal_tx_currency
+                    _renewal_fx = await get_fx_rate(_renewal_tx_currency, _renewal_base_currency)
+                    _renewal_base_amount = round(renewal_total * _renewal_fx, 2)
                     renewal_order_id = make_id()
                     renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
 
@@ -159,7 +241,7 @@ async def stripe_webhook(request: Request):
                         "tax_name": subscription.get("tax_name"),
                         "currency": subscription.get("currency"),
                         "base_currency": subscription.get("base_currency"),
-                        "base_currency_amount": renewal_total,
+                        "base_currency_amount": _renewal_base_amount,
                         "payment_method": "card",
                         "stripe_invoice_id": stripe_invoice_id,
                         "subscription_id": subscription["id"],
@@ -168,6 +250,21 @@ async def stripe_webhook(request: Request):
                         "created_at": now_iso(),
                     }
                     await db.orders.insert_one(renewal_doc)
+
+                    # Fix #4: Advance subscription renewal_date after Stripe renewal
+                    _stripe_old_renewal = subscription.get("renewal_date") or now_iso()[:10]
+                    _stripe_billing_int = subscription.get("billing_interval", "monthly")
+                    _stripe_new_renewal = advance_billing_date(_stripe_old_renewal[:10], _stripe_billing_int)
+                    await db.subscriptions.update_one(
+                        {"id": subscription["id"]},
+                        {"$set": {
+                            "renewal_date": _stripe_new_renewal,
+                            "current_period_start": now_iso(),
+                            "current_period_end": _stripe_new_renewal,
+                            "updated_at": now_iso(),
+                        }},
+                    )
+
                     await create_audit_log(
                         entity_type="order",
                         entity_id=renewal_order_id,
@@ -232,7 +329,7 @@ async def stripe_webhook(request: Request):
                             "amount": renewal_amount,
                             "currency": subscription.get("currency", ""),
                             "customer_email": email_target or "",
-                            "next_billing_date": subscription.get("renewal_date", ""),
+                            "next_billing_date": _stripe_new_renewal,
                             "renewed_at": now_iso(),
                         },
                         tenant_id=tenant_id,
@@ -611,6 +708,11 @@ async def gocardless_webhook(request: Request):
                         renewal_amount = renewal_sub.get("amount", 0)
                         renewal_tax = renewal_sub.get("tax_amount", 0.0)
                         renewal_total = round_cents(renewal_amount + renewal_tax)
+                        # Fix #12 (FX): compute correct base_currency_amount
+                        _gc_tx_currency = renewal_sub.get("currency", "GBP")
+                        _gc_base_currency = renewal_sub.get("base_currency") or _gc_tx_currency
+                        _gc_fx = await get_fx_rate(_gc_tx_currency, _gc_base_currency)
+                        _gc_base_amount = round(renewal_total * _gc_fx, 2)
                         renewal_order_id = make_id()
                         renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
 
@@ -630,7 +732,7 @@ async def gocardless_webhook(request: Request):
                             "tax_name": renewal_sub.get("tax_name"),
                             "currency": renewal_sub.get("currency"),
                             "base_currency": renewal_sub.get("base_currency"),
-                            "base_currency_amount": renewal_total,
+                            "base_currency_amount": _gc_base_amount,
                             "payment_method": "bank_transfer",
                             "gocardless_payment_id": payment_id,
                             "gocardless_mandate_id": mandate_id,
@@ -640,6 +742,21 @@ async def gocardless_webhook(request: Request):
                             "created_at": now_iso(),
                         }
                         await db.orders.insert_one(gc_renewal_doc)
+
+                        # Fix #5: Advance GoCardless subscription renewal_date
+                        _gc_old_renewal = renewal_sub.get("renewal_date") or now_iso()[:10]
+                        _gc_billing_int = renewal_sub.get("billing_interval", "monthly")
+                        _gc_new_renewal = advance_billing_date(_gc_old_renewal[:10], _gc_billing_int)
+                        await db.subscriptions.update_one(
+                            {"id": renewal_sub["id"]},
+                            {"$set": {
+                                "renewal_date": _gc_new_renewal,
+                                "current_period_start": now_iso(),
+                                "current_period_end": _gc_new_renewal,
+                                "updated_at": now_iso(),
+                            }},
+                        )
+
                         await create_audit_log(
                             entity_type="order",
                             entity_id=renewal_order_id,
@@ -681,7 +798,7 @@ async def gocardless_webhook(request: Request):
                                 "amount": renewal_amount,
                                 "currency": renewal_sub.get("currency", ""),
                                 "customer_email": gc_email,
-                                "next_billing_date": renewal_sub.get("renewal_date", ""),
+                                "next_billing_date": _gc_new_renewal,
                                 "renewed_at": now_iso(),
                             },
                             tenant_id=tenant_id,

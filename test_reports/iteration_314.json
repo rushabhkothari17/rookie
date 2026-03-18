@@ -1,0 +1,65 @@
+{
+  "summary": "Tested all 18 critical bug fixes in the customer subscription-to-order flow (Stripe, GoCardless, bank transfer, scheduler). 34/34 backend tests passed. All fixes verified via code inspection + live HTTP tests with webhook simulation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/checkout/bank-transfer",
+        "issue": "BUG #7, #10, #11 (bank-transfer subscription billing_interval and tenant_id) could NOT be verified via live API because GoCardless is not configured for the edd tenant — the endpoint returns 400 ('Bank transfer payments are currently not available.') before any DB writes happen. Verified via code inspection instead.",
+        "priority": "LOW — code fix is confirmed present, just untestable in this environment without GC credentials"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter314_checkout_flow_fixes.py",
+    "/app/test_reports/pytest/pytest_iter314_checkout_flow.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "BUG #7/#10 environment note: bank-transfer checkout immediately returns 400 when GoCardless is not connected (line 139-141 checkout.py). Code fixes ARE present in the source but cannot be verified via live API without a configured GC connection.",
+    "checkout_status endpoint creates order+subscription in one HTTP call — this is fine but means cleanup for orphaned pending orders on Stripe failure should be handled.",
+    "Stripe webhook handle_webhook has no webhook_secret set (StripeCheckout initialized without it) — this means ANY raw JSON event can trigger the webhook handler. Consider adding webhook secret in production.",
+    "billing_interval in checkout_status subscription fallback reads from product.get('billing_interval') with fallback to 'monthly' — this means newly created subscriptions via checkout_status always get billing_interval even if product doesn't explicitly set one."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter314_checkout_flow_fixes.py"
+  ],
+  "success_rate": {
+    "backend": "100% (34/34 tests passed)",
+    "frontend": "N/A — backend only testing requested"
+  },
+  "test_credentials": {
+    "customer": "rushabh0996+1@gmail.com / Test1234! (edd tenant, password set by tester)",
+    "admin": "admin@automateaccounts.local / ChangeMe123!",
+    "partner_admin": "rushabh0996@gmail.com / ChangeMe123! (edd tenant)"
+  },
+  "seed_data_creation": "Test customer password reset to 'Test1234!' (rushabh0996+1@gmail.com). Test products created/deleted within tests. Test subscriptions created/deleted within tests.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 18 checkout flow bug fixes verified: 18 code-inspection tests passed, 5 live webhook/DB tests passed, 8 API regression tests passed, 3 scheduler tests passed. Customer login: rushabh0996+1@gmail.com / Test1234! (edd tenant). EDD tenant_id: bd229c3b-13ca-4426-aa3b-5e3096c8954b. Key note: GoCardless not configured for edd tenant so bank-transfer endpoints are blocked at line 139-141 checkout.py — BT bugs verified via code inspection only. Stripe webhook_secret NOT set in StripeCheckout init, so any JSON event triggers the handler (no signature validation). All test data cleaned up.",
+  "test_results_detail": {
+    "BUG1_tenant_id_stripe_order": "PASS — code inspection (order_doc has tenant_id) + live DB verification (order created with tenant_id=edd before Stripe call)",
+    "BUG2_customer_id_payment_tx": "PASS — code inspection confirms customer_id in payment_transactions insert + IDOR guard present (transaction.customer_id != customer.id check)",
+    "BUG3_subscription_create_fallback": "PASS — live Stripe webhook test: sent invoice.paid with billing_reason=subscription_create, confirmed subscription created in DB with tenant_id and billing_interval=monthly",
+    "BUG4_stripe_renewal_date_advance": "PASS — live Stripe webhook test: sent invoice.paid with subscription_cycle, confirmed renewal_date advanced from 2026-02-01 → 2026-03-01",
+    "BUG5_gc_renewal_date_advance": "PASS — live GC webhook test: sent payment confirmed event, confirmed renewal_date advanced and renewal order created",
+    "BUG6_gc_initial_order": "PASS — code inspection: gocardless.py has subscription_start order insert with tenant_id on complete-redirect",
+    "BUG7_billing_interval_bt_sub": "PASS (code inspection) — billing_interval set in bank-transfer subscription insert; live test blocked by GC not configured",
+    "BUG8_billing_interval_cs_sub": "PASS — code inspection: checkout_status subscription fallback has _cs_billing_interval and billing_interval field",
+    "LOGIC9_stripe_renewal_fx": "PASS — code inspection confirms _renewal_base_amount computed via FX; live test confirms base_currency_amount field present in renewal order",
+    "LOGIC10_bt_sub_tenant_id": "PASS (code inspection) — subscription insert has tenant_id in BT checkout",
+    "LOGIC11_bt_one_time_tenant_id": "PASS (code inspection) — one-time order_doc has tenant_id in BT checkout",
+    "LOGIC12_gc_renewal_fx": "PASS — code inspection confirms _gc_base_amount computed via FX; live GC webhook test confirms base_currency_amount in renewal order",
+    "LOGIC13_cs_sub_tenant_id": "PASS — code inspection: checkout_status subscription insert has order.get('tenant_id', '')",
+    "LOGIC14_scheduler_tax_fx": "PASS — direct scheduler invocation: renewal order created with tax_amount=10.0, base_currency=GBP, base_currency_amount set correctly",
+    "LOGIC15_dispatch_new_renewal_date": "PASS — code inspection: both Stripe and GC dispatch use _stripe_new_renewal/_gc_new_renewal as next_billing_date; live tests confirm correct new date dispatched",
+    "API_regression_checkout_session": "PASS — requires auth (401), rejects missing terms (400), creates order in DB",
+    "API_regression_bank_transfer": "PASS — requires auth (401), rejects missing terms (400)",
+    "API_regression_checkout_status": "PASS — invalid session returns 404, requires auth, IDOR guard returns 4xx for cross-customer access"
+  }
+}

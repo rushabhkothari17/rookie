@@ -309,6 +309,17 @@ async def create_renewal_orders() -> None:
         try:
             order_id = make_id()
             order_number = f"AA-{order_id.split('-')[0].upper()}"
+            # Fix #15: include tax and FX fields in renewal orders
+            from services.checkout_service import get_fx_rate as _sched_gfx
+            _sched_tax_amount = sub.get("tax_amount", 0.0)
+            _sched_tax_rate = sub.get("tax_rate", 0.0)
+            _sched_tax_name = sub.get("tax_name")
+            _sched_subtotal = sub.get("amount", 0)
+            _sched_total = round(_sched_subtotal + _sched_tax_amount, 2)
+            _sched_base_currency = sub.get("base_currency") or sub.get("currency", "USD")
+            _sched_tx_currency = sub.get("currency", "USD")
+            _sched_fx = await _sched_gfx(_sched_tx_currency, _sched_base_currency)
+            _sched_base_amount = round(_sched_total * _sched_fx, 2)
             order_doc = {
                 "id": order_id,
                 "tenant_id": sub.get("tenant_id"),
@@ -318,11 +329,16 @@ async def create_renewal_orders() -> None:
                 "subscription_number": sub.get("subscription_number", ""),
                 "type": "subscription_renewal",
                 "status": "pending",
-                "subtotal": sub.get("amount", 0),
+                "subtotal": _sched_subtotal,
                 "discount_amount": 0.0,
                 "fee": 0.0,
-                "total": sub.get("amount", 0),
-                "currency": sub.get("currency", "USD"),
+                "total": _sched_total,
+                "tax_amount": _sched_tax_amount,
+                "tax_rate": _sched_tax_rate,
+                "tax_name": _sched_tax_name,
+                "currency": _sched_tx_currency,
+                "base_currency": _sched_base_currency,
+                "base_currency_amount": _sched_base_amount,
                 "payment_method": sub.get("payment_method", "offline"),
                 "created_at": now_iso(),
                 "created_by": "scheduler",

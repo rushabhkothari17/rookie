@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.helpers import now_iso
+from core.helpers import now_iso, make_id, round_cents
 from core.security import get_current_user
 from core.config import GOCARDLESS_ACCESS_TOKEN, GOCARDLESS_ENVIRONMENT
 from db.session import db
@@ -235,12 +235,64 @@ async def complete_gocardless_redirect(
                 )
                 if payment:
                     payment_id = payment["id"]
+                    # Fix #6: Create initial order document for this GoCardless subscription
+                    _gc_sub_order_id = make_id()
+                    _gc_sub_order_number = f"AA-{_gc_sub_order_id.split('-')[0].upper()}"
+                    _gc_sub_tax = subscription.get("tax_amount", 0.0)
+                    _gc_sub_total = round_cents(subscription["amount"] + _gc_sub_tax)
+                    _gc_cust_doc = await db.customers.find_one({"id": subscription.get("customer_id")}, {"_id": 0, "tenant_id": 1})
+                    _gc_sub_tenant_id = _gc_cust_doc.get("tenant_id", "") if _gc_cust_doc else ""
+                    # FX conversion for base_currency_amount
+                    from services.checkout_service import get_fx_rate as _gc_gfx
+                    _gc_sub_tx_currency = subscription.get("currency", "GBP")
+                    _gc_sub_base_currency = subscription.get("base_currency") or _gc_sub_tx_currency
+                    _gc_sub_fx = await _gc_gfx(_gc_sub_tx_currency, _gc_sub_base_currency)
+                    _gc_sub_base_amount = round(_gc_sub_total * _gc_sub_fx, 2)
+                    await db.orders.insert_one({
+                        "id": _gc_sub_order_id,
+                        "order_number": _gc_sub_order_number,
+                        "tenant_id": _gc_sub_tenant_id,
+                        "customer_id": subscription["customer_id"],
+                        "subscription_id": payload.subscription_id,
+                        "subscription_number": subscription.get("subscription_number", ""),
+                        "type": "subscription_start",
+                        "status": "pending",
+                        "subtotal": subscription["amount"],
+                        "discount_amount": 0.0,
+                        "fee": 0.0,
+                        "total": _gc_sub_total,
+                        "tax_amount": _gc_sub_tax,
+                        "tax_rate": subscription.get("tax_rate", 0.0),
+                        "tax_name": subscription.get("tax_name"),
+                        "currency": _gc_sub_tx_currency,
+                        "base_currency": _gc_sub_base_currency,
+                        "base_currency_amount": _gc_sub_base_amount,
+                        "payment_method": "bank_transfer",
+                        "gocardless_mandate_id": mandate_id,
+                        "gocardless_payment_id": payment_id,
+                        "terms_id_used": subscription.get("terms_id_used"),
+                        "rendered_terms_text": subscription.get("rendered_terms_text", ""),
+                        "terms_accepted_at": subscription.get("terms_accepted_at"),
+                        "created_at": now_iso(),
+                    })
+                    await create_audit_log(
+                        entity_type="order",
+                        entity_id=_gc_sub_order_id,
+                        action="created",
+                        actor="gocardless",
+                        details={"mandate_id": mandate_id, "payment_id": payment_id, "subscription_id": payload.subscription_id},
+                    )
                     # When payment is created, mandate is in place — set subscription active immediately.
-                    # GoCardless bank mandates authorize recurring collection; active status is appropriate
-                    # even when first payment is still pending_submission (charge_date may be future).
                     await db.subscriptions.update_one(
                         {"id": payload.subscription_id},
-                        {"$set": {"status": "active", "processor_id": mandate_id, "gocardless_mandate_id": mandate_id, "gocardless_payment_id": payment_id, "updated_at": now_iso()}},
+                        {"$set": {
+                            "order_id": _gc_sub_order_id,
+                            "status": "active",
+                            "processor_id": mandate_id,
+                            "gocardless_mandate_id": mandate_id,
+                            "gocardless_payment_id": payment_id,
+                            "updated_at": now_iso(),
+                        }},
                     )
                     await create_audit_log(
                         entity_type="subscription",

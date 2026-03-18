@@ -178,6 +178,7 @@ async def checkout_bank_transfer(
 
         product = subscription_items[0]["product"]
         subtotal = subscription_items[0]["pricing"]["subtotal"]
+        billing_interval = product.get("billing_interval", "monthly")
         terms_id = payload.terms_id if payload.terms_id else product.get("terms_id")
         if not terms_id:
             default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
@@ -252,6 +253,7 @@ async def checkout_bank_transfer(
             "id": sub_id,
             "subscription_number": sub_number,
             "order_id": None,
+            "tenant_id": tenant_id,
             "customer_id": customer["id"],
             "product_id": product["id"],
             "plan_name": product["name"],
@@ -260,6 +262,7 @@ async def checkout_bank_transfer(
             "processor_id": redirect_flow_id,
             "gocardless_customer_id": gc_customer_id,
             "gocardless_redirect_flow_id": redirect_flow_id,
+            "billing_interval": billing_interval,
             "current_period_start": period_start.isoformat(),
             "current_period_end": period_end.isoformat(),
             "cancel_at_period_end": False,
@@ -393,6 +396,7 @@ async def checkout_bank_transfer(
 
     order_doc = {
         "id": order_id, "order_number": order_number,
+        "tenant_id": tenant_id,
         "customer_id": customer["id"], "type": "one_time",
         "status": "pending_direct_debit_setup",
         "subtotal": round_cents(subtotal), "discount_amount": discount_amount,
@@ -598,6 +602,7 @@ async def create_checkout_session(
     order_number = f"AA-{order_id.split('-')[0].upper()}"
     order_doc = {
         "id": order_id, "order_number": order_number,
+        "tenant_id": tenant_id,
         "customer_id": customer["id"],
         "type": "subscription_start" if checkout_type == "subscription" else "one_time",
         "status": "pending",
@@ -717,7 +722,7 @@ async def create_checkout_session(
         "id": make_id(), "session_id": session_response.session_id,
         "payment_status": "initiated", "amount": float(total),
         "currency": order_items[0]["product"].get("currency", "USD"), "metadata": metadata,
-        "user_id": user["id"], "order_id": order_id,
+        "user_id": user["id"], "customer_id": customer["id"], "order_id": order_id,
         "created_at": now_iso(), "updated_at": now_iso(),
     })
     # Increment monthly usage for Stripe subscription
@@ -835,6 +840,8 @@ async def checkout_status(
                     contract_end = period_start + timedelta(days=365)
                     sub_id = make_id()
                     sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
+                    # Fix #7: get billing_interval from product
+                    _cs_billing_interval = product.get("billing_interval", "monthly") if product else "monthly"
                     _stripe_sub_tx_currency = order.get("currency", "USD")
                     _stripe_sub_base_currency = order.get("base_currency", "USD")
                     _stripe_sub_fx = await get_fx_rate(_stripe_sub_tx_currency, _stripe_sub_base_currency)
@@ -843,12 +850,14 @@ async def checkout_status(
                         "id": sub_id,
                         "subscription_number": sub_number,
                         "order_id": order["id"],
+                        "tenant_id": order.get("tenant_id", ""),
                         "customer_id": order["customer_id"],
                         "product_id": product_id,
                         "plan_name": product_name,
                         "status": "active",
                         "stripe_subscription_id": stripe_sub_id,
                         "processor_id": payment_intent_id,
+                        "billing_interval": _cs_billing_interval,
                         "current_period_start": period_start.isoformat(),
                         "current_period_end": period_end.isoformat(),
                         "start_date": period_start.isoformat(),
