@@ -633,6 +633,36 @@ Build a white-label service commerce platform with:
 - Spacing on Resources and My Profile pages (minor UI inconsistency)
 - Centralize Email Settings
 
+### Phase 29: Stripe Partner Plan Upgrade Flow Fix (Mar 2026)
+**Critical P0 bug fixed — partner plan upgrades now work end-to-end:**
+1. **Fixed `core.utils` import bug** — `billing_service.py` was importing `now_iso, make_id` from non-existent `core.utils`. Changed to `core.helpers`. This caused a silent failure in `confirm_plan_upgrade`.
+2. **Added `partner_upgrade` webhook handler** — `webhooks.py` was missing an `elif event_meta.get("type") == "partner_upgrade":` block. Stripe's `checkout.session.completed` event was received but ignored. Now correctly calls `confirm_plan_upgrade(pending, partner_id)`.
+3. **Removed dead code from webhook** — Removed a duplicate second `if checkout.session.completed` block inside the `one_time_upgrade` branch (lines 381-423) that was leftover from the old `partner_upgrade` implementation.
+4. **Fixed `cancel-pending-upgrade` endpoint** — Was cancelling `partner_orders` records but the new flow stores pre-payment state in `pending_plan_upgrades`. Now cancels `pending_plan_upgrades` first (with `partner_orders` as legacy fallback).
+5. **Added coupon usage recording** — `confirm_plan_upgrade()` now records coupon usage when a coupon was applied to the upgrade.
+6. **Fixed duplicate `_record_coupon_usage` call** — Zero-charge coupon path in `upgrade_plan_ongoing` had `_record_coupon_usage` called twice due to duplicate `if coupon_id:` blocks.
+
+**Data flow (correct):**
+- Partner clicks Upgrade → `POST /partner/upgrade-plan-ongoing` → creates `pending_plan_upgrades` doc + Stripe session (NO order created yet)
+- Partner pays in Stripe → Stripe fires `checkout.session.completed` → webhook calls `confirm_plan_upgrade()` → creates `partner_orders` (paid), updates tenant license, marks pending as completed
+- Frontend polls `GET /partner/upgrade-plan-status?session_id=X` → calls `confirm_plan_upgrade()` as backup if webhook was slow
+- `confirm_plan_upgrade()` is atomic + idempotent (uses `find_one_and_update` so only processes once even if called by webhook AND polling simultaneously)
+
+- **Tested**: iteration_311 — 100% (24/24 backend + 11/11 frontend)
+
+### P0 — Upcoming
+- Implement AI Chatbot
+
+### P2 — Upcoming  
+- Add radio filters for Role & Status columns in Users table
+- Build new landing page
+- Allow customers to browse their own submission history
+
+### P2 — Future
+- Google Drive & OneDrive Integration
+- Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button)
+- Move `ProductConditionBuilder` to shared components directory (Refactor)
+
 ### P3 — Future / Backlog
 - Google Drive & OneDrive Integration
 - Customer Portal: self-service subscription cancellation, renewal dates, Reorder button

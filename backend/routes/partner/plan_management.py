@@ -723,9 +723,6 @@ async def upgrade_plan_ongoing(
     # Zero charge (coupon covered full amount) — activate immediately
     if coupon_id:
         await _record_coupon_usage(coupon_id, tid)
-    # Zero charge — coupon covers full amount, activate immediately
-    if coupon_id:
-        await _record_coupon_usage(coupon_id, tid)
     limits = {k: v for k, v in new_plan.items() if k.startswith("max_")}
     await db.tenants.update_one({"id": tid}, {"$set": {"license": {
         "plan_id": new_plan["id"], "plan_name": new_plan["name"], "assigned_at": now, **limits,
