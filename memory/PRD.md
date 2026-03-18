@@ -28,7 +28,15 @@ Build a white-label service commerce platform with:
 - Database fully reset (all 46 collections dropped + reseeded via backend startup)
 - Seeded data: platform_super_admin user, automate-accounts tenant, Free Trial plan
 
-### Session: Mar 2026 - Tax/Refund for Partner Orders/Subscriptions + Customer Manual Order Tax
+### Session: Mar 2026 - Tax Logic Centralization + Sticky Scrollbar Fix + Tax Settings Lock
+**Issues fixed:**
+1. **Sticky Scrollbar**: Fixed `StickyTableScroll.tsx` - sticky scrollbar now only shows when table's native scrollbar is out of viewport (`rect.bottom > window.innerHeight`). Previously showed even when table bottom was visible.
+2. **Centralized Tax Utility**: Created `/app/frontend/src/utils/taxUtils.ts` with `computeTax()` function. Priority: override rules (by priority desc) → tax table (state-specific preferred) → No tax fallback. `resolveCountryCode()` normalizes country names to ISO codes.
+3. **PartnerOrdersTab + PartnerSubscriptionsTab**: Removed local COUNTRY_NAME_TO_ISO/resolveCountryCode. Now uses `computeTax()` with: partner address as primary, org address (`/admin/tenants/my`) as fallback, override rules checked first. Also loads org address + override rules on mount.
+4. **OrdersTab (manual orders)**: When customer is selected, auto-populates tax based on: tax_exempt → No tax; customer address or org address fallback; computeTax() checks override rules then tax table.
+5. **TaxesTab Settings Panel locked**: When enabling tax collection, validates org has country in address + matching tax rules exist. Country/state pre-populated from org address and shown as read-only (with Lock icon). No editable selects when enabled. Uses `/admin/tenants/my` for org address instead of `/admin/tenants`.
+
+
 **Features added:**
 1. **Tax fields on Partner Orders**: `tax_name`, `tax_rate` inputs + auto-calculated tax amount display. Backend `PartnerOrderCreate`/`PartnerOrderUpdate` support all 3 fields. Tax saved to DB.
 2. **Tax fields on Partner Subscriptions**: Same fields added to form and `PartnerSubscriptionCreate`/`PartnerSubscriptionUpdate`
