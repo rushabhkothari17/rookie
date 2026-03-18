@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
+import { StickyTableScroll } from "@/components/shared/StickyTableScroll";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -365,29 +366,6 @@ function OrderFormModal({
             )}
           </div>
           {/* Tax fields */}
-          {filteredTaxOptions.length > 0 && (
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-500">Quick-fill from Tax Table</label>
-              <Select onValueChange={handleTaxSelect}>
-                <SelectTrigger className="h-8 text-sm" data-testid="order-tax-quick-fill">
-                  <SelectValue placeholder="Select a tax rule to auto-fill…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredTaxOptions.map((e, i) => {
-                    const ratePercent = e.rate < 1 ? parseFloat((e.rate * 100).toFixed(4)) : e.rate;
-                    return (
-                      <SelectItem
-                        key={i}
-                        value={`${e.country_code}|${e.state_code || ""}|${e.label}|${ratePercent}`}
-                      >
-                        {e.label} — {ratePercent}%{e.state_code ? ` (${e.state_code})` : ""}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-slate-600">Tax Name</label>
@@ -467,7 +445,8 @@ export function PartnerOrdersTab() {
   const [colFilters, setColFilters] = useState({
     orderNumbers: [] as string[], partnerNames: [] as string[],
     methods: [] as string[], statuses: [] as string[],
-    description: "", amount: { min: "", max: "", currency: "" }, date: { from: "", to: "" },
+    description: "", amount: { min: "", max: "", currency: "" },
+    date: { from: "", to: "" }, outstanding: { min: "", max: "", currency: "" },
   });
   const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
 
@@ -483,6 +462,13 @@ export function PartnerOrdersTab() {
     if (colFilters.amount.currency) r = r.filter(o => o.currency === colFilters.amount.currency);
     if (colFilters.date.from) r = r.filter(o => o.invoice_date && o.invoice_date >= colFilters.date.from);
     if (colFilters.date.to) r = r.filter(o => o.invoice_date && o.invoice_date <= colFilters.date.to);
+    if (colFilters.outstanding.min || colFilters.outstanding.max) {
+      const outOf = (o: PartnerOrder) => (o.status === "paid" || o.status === "refunded" || o.status === "cancelled")
+        ? 0 : o.amount - (o.refunded_amount || 0);
+      if (colFilters.outstanding.min) r = r.filter(o => outOf(o) >= parseFloat(colFilters.outstanding.min));
+      if (colFilters.outstanding.max) r = r.filter(o => outOf(o) <= parseFloat(colFilters.outstanding.max));
+    }
+    if (colFilters.outstanding.currency) r = r.filter(o => o.currency === colFilters.outstanding.currency);
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -493,6 +479,10 @@ export function PartnerOrdersTab() {
         else if (colSort.col === "method") { av = a.payment_method || ""; bv = b.payment_method || ""; }
         else if (colSort.col === "status") { av = a.status; bv = b.status; }
         else if (colSort.col === "date") { av = a.invoice_date || ""; bv = b.invoice_date || ""; }
+        else if (colSort.col === "outstanding") {
+          const outOf = (o: PartnerOrder) => (o.status === "paid" || o.status === "refunded" || o.status === "cancelled") ? 0 : o.amount - (o.refunded_amount || 0);
+          av = outOf(a); bv = outOf(b);
+        }
         if (av < bv) return colSort.dir === "asc" ? -1 : 1;
         if (av > bv) return colSort.dir === "asc" ? 1 : -1;
         return 0;
@@ -626,49 +616,56 @@ export function PartnerOrdersTab() {
       )}
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
+      <StickyTableScroll className="rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm" data-testid="partner-orders-table">
           <thead className="bg-slate-50">
             <tr>
-              <ColHeader label="Order #" colKey="order_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.orderNumbers} onFilter={v => setCF("orderNumbers", v)} onClearFilter={() => setCF("orderNumbers", [])} statusOptions={orderNumOpts} />
-              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={orderPartnerOpts} />
-              <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.description} onFilter={v => setCF("description", v)} onClearFilter={() => setCF("description", "")} />
-              <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"], ["partially_refunded", "Partially Refunded"]]} />
-              <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
-              <th className="px-4 py-3 text-xs font-medium uppercase text-slate-500">Outstanding</th>
-              <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+              <ColHeader label="Order #" colKey="order_number" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.orderNumbers} onFilter={v => setCF("orderNumbers", v)} onClearFilter={() => setCF("orderNumbers", [])} statusOptions={orderNumOpts} />
+              <ColHeader label="Partner" colKey="partner" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={orderPartnerOpts} />
+              <ColHeader label="Description" colKey="description" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.description} onFilter={v => setCF("description", v)} onClearFilter={() => setCF("description", "")} />
+              <ColHeader label="Amount" colKey="amount" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
+              <ColHeader label="Method" colKey="method" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader label="Status" colKey="status" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"], ["partially_refunded", "Partially Refunded"]]} />
+              <ColHeader label="Date" colKey="date" compact sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
+              <th className="px-3 py-2 text-xs font-medium uppercase text-slate-500">Tax</th>
+              <ColHeader label="Outstanding" colKey="outstanding" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.outstanding} onFilter={v => setCF("outstanding", v)} onClearFilter={() => setCF("outstanding", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
+              <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={9} className="text-center py-8 text-slate-400">Loading…</td></tr>
+              <tr><td colSpan={10} className="text-center py-8 text-slate-400">Loading…</td></tr>
             ) : displayOrders.length === 0 ? (
-              <tr><td colSpan={9} className="text-center py-8 text-slate-400">No orders found.</td></tr>
+              <tr><td colSpan={10} className="text-center py-8 text-slate-400">No orders found.</td></tr>
             ) : displayOrders.map(order => {
               const outstandingAmt = (order.status === "paid" || order.status === "refunded" || order.status === "cancelled")
                 ? 0
                 : order.amount - (order.refunded_amount || 0);
+              const taxAmt = (order as any).tax_amount ?? (order.tax_rate ? order.amount * order.tax_rate / 100 : 0);
               return (
-              <tr key={order.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs text-slate-600">{order.order_number}</td>
-                <td className="px-4 py-3 font-medium">{order.partner_name}</td>
-                <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate">{order.description}</td>
-                <td className="px-4 py-3 font-semibold">{fmtAmt(order.amount, order.currency)}</td>
-                <td className="px-4 py-3 text-slate-500 capitalize">{order.payment_method.replace("_", " ")}</td>
-                <td className="px-4 py-3">
+              <tr key={order.id} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+                <td className="px-3 py-2 font-mono text-xs text-slate-600">{order.order_number}</td>
+                <td className="px-3 py-2 font-medium text-sm">{order.partner_name}</td>
+                <td className="px-3 py-2 text-slate-600 text-sm max-w-[180px] truncate">{order.description}</td>
+                <td className="px-3 py-2 font-semibold text-sm">{fmtAmt(order.amount, order.currency)}</td>
+                <td className="px-3 py-2 text-slate-500 text-sm capitalize">{order.payment_method.replace("_", " ")}</td>
+                <td className="px-3 py-2">
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[order.status] || "bg-slate-100 text-slate-600"}`}>
                     {order.status.replace(/_/g, " ")}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(order.invoice_date)}</td>
-                <td className="px-4 py-3 font-semibold text-sm">
+                <td className="px-3 py-2 text-slate-500 text-xs">{fmtDate(order.invoice_date)}</td>
+                <td className="px-3 py-2 text-sm">
+                  {taxAmt > 0
+                    ? <span className="text-slate-600">{fmtAmt(taxAmt, order.currency)}</span>
+                    : <span className="text-slate-300">—</span>}
+                </td>
+                <td className="px-3 py-2 font-semibold text-sm">
                   {outstandingAmt > 0
                     ? <span className="text-amber-700">{fmtAmt(outstandingAmt, order.currency)}</span>
                     : <span className="text-slate-400">—</span>}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <div className="flex justify-end gap-1">
                     {(["paid", "partially_refunded", "refunded", "unpaid", "pending"].includes(order.status)) && (
                       <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
@@ -684,7 +681,7 @@ export function PartnerOrdersTab() {
             );})}
           </tbody>
         </table>
-      </div>
+      </StickyTableScroll>
 
       {/* Pagination */}
       {total > LIMIT && (

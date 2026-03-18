@@ -983,6 +983,27 @@ async def admin_download_partner_invoice(
     platform_ts = await db.tenants.find_one({"id": DEFAULT_TENANT_ID}, {"_id": 0}) or {}
     invoice_settings = (platform_ts.get("tax_settings") or {}).get("invoice_settings") or {}
 
+    # Enrich invoice_settings with platform address from org record if not set in invoice settings
+    if not invoice_settings.get("company_address"):
+        plat_addr = platform_ts.get("address") or {}
+        addr_parts = filter(None, [
+            plat_addr.get("line1"), plat_addr.get("line2"),
+            plat_addr.get("city"), plat_addr.get("region"),
+            plat_addr.get("postal_code"), plat_addr.get("country"),
+        ])
+        invoice_settings = dict(invoice_settings)
+        invoice_settings["company_address"] = ", ".join(addr_parts)
+
+    # Fetch default terms to include in PDF
+    terms_doc = await db.terms_and_conditions.find_one(
+        {"tenant_id": DEFAULT_TENANT_ID, "status": "active"},
+        {"_id": 0, "content": 1, "title": 1},
+        sort=[("created_at", -1)],
+    ) or {}
+    invoice_settings = dict(invoice_settings)
+    invoice_settings["terms_text"] = terms_doc.get("content") or ""
+    invoice_settings["terms_title"] = terms_doc.get("title") or "Terms & Conditions"
+
     from services.invoice_service import generate_partner_invoice_pdf
     platform_name = invoice_settings.get("company_name") or platform_ts.get("name") or "Automate Accounts"
     pdf_bytes = generate_partner_invoice_pdf(order, partner_org, invoice_settings, platform_name)

@@ -362,7 +362,12 @@ async def create_renewal_orders() -> None:
                 "amount": round(psub.get("amount", 0), 2),
                 "currency": psub.get("currency", "GBP"),
                 "status": "pending",
-                "payment_method": psub.get("payment_method", "offline"),
+                "payment_method": psub.get("payment_method", "manual"),
+                "tax_name": psub.get("tax_name", ""),
+                "tax_rate": psub.get("tax_rate", 0),
+                "tax_amount": round(
+                    psub.get("amount", 0) * psub.get("tax_rate", 0) / 100, 2
+                ) if psub.get("tax_rate") else 0,
                 "invoice_date": today_str,
                 "subscription_id": psub["id"],
                 "subscription_number": psub.get("subscription_number", ""),
@@ -407,7 +412,7 @@ async def create_renewal_orders() -> None:
                         "currency": psub.get("currency", "GBP"),
                         "invoice_date": today_str,
                         "due_date": today_str,
-                        "payment_method": psub.get("payment_method", "offline").replace("_", " ").title(),
+                        "payment_method": psub.get("payment_method", "manual").replace("_", " ").title(),
                         "payment_link_section": "",
                     },
                     db=db,

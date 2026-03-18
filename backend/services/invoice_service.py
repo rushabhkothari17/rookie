@@ -113,6 +113,8 @@ def generate_partner_invoice_pdf(
     balance_due = max(0.0, round(invoice_total - refunded_amount, 2))
 
     partner_name = partner_org.get("name", order.get("partner_name", "—"))
+    terms_text = invoice_settings.get("terms_text") or ""
+    terms_title = invoice_settings.get("terms_title") or "Terms & Conditions"
     partner_addr = partner_org.get("address") or {}
     partner_email = partner_org.get("admin_email", "")
 
@@ -267,8 +269,8 @@ def generate_partner_invoice_pdf(
     story.append(totals_tbl)
     story.append(Spacer(1, 16))
 
-    # ── Pay Now section (for unpaid/pending orders) ───────────────────────────
-    if order.get("status") in ("unpaid", "pending") and payment_url:
+    # ── Pay Now section (for orders with a balance due) ───────────────────────
+    if balance_due > 0 and payment_url:
         story.append(Paragraph(
             f'<para alignment="center"><b>Pay Now: </b><a href="{payment_url}"><u>{payment_url}</u></a></para>',
             ParagraphStyle("pay_link", parent=styles["Normal"], fontSize=9,
@@ -322,6 +324,24 @@ def generate_partner_invoice_pdf(
     if footer_notes:
         story.append(Spacer(1, 8))
         story.append(Paragraph(footer_notes, small))
+
+    # ── Terms & Conditions ─────────────────────────────────────────────────────
+    if terms_text:
+        story.append(Spacer(1, 10))
+        story.append(HRFlowable(width=W, thickness=0.5, color=BORDER, spaceAfter=6))
+        story.append(Paragraph(f"<b>{terms_title}</b>", ParagraphStyle(
+            "terms_hdr", parent=small, fontName="Helvetica-Bold",
+            textColor=colors.HexColor("#0f172a"), spaceAfter=4,
+        )))
+        # Strip HTML tags for PDF rendering
+        import re as _re
+        clean_terms = _re.sub(r"<[^>]+>", " ", terms_text).strip()
+        clean_terms = _re.sub(r"\s+", " ", clean_terms)
+        if len(clean_terms) > 2000:
+            clean_terms = clean_terms[:2000] + "…"
+        story.append(Paragraph(clean_terms, ParagraphStyle(
+            "terms_body", parent=small, fontSize=7, textColor=colors.HexColor("#64748b"),
+        )))
 
     doc.build(story)
     return buf.getvalue()

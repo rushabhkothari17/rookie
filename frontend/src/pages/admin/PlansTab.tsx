@@ -483,14 +483,14 @@ function PlansSection() {
                 <ColHeader label="Orgs" colKey="orgs" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="number-range" filterValue={filters.orgs} onFilter={v => setF("orgs", v)} onClearFilter={() => setF("orgs", { min: "", max: "" })} />
                 <ColHeader label="Status" colKey="status" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="dropdown" filterValue={filters.status} onFilter={v => setF("status", v)} onClearFilter={() => setF("status", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
                 <ColHeader label="Created" colKey="created" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="date-range" filterValue={filters.date} onFilter={v => setF("date", v)} onClearFilter={() => setF("date", { from: "", to: "" })} />
-                <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+                <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>
               {displayPlans.map(plan => (
                 <React.Fragment key={plan.id}>
                   <tr className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-slate-800">{plan.name}</span>
                         {plan.is_default && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-medium flex items-center gap-0.5"><Lock size={9} />Default</span>}
@@ -498,17 +498,17 @@ function PlansSection() {
                       {plan.description && <div className="text-xs text-slate-400 mt-0.5">{plan.description}</div>}
                       {plan.is_public && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-[10px] mt-1">Public</Badge>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-700">
+                    <td className="px-3 py-2 text-sm text-slate-700">
                       {plan.monthly_price != null ? `${plan.currency || "GBP"} ${plan.monthly_price.toFixed(2)}/mo` : <span className="text-slate-400">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{plan.tenant_count ?? 0}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 text-slate-600">{plan.tenant_count ?? 0}</td>
+                    <td className="px-3 py-2">
                       {plan.is_active
                         ? <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
                         : <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{fmt(plan.created_at)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 text-slate-500 text-xs">{fmt(plan.created_at)}</td>
+                    <td className="px-3 py-2">
                       <div className="flex items-center justify-end gap-1">
                         <Button size="sm" variant="ghost" onClick={() => setExpanded(expanded === plan.id ? null : plan.id)} data-testid={`expand-plan-${plan.id}`} title="View limits">
                           {expanded === plan.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -526,7 +526,7 @@ function PlansSection() {
                   </tr>
                   {expanded === plan.id && (
                     <tr className="border-t border-slate-100 bg-slate-50">
-                      <td colSpan={6} className="px-4 py-3">
+                      <td colSpan={6} className="px-3 py-2">
                         <div className="grid grid-cols-3 gap-x-6 gap-y-1 text-xs">
                           {LIMIT_FIELDS.map(({ key, label }) => {
                             const val = plan[key as keyof Plan];
@@ -669,24 +669,24 @@ function OneTimeRatesSection() {
                 <ColHeader label="Price / Unit" colKey="price" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="number-range" filterValue={rateFilters.price} onFilter={v => setRF("price", v)} onClearFilter={() => setRF("price", { min: "", max: "" })} />
                 <ColHeader label="Currency" colKey="currency" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="dropdown" filterValue={rateFilters.currency} onFilter={v => setRF("currency", v)} onClearFilter={() => setRF("currency", [])} statusOptions={currencyOptions} />
                 <ColHeader label="Status" colKey="status" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="dropdown" filterValue={rateFilters.status} onFilter={v => setRF("status", v)} onClearFilter={() => setRF("status", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
-                <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+                <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>
               {displayRates.map(r => (
                 <tr key={r.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <p className="font-medium text-slate-800">{r.label}</p>
                     <p className="text-xs font-mono text-slate-400">{r.module_key}</p>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{r.price_per_record.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-slate-600">{r.currency}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2 font-semibold text-slate-900">{r.price_per_record.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-slate-600">{r.currency}</td>
+                  <td className="px-3 py-2">
                     {r.is_active
                       ? <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
                       : <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => setEditRate(r)} data-testid={`edit-rate-${r.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => setDeleteRate(r)} data-testid={`delete-rate-${r.id}`} title="Delete" className="text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
@@ -880,10 +880,10 @@ function CouponsSection() {
               <ColHeader label="Discount" colKey="discount" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.discount} onFilter={v => setCF("discount", v)} onClearFilter={() => setCF("discount", { min: "", max: "" })} />
               <ColHeader label="Applies To" colKey="applies_to" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="dropdown" filterValue={couponFilters.applies_to} onFilter={v => setCF("applies_to", v)} onClearFilter={() => setCF("applies_to", [])} statusOptions={[["ongoing", "Ongoing only"], ["one_time", "One-time only"], ["both", "Both"]]} />
               <ColHeader label="Expiry" colKey="expiry" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="date-range" filterValue={couponFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
-              <th className="text-left px-4 py-3 text-xs font-medium uppercase text-slate-500">Flags</th>
+              <th className="text-left px-3 py-2 text-xs font-medium uppercase text-slate-500">Flags</th>
               <ColHeader label="Uses" colKey="uses" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.uses} onFilter={v => setCF("uses", v)} onClearFilter={() => setCF("uses", { min: "", max: "" })} />
               <ColHeader label="Status" colKey="status" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="dropdown" filterValue={couponFilters.status} onFilter={v => setCF("status", v)} onClearFilter={() => setCF("status", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
-              <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+              <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -895,30 +895,30 @@ function CouponsSection() {
               </tr>
             ) : displayCoupons.map(c => (
                 <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <span className="font-mono font-semibold text-slate-800 text-sm">{c.code}</span>
                     {c.internal_note && <p className="text-xs text-slate-400 mt-0.5">{c.internal_note}</p>}
                   </td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">
+                  <td className="px-3 py-2 font-semibold text-slate-900">
                     {c.discount_type === "percentage" ? `${c.discount_value}%` : `${c.discount_value.toFixed(2)} off`}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 text-xs">{appliesToLabel(c.applies_to)}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-3 py-2 text-slate-600 text-xs">{appliesToLabel(c.applies_to)}</td>
+                  <td className="px-3 py-2 text-xs text-slate-500">
                     {c.expiry_date ? fmt(c.expiry_date) : <span className="text-slate-300">No expiry</span>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">
                       {c.is_single_use && <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">Single-use</span>}
                       {c.is_one_time_per_org && <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">Per-org</span>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{c.usage_count}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2 text-slate-600">{c.usage_count}</td>
+                  <td className="px-3 py-2">
                     {c.is_active
                       ? <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
                       : <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => setLogCoupon(c)} data-testid={`logs-coupon-${c.id}`} title="Audit logs"><ScrollText className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => setEditCoupon(c)} data-testid={`edit-coupon-${c.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
@@ -1228,31 +1228,31 @@ function CouponUsageSection() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
               <tr>
-                <th className="text-left px-4 py-3">Date</th>
-                <th className="text-left px-4 py-3">Partner</th>
-                <th className="text-left px-4 py-3">Coupon</th>
-                <th className="text-left px-4 py-3">Upgrade Type</th>
-                <th className="text-right px-4 py-3">Original</th>
-                <th className="text-right px-4 py-3">Discount</th>
-                <th className="text-right px-4 py-3">Paid</th>
-                <th className="text-left px-4 py-3">Status</th>
+                <th className="text-left px-3 py-2">Date</th>
+                <th className="text-left px-3 py-2">Partner</th>
+                <th className="text-left px-3 py-2">Coupon</th>
+                <th className="text-left px-3 py-2">Upgrade Type</th>
+                <th className="text-right px-3 py-2">Original</th>
+                <th className="text-right px-3 py-2">Discount</th>
+                <th className="text-right px-3 py-2">Paid</th>
+                <th className="text-left px-3 py-2">Status</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
                 <tr key={row.order_id || i} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{fmt(row.used_at)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">{fmt(row.used_at)}</td>
+                  <td className="px-3 py-2">
                     <p className="font-medium text-slate-800">{row.partner_name || "—"}</p>
                     {row.order_number && <p className="text-[10px] font-mono text-slate-400">{row.order_number}</p>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <span className="font-mono font-semibold text-slate-800">{row.coupon_code || "—"}</span>
                     {row.discount_type && (
                       <p className="text-[10px] text-slate-400 mt-0.5">{discountLabel(row)}</p>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
                       row.upgrade_type === "ongoing_upgrade"
                         ? "bg-emerald-100 text-emerald-700"
@@ -1261,18 +1261,18 @@ function CouponUsageSection() {
                       {upgradeTypeLabel(row.upgrade_type)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right text-slate-600">
+                  <td className="px-3 py-2 text-right text-slate-600">
                     {row.base_amount > 0 ? `${row.currency} ${row.base_amount.toFixed(2)}` : <span className="text-slate-300">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 py-2 text-right">
                     {row.discount_amount > 0
                       ? <span className="text-red-600 font-medium">-{row.currency} {row.discount_amount.toFixed(2)}</span>
                       : <span className="text-slate-300">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold text-slate-900">
+                  <td className="px-3 py-2 text-right font-semibold text-slate-900">
                     {row.currency} {row.final_amount.toFixed(2)}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
                       row.status === "paid" ? "bg-emerald-100 text-emerald-700"
                       : row.status === "pending_payment" ? "bg-amber-100 text-amber-700"

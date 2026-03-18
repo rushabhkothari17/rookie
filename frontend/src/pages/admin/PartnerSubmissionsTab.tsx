@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { StickyTableScroll } from "@/components/shared/StickyTableScroll";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -142,23 +143,23 @@ export function PartnerSubmissionsTab() {
           <Loader2 className="animate-spin text-slate-400" size={24} />
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 overflow-hidden">
+        <StickyTableScroll className="rounded-2xl border border-slate-200">
           <Table data-testid="submissions-admin-table">
             <TableHeader>
               <TableRow className="bg-slate-50">
-                <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={partnerOpts} />
-                <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.types} onFilter={v => setCF("types", v)} onClearFilter={() => setCF("types", [])} statusOptions={typeOpts} />
-                <ColHeader label="From → To" colKey="plan_change" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planChanges} onFilter={v => setCF("planChanges", v)} onClearFilter={() => setCF("planChanges", [])} statusOptions={planChangeOpts} />
-                <ColHeader label="Effective" colKey="effective" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.effective} onFilter={v => setCF("effective", v)} onClearFilter={() => setCF("effective", { from: "", to: "" })} />
-                <ColHeader label="Submitted" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.submitted} onFilter={v => setCF("submitted", v)} onClearFilter={() => setCF("submitted", { from: "", to: "" })} />
-                <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]]} />
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
+                <ColHeader compact label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={partnerOpts} />
+                <ColHeader compact label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.types} onFilter={v => setCF("types", v)} onClearFilter={() => setCF("types", [])} statusOptions={typeOpts} />
+                <ColHeader compact label="From → To" colKey="plan_change" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planChanges} onFilter={v => setCF("planChanges", v)} onClearFilter={() => setCF("planChanges", [])} statusOptions={planChangeOpts} />
+                <ColHeader compact label="Effective" colKey="effective" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.effective} onFilter={v => setCF("effective", v)} onClearFilter={() => setCF("effective", { from: "", to: "" })} />
+                <ColHeader compact label="Submitted" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.submitted} onFilter={v => setCF("submitted", v)} onClearFilter={() => setCF("submitted", { from: "", to: "" })} />
+                <ColHeader compact label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]]} />
+                <th className="px-3 py-2 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
               </TableRow>
             </TableHeader>
             <TableBody>
               {displayItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="px-4 py-12 text-center text-sm text-slate-400" data-testid="submissions-admin-empty">
+                  <TableCell colSpan={7} className="px-3 py-8 text-center text-sm text-slate-400" data-testid="submissions-admin-empty">
                     No submissions found.
                   </TableCell>
                 </TableRow>
@@ -215,7 +216,7 @@ export function PartnerSubmissionsTab() {
               })}
             </TableBody>
           </Table>
-        </div>
+        </StickyTableScroll>
       )}
 
       {/* Resolve Dialog */}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
+import { StickyTableScroll } from "@/components/shared/StickyTableScroll";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -412,29 +413,6 @@ function SubFormModal({
             <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} maxLength={5000} />
           </div>
           {/* Tax fields */}
-          {filteredTaxOptions.length > 0 && (
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-500">Quick-fill from Tax Table</label>
-              <Select onValueChange={handleTaxSelect}>
-                <SelectTrigger className="h-8 text-sm" data-testid="sub-tax-quick-fill">
-                  <SelectValue placeholder="Select a tax rule to auto-fill…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredTaxOptions.map((e, i) => {
-                    const ratePercent = e.rate < 1 ? parseFloat((e.rate * 100).toFixed(4)) : e.rate;
-                    return (
-                      <SelectItem
-                        key={i}
-                        value={`${e.country_code}|${e.state_code || ""}|${e.label}|${ratePercent}`}
-                      >
-                        {e.label} — {ratePercent}%{e.state_code ? ` (${e.state_code})` : ""}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-slate-600">Tax Name</label>
@@ -678,20 +656,20 @@ export function PartnerSubscriptionsTab() {
       )}
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
+      <StickyTableScroll className="rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm" data-testid="partner-subscriptions-table">
           <thead className="bg-slate-50">
             <tr>
-              <ColHeader label="Sub #" colKey="sub_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.subNumbers} onFilter={v => setCF("subNumbers", v)} onClearFilter={() => setCF("subNumbers", [])} statusOptions={subNumOpts} />
-              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={partnerOpts} />
-              <ColHeader label="Plan" colKey="plan" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planNames} onFilter={v => setCF("planNames", v)} onClearFilter={() => setCF("planNames", [])} statusOptions={planOpts} />
-              <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
-              <ColHeader label="Interval" colKey="interval" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.intervals} onFilter={v => setCF("intervals", v)} onClearFilter={() => setCF("intervals", [])} statusOptions={[["monthly", "Monthly"], ["quarterly", "Quarterly"], ["annual", "Annual"]]} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["active", "Active"], ["unpaid", "Unpaid"], ["paused", "Paused"], ["cancelled", "Cancelled"]]} />
-              <ColHeader label="Next Billing" colKey="next_billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.nextBilling} onFilter={v => setCF("nextBilling", v)} onClearFilter={() => setCF("nextBilling", { from: "", to: "" })} />
-              <ColHeader label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
-              <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+              <ColHeader compact label="Sub #" colKey="sub_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.subNumbers} onFilter={v => setCF("subNumbers", v)} onClearFilter={() => setCF("subNumbers", [])} statusOptions={subNumOpts} />
+              <ColHeader compact label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={partnerOpts} />
+              <ColHeader compact label="Plan" colKey="plan" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planNames} onFilter={v => setCF("planNames", v)} onClearFilter={() => setCF("planNames", [])} statusOptions={planOpts} />
+              <ColHeader compact label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
+              <ColHeader compact label="Interval" colKey="interval" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.intervals} onFilter={v => setCF("intervals", v)} onClearFilter={() => setCF("intervals", [])} statusOptions={[["monthly", "Monthly"], ["quarterly", "Quarterly"], ["annual", "Annual"]]} />
+              <ColHeader compact label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader compact label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["active", "Active"], ["unpaid", "Unpaid"], ["paused", "Paused"], ["cancelled", "Cancelled"]]} />
+              <ColHeader compact label="Next Billing" colKey="next_billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.nextBilling} onFilter={v => setCF("nextBilling", v)} onClearFilter={() => setCF("nextBilling", { from: "", to: "" })} />
+              <ColHeader compact label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
+              <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -701,18 +679,18 @@ export function PartnerSubscriptionsTab() {
               <tr><td colSpan={10} className="text-center py-8 text-slate-400">No subscriptions found.</td></tr>
             ) : displaySubs.map(sub => (
               <tr key={sub.id} className="border-t border-slate-100 hover:bg-slate-50" data-testid={`sub-row-${sub.id}`}>
-                <td className="px-4 py-3 font-mono text-xs text-slate-600">{sub.subscription_number}</td>
-                <td className="px-4 py-3 font-medium">{sub.partner_name}</td>
-                <td className="px-4 py-3 text-slate-500 text-xs">{sub.plan_name || "—"}</td>
-                <td className="px-4 py-3 font-semibold">{fmtAmt(sub.amount, sub.currency)}</td>
-                <td className="px-4 py-3 text-slate-500 capitalize">{sub.billing_interval}</td>
-                <td className="px-4 py-3 text-slate-500 capitalize">{sub.payment_method.replace("_", " ")}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs text-slate-600">{sub.subscription_number}</td>
+                <td className="px-3 py-2 font-medium">{sub.partner_name}</td>
+                <td className="px-3 py-2 text-slate-500 text-xs">{sub.plan_name || "—"}</td>
+                <td className="px-3 py-2 font-semibold">{fmtAmt(sub.amount, sub.currency)}</td>
+                <td className="px-3 py-2 text-slate-500 capitalize">{sub.billing_interval}</td>
+                <td className="px-3 py-2 text-slate-500 capitalize">{sub.payment_method.replace("_", " ")}</td>
+                <td className="px-3 py-2">
                   <Badge className={`text-[11px] ${STATUS_COLORS[sub.status] || "bg-slate-100"}`}>{sub.status}</Badge>
                 </td>
-                <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(sub.next_billing_date)}</td>
-                <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(sub.contract_end_date)}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 text-slate-500 text-xs">{fmtDate(sub.next_billing_date)}</td>
+                <td className="px-3 py-2 text-slate-500 text-xs">{fmtDate(sub.contract_end_date)}</td>
+                <td className="px-3 py-2">
                   <div className="flex justify-end gap-1">
                     <Button size="sm" variant="ghost" title="Audit Logs" onClick={() => { setLogsUrl(`/admin/partner-subscriptions/${sub.id}`); setShowAuditLogs(true); }} data-testid={`sub-logs-${sub.id}`}>
                       <ScrollText className="h-4 w-4" />
@@ -736,9 +714,7 @@ export function PartnerSubscriptionsTab() {
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Pagination */}
+      </StickyTableScroll>
       {total > LIMIT && (
         <div className="flex justify-end gap-2">
           <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Prev</Button>

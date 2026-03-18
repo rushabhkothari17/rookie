@@ -18,6 +18,7 @@ export type ColHeaderProps = {
   onFilter?: (val: any) => void;
   onClearFilter?: () => void;
   align?: "left" | "right";
+  compact?: boolean;
   /** For filterType="status": override the radio options. Defaults to [[all,All],[active,Active],[inactive,Inactive]] */
   statusOptions?: [string, string][];
   /** For filterType="number-range": show a currency selector above the min/max inputs */
@@ -34,6 +35,7 @@ export function ColHeader({
   label, colKey, sortCol, sortDir, onSort, onClearSort,
   filterType, filterValue, onFilter, onClearFilter,
   align = "left",
+  compact = false,
   statusOptions,
   currencyOptions,
 }: ColHeaderProps) {
@@ -57,7 +59,7 @@ export function ColHeader({
   const SortIcon = isActive ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
 
   return (
-    <th className={`px-4 py-3 text-${align}`}>
+    <th className={`${compact ? "px-3 py-2" : "px-4 py-3"} text-${align}`}>
       <Popover>
         <PopoverTrigger asChild>
           <button className="flex items-center gap-1 text-xs font-medium uppercase text-slate-500 hover:text-slate-700 group">
