@@ -378,48 +378,24 @@ async def stripe_webhook(request: Request):
                     action="activated_via_stripe", actor="stripe_webhook",
                     details={"partner_id": partner_id, "order_id": order_id_meta},
                 )
+
+        elif event_meta.get("type") == "partner_upgrade":
+            # New-style self-service plan upgrade (upgrade-plan-ongoing endpoint)
+            # The pending_plan_upgrades record holds all context; confirm_plan_upgrade handles the rest.
             if webhook_response.event_type == "checkout.session.completed":
-                partner_order_id = event_meta.get("partner_order_id")
-                plan_id = event_meta.get("plan_id")
+                pending_upgrade_id = event_meta.get("pending_upgrade_id")
                 partner_id = event_meta.get("partner_id")
-                sub_id = event_meta.get("sub_id")
-                is_new_sub = event_meta.get("is_new_sub") == "1"
-
-                # Mark order paid
-                if partner_order_id:
-                    await db.partner_orders.update_one(
-                        {"id": partner_order_id},
-                        {"$set": {"status": "paid", "paid_at": now_iso(), "payment_method": "card", "updated_at": now_iso()}},
+                if pending_upgrade_id and partner_id:
+                    pending = await db.pending_plan_upgrades.find_one(
+                        {"id": pending_upgrade_id}, {"_id": 0}
                     )
-
-                # Activate / update subscription
-                if sub_id:
-                    sub_update: dict = {"status": "active", "payment_method": "card", "updated_at": now_iso()}
-                    if not is_new_sub and plan_id:
-                        plan_doc_wh = await db.plans.find_one({"id": plan_id}, {"_id": 0})
-                        if plan_doc_wh:
-                            sub_update["plan_id"] = plan_id
-                            sub_update["plan_name"] = plan_doc_wh.get("name", "")
-                            sub_update["amount"] = plan_doc_wh.get("monthly_price", 0)
-                    await db.partner_subscriptions.update_one({"id": sub_id}, {"$set": sub_update})
-
-                # Assign plan to tenant license
-                if plan_id and partner_id:
-                    plan_doc_wh2 = await db.plans.find_one({"id": plan_id}, {"_id": 0})
-                    if plan_doc_wh2:
-                        limits_wh = {k: v for k, v in plan_doc_wh2.items() if k.startswith("max_")}
-                        await db.tenants.update_one({"id": partner_id}, {"$set": {
-                            "license": {
-                                "plan_id": plan_doc_wh2["id"],
-                                "plan_name": plan_doc_wh2["name"],
-                                "assigned_at": now_iso(),
-                                **limits_wh,
-                            }
-                        }})
+                    if pending:
+                        from services.billing_service import confirm_plan_upgrade
+                        await confirm_plan_upgrade(pending, partner_id)
                         await create_audit_log(
                             entity_type="tenant", entity_id=partner_id,
-                            action="plan_upgraded_via_stripe", actor="stripe_webhook",
-                            details={"plan_id": plan_id, "order_id": partner_order_id},
+                            action="plan_upgrade_confirmed_via_webhook", actor="stripe_webhook",
+                            details={"pending_upgrade_id": pending_upgrade_id},
                         )
 
         elif event_meta.get("billing_type") == "partner":

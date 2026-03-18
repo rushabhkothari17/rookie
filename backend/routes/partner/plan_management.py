@@ -120,10 +120,10 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
             "display_currency": base_currency,
         })
 
-    # Check if there is a valid pending (unconfirmed) upgrade order so the UI can offer "Resume Checkout"
-    # Stripe checkout sessions expire after 24 hours — auto-cancel stale orders
-    pending_upgrade_raw = await db.partner_orders.find_one(
-        {"partner_id": tid, "status": "pending_payment", "order_type": "ongoing_upgrade"},
+    # Check if there is a valid pending (unconfirmed) upgrade so the UI can offer "Resume Checkout"
+    # Stripe checkout sessions expire after 24 hours — auto-cancel stale entries
+    pending_upgrade_raw = await db.pending_plan_upgrades.find_one(
+        {"partner_id": tid, "status": "pending"},
         {"_id": 0},
         sort=[("created_at", -1)],
     )
@@ -139,26 +139,29 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
             age_hours = 0
 
         if age_hours > 23:
-            # Session has certainly expired — mark order as cancelled
-            await db.partner_orders.update_one(
+            # Session has certainly expired — cancel the pending entry
+            await db.pending_plan_upgrades.update_one(
                 {"id": pending_upgrade_raw["id"]},
                 {"$set": {"status": "cancelled", "updated_at": now_iso(),
                            "notes": "Stripe checkout session expired"}},
             )
         elif pending_upgrade_raw.get("stripe_session_id"):
-            # Verify the actual Stripe session status (handles early expiry / abandonment)
+            # Verify the actual Stripe session status
             try:
                 stripe_sdk.api_key = STRIPE_API_KEY
                 session = stripe_sdk.checkout.Session.retrieve(
                     pending_upgrade_raw["stripe_session_id"]
                 )
-                if session.status in ("expired", "complete"):
-                    new_status = "cancelled" if session.status == "expired" else "paid"
-                    await db.partner_orders.update_one(
+                if session.status == "expired":
+                    await db.pending_plan_upgrades.update_one(
                         {"id": pending_upgrade_raw["id"]},
-                        {"$set": {"status": new_status, "updated_at": now_iso(),
-                                   "notes": f"Auto-updated from Stripe status: {session.status}"}},
+                        {"$set": {"status": "cancelled", "updated_at": now_iso(),
+                                   "notes": "Stripe checkout session expired"}},
                     )
+                elif session.status == "complete":
+                    # Payment already confirmed but we haven't activated — do it now
+                    from services.billing_service import confirm_plan_upgrade
+                    await confirm_plan_upgrade(pending_upgrade_raw, tid)
                 else:
                     # Session is still open — safe to show Resume Checkout
                     pending_upgrade = {
@@ -167,7 +170,6 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
                                   "stripe_session_id", "order_number")
                         if k in pending_upgrade_raw
                     }
-                    # Use the real URL from Stripe (may differ from stored)
                     pending_upgrade["checkout_url"] = session.url
             except Exception:
                 # If Stripe is unreachable, show banner using stored URL if available
@@ -177,13 +179,6 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
                               "stripe_session_id", "order_number", "checkout_url")
                     if k in pending_upgrade_raw
                 }
-        else:
-            pending_upgrade = {
-                k: pending_upgrade_raw[k]
-                for k in ("id", "plan_id", "plan_name", "amount", "currency",
-                          "stripe_session_id", "order_number", "checkout_url")
-                if k in pending_upgrade_raw
-            }
 
     return {
         "current_plan": current_plan,
@@ -442,62 +437,45 @@ async def upgrade_plan_status(
     admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     """Poll after returning from Stripe Checkout to confirm plan activation."""
+    from services.billing_service import confirm_plan_upgrade
     tid = tenant_id_of(admin)
+
+    # Look up pending upgrade first (new approach: order only created after payment)
+    pending = await db.pending_plan_upgrades.find_one(
+        {"stripe_session_id": session_id, "partner_id": tid}, {"_id": 0}
+    )
+    if pending:
+        if pending["status"] == "completed":
+            # Already processed — return current plan name
+            tenant_doc = await db.tenants.find_one({"id": tid}, {"_id": 0, "license": 1})
+            return {"status": "paid", "plan_name": (tenant_doc or {}).get("license", {}).get("plan_name", "")}
+
+        if pending["status"] == "pending":
+            try:
+                stripe_sdk.api_key = STRIPE_API_KEY
+                sess = stripe_sdk.checkout.Session.retrieve(session_id)
+                if sess.payment_status == "paid":
+                    activated = await confirm_plan_upgrade(pending, tid)
+                    tenant_doc = await db.tenants.find_one({"id": tid}, {"_id": 0, "license": 1})
+                    return {"status": "paid", "plan_name": (tenant_doc or {}).get("license", {}).get("plan_name", "")}
+                if sess.status == "expired":
+                    await db.pending_plan_upgrades.update_one(
+                        {"id": pending["id"]}, {"$set": {"status": "cancelled", "updated_at": now_iso()}}
+                    )
+                    return {"status": "cancelled", "plan_name": ""}
+                return {"status": "pending", "plan_name": pending.get("plan_name", "")}
+            except Exception as e:
+                return {"status": "pending", "plan_name": pending.get("plan_name", "")}
+
+    # Fallback: check legacy partner_orders (for backwards compatibility with old sessions)
     order = await db.partner_orders.find_one(
         {"stripe_session_id": session_id, "partner_id": tid}, {"_id": 0}
     )
     if not order:
         raise HTTPException(status_code=404, detail="Upgrade session not found")
 
-    if order["status"] == "pending_payment":
-        # Webhook may not have fired yet — query Stripe directly
-        try:
-            stripe_sdk.api_key = STRIPE_API_KEY
-            sess = stripe_sdk.checkout.Session.retrieve(session_id)
-            if sess.payment_status == "paid":
-                meta = sess.metadata or {}
-                plan_id = meta.get("plan_id")
-                sub_id_m = meta.get("sub_id")
-                is_new = meta.get("is_new_sub") == "1"
-
-                await db.partner_orders.update_one(
-                    {"id": order["id"]},
-                    {"$set": {"status": "paid", "paid_at": now_iso(), "payment_method": "card", "updated_at": now_iso()}},
-                )
-                if sub_id_m:
-                    update_fields: Dict[str, Any] = {"status": "active", "payment_method": "card", "updated_at": now_iso()}
-                    if not is_new and plan_id:
-                        plan_doc_s = await db.plans.find_one({"id": plan_id}, {"_id": 0})
-                        if plan_doc_s:
-                            update_fields["plan_id"] = plan_id
-                            update_fields["plan_name"] = plan_doc_s.get("name", "")
-                    await db.partner_subscriptions.update_one({"id": sub_id_m}, {"$set": update_fields})
-
-                if plan_id:
-                    plan_doc = await db.plans.find_one({"id": plan_id}, {"_id": 0})
-                    if plan_doc:
-                        limits = {k: v for k, v in plan_doc.items() if k.startswith("max_")}
-                        await db.tenants.update_one({"id": tid}, {"$set": {
-                            "license": {
-                                "plan_id": plan_doc["id"],
-                                "plan_name": plan_doc["name"],
-                                "assigned_at": now_iso(),
-                                **limits,
-                            }
-                        }})
-                        await create_audit_log(
-                            entity_type="tenant", entity_id=tid,
-                            action="plan_upgraded_via_stripe",
-                            actor="stripe_status_poll",
-                            details={"plan_id": plan_id, "session_id": session_id},
-                        )
-                        return {"status": "paid", "plan_name": plan_doc["name"]}
-        except Exception:
-            pass
-
     tenant_doc = await db.tenants.find_one({"id": tid}, {"_id": 0, "license": 1})
-    plan_name = (tenant_doc or {}).get("license", {}).get("plan_name", "")
-    return {"status": order["status"], "plan_name": plan_name}
+    return {"status": order["status"], "plan_name": (tenant_doc or {}).get("license", {}).get("plan_name", "")}
 
 
 # ---------------------------------------------------------------------------
@@ -699,26 +677,10 @@ async def upgrade_plan_ongoing(
     now = now_iso()
     seq = await db.partner_orders.count_documents({}) + 1
     order_number = f"PO-{today.year}-{seq:04d}"
-    order_id = make_id()
+    pending_id = make_id()
     sub_id = existing_sub["id"] if existing_sub else None
     partner_name = (tenant or {}).get("name", "")
-
-    await db.partner_orders.insert_one({
-        "id": order_id, "order_number": order_number,
-        "subscription_id": sub_id,
-        "subscription_number": (existing_sub or {}).get("subscription_number", ""),
-        "partner_id": tid, "partner_name": partner_name,
-        "plan_id": new_plan["id"], "plan_name": new_plan["name"],
-        "description": f"Ongoing plan upgrade to {new_plan['name']} (monthly difference)",
-        "amount": final_amount, "currency": currency,
-        "base_amount": flat_diff,
-        "discount_amount": round(flat_diff - final_amount, 2),
-        "coupon_code": payload.coupon_code.upper().strip() if payload.coupon_code else "",
-        "status": "pending_payment", "payment_method": "card",
-        "invoice_date": today.isoformat(), "due_date": today.isoformat(),
-        "order_type": "ongoing_upgrade", "coupon_id": coupon_id,
-        "created_at": now, "created_by": admin.get("email", "system"),
-    })
+    coupon_code_clean = payload.coupon_code.upper().strip() if payload.coupon_code else ""
 
     if final_amount > 0:
         try:
@@ -734,21 +696,34 @@ async def upgrade_plan_ongoing(
                 success_url=f"{host}/admin?tab=plan-billing&upgrade_status=success&session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=f"{host}/admin?tab=plan-billing&upgrade_status=cancelled",
                 metadata={
-                    "type": "partner_upgrade", "partner_order_id": order_id,
+                    "type": "partner_upgrade", "pending_upgrade_id": pending_id,
                     "partner_id": tid, "plan_id": new_plan["id"],
-                    "sub_id": sub_id or "", "is_new_sub": "0",
+                    "sub_id": sub_id or "",
                     "coupon_id": coupon_id or "",
                 },
             )
-            await db.partner_orders.update_one({"id": order_id}, {"$set": {"stripe_session_id": session.id, "checkout_url": session.url}})
-            if coupon_id:
-                await _record_coupon_usage(coupon_id, tid)
+            # Store pending upgrade — the partner_order is created ONLY after payment is confirmed
+            await db.pending_plan_upgrades.insert_one({
+                "id": pending_id, "order_number": order_number,
+                "stripe_session_id": session.id, "checkout_url": session.url,
+                "partner_id": tid, "partner_name": partner_name,
+                "plan_id": new_plan["id"], "plan_name": new_plan["name"],
+                "sub_id": sub_id or "",
+                "amount": final_amount, "currency": currency,
+                "base_amount": flat_diff,
+                "discount_amount": round(flat_diff - final_amount, 2),
+                "coupon_code": coupon_code_clean, "coupon_id": coupon_id or "",
+                "status": "pending", "created_at": now,
+            })
             return {"checkout_url": session.url, "session_id": session.id, "amount": final_amount, "currency": currency}
-        except Exception:
-            await db.partner_orders.update_one({"id": order_id}, {"$set": {"status": "pending", "payment_method": "offline"}})
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to create Stripe checkout session: {str(e)}")
 
 
     # Zero charge (coupon covered full amount) — activate immediately
+    if coupon_id:
+        await _record_coupon_usage(coupon_id, tid)
+    # Zero charge — coupon covers full amount, activate immediately
     if coupon_id:
         await _record_coupon_usage(coupon_id, tid)
     limits = {k: v for k, v in new_plan.items() if k.startswith("max_")}
@@ -761,7 +736,22 @@ async def upgrade_plan_ongoing(
             {"$set": {"plan_id": new_plan["id"], "plan_name": new_plan["name"],
                       "amount": new_monthly, "updated_at": now}},
         )
-    await db.partner_orders.update_one({"id": order_id}, {"$set": {"status": "paid", "paid_at": now}})
+    # Create order immediately (no Stripe needed)
+    order_id = make_id()
+    await db.partner_orders.insert_one({
+        "id": order_id, "order_number": order_number,
+        "subscription_id": sub_id or "",
+        "partner_id": tid, "partner_name": partner_name,
+        "plan_id": new_plan["id"], "plan_name": new_plan["name"],
+        "description": f"Plan upgrade to {new_plan['name']} (coupon covered full amount)",
+        "amount": 0, "currency": currency,
+        "base_amount": flat_diff, "discount_amount": flat_diff,
+        "coupon_code": coupon_code_clean, "coupon_id": coupon_id or "",
+        "status": "paid", "payment_method": "coupon",
+        "invoice_date": today.isoformat(), "due_date": today.isoformat(),
+        "paid_at": now, "order_type": "ongoing_upgrade",
+        "created_at": now, "created_by": admin.get("email", "system"),
+    })
     return {"message": f"Upgraded to {new_plan['name']}", "new_plan": new_plan}
 
 
@@ -954,15 +944,23 @@ async def one_time_upgrade_status(
 
 @router.post("/partner/cancel-pending-upgrade")
 async def cancel_pending_upgrade(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
-    """Let the partner dismiss/cancel any stale pending_payment upgrade order (ongoing or one-time)."""
+    """Let the partner dismiss/cancel any stale pending upgrade (ongoing or one-time)."""
     tid = tenant_id_of(admin)
-    result = await db.partner_orders.update_one(
+
+    # Cancel pending_plan_upgrades (new flow)
+    result1 = await db.pending_plan_upgrades.update_one(
+        {"partner_id": tid, "status": "pending"},
+        {"$set": {"status": "cancelled", "updated_at": now_iso(),
+                  "notes": "Dismissed by partner — session abandoned"}},
+    )
+    # Cancel any legacy partner_orders pending_payment (old flow fallback)
+    result2 = await db.partner_orders.update_one(
         {"partner_id": tid, "status": "pending_payment",
          "order_type": {"$in": ["ongoing_upgrade", "one_time_upgrade"]}},
         {"$set": {"status": "cancelled", "updated_at": now_iso(),
                   "notes": "Dismissed by partner — session abandoned"}},
     )
-    if result.modified_count == 0:
+    if result1.modified_count == 0 and result2.modified_count == 0:
         raise HTTPException(404, "No pending upgrade order found")
 
     # Also cancel the linked one_time_upgrade record if present
