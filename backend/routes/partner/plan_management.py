@@ -18,7 +18,7 @@ import stripe as stripe_sdk
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_super_admin, tenant_id_of
-from core.config import STRIPE_API_KEY
+from core.config import STRIPE_API_KEY, APP_URL
 from db.session import db
 from services.audit_service import create_audit_log
 
@@ -209,6 +209,7 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
 
 class UpgradePlanRequest(BaseModel):
     plan_id: str
+    origin_url: str = ""
 
 
 @router.post("/partner/upgrade-plan")
@@ -355,7 +356,7 @@ async def upgrade_plan(
     if prorata_amount > 0 and order_id:
         try:
             stripe_sdk.api_key = STRIPE_API_KEY
-            host = str(request.base_url).rstrip("/")
+            host = (payload.origin_url or APP_URL or str(request.base_url)).rstrip("/")
             session = stripe_sdk.checkout.Session.create(
                 mode="payment",
                 line_items=[{
@@ -639,6 +640,7 @@ async def _record_coupon_usage(coupon_id: str, tid: str) -> None:
 class OngoingUpgradeRequest(BaseModel):
     plan_id: str
     coupon_code: str = ""
+    origin_url: str = ""
 
 
 @router.post("/partner/upgrade-plan-ongoing")
@@ -721,7 +723,7 @@ async def upgrade_plan_ongoing(
     if final_amount > 0:
         try:
             stripe_sdk.api_key = STRIPE_API_KEY
-            host = str(request.base_url).rstrip("/")
+            host = (payload.origin_url or APP_URL or str(request.base_url)).rstrip("/")
             session = stripe_sdk.checkout.Session.create(
                 mode="payment",
                 line_items=[{"price_data": {
@@ -744,6 +746,7 @@ async def upgrade_plan_ongoing(
             return {"checkout_url": session.url, "session_id": session.id, "amount": final_amount, "currency": currency}
         except Exception:
             await db.partner_orders.update_one({"id": order_id}, {"$set": {"status": "pending", "payment_method": "offline"}})
+
 
     # Zero charge (coupon covered full amount) — activate immediately
     if coupon_id:
@@ -774,6 +777,7 @@ class OneTimeItem(BaseModel):
 class OneTimeUpgradeRequest(BaseModel):
     upgrades: list[OneTimeItem]
     coupon_code: str = ""
+    origin_url: str = ""
 
 
 @router.post("/partner/one-time-upgrade")
@@ -867,7 +871,7 @@ async def one_time_upgrade(
     if final_amount > 0:
         try:
             stripe_sdk.api_key = STRIPE_API_KEY
-            host = str(request.base_url).rstrip("/")
+            host = (payload.origin_url or APP_URL or str(request.base_url)).rstrip("/")
             desc_lines = [f"+{i['quantity']} {i['label']}" for i in line_items]
             session = stripe_sdk.checkout.Session.create(
                 mode="payment",

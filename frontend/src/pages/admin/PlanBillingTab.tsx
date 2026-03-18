@@ -195,6 +195,7 @@ function OngoingUpgradeDialog({
       const { data } = await api.post("/partner/upgrade-plan-ongoing", {
         plan_id: plan.id,
         coupon_code: couponCode.trim(),
+        origin_url: window.location.origin,
       });
       onSuccess(data);
     } catch (e: any) {
@@ -325,6 +326,7 @@ function OneTimeUpgradeModal({
       const { data } = await api.post("/partner/one-time-upgrade", {
         upgrades,
         coupon_code: couponCode.trim(),
+        origin_url: window.location.origin,
       });
       onSuccess(data);
     } catch (e: any) {
