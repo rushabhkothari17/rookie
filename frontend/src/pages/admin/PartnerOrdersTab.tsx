@@ -165,6 +165,14 @@ function OrderFormModal({
   const [generatingLink, setGeneratingLink] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState(order?.payment_url || "");
 
+  // Default to "No tax" / 0 when tax collection is disabled
+  useEffect(() => {
+    if (!taxEnabled && !isEdit && !form.tax_name) {
+      setForm(f => ({ ...f, tax_name: "No tax", tax_rate: "0" }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taxEnabled]);
+
   // Derive filtered tax options for the selected partner
   const selectedTenant = tenants.find(t => t.id === form.partner_id);
   const partnerCountry = resolveCountryCode(selectedTenant?.address?.country);
@@ -271,6 +279,10 @@ function OrderFormModal({
               <SearchableSelect
                 value={form.partner_id || undefined}
                 onValueChange={v => {
+                  if (!taxEnabled) {
+                    setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
+                    return;
+                  }
                   set("partner_id", v);
                   // Auto-populate tax when exactly one rule matches partner's address
                   const tenant = tenants.find(t => t.id === v);
@@ -286,7 +298,11 @@ function OrderFormModal({
                       const best = matches.find(m => m.state_code && region && m.state_code.toUpperCase() === region) || matches[0];
                       const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
                       setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
+                    } else {
+                      setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
                     }
+                  } else {
+                    setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
                   }
                 }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}

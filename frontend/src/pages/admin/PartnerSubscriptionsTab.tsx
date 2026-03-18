@@ -93,6 +93,9 @@ type PartnerSubscription = {
   auto_cancel_on_termination?: boolean;
   contract_end_date?: string;
   created_at: string;
+  tax_name?: string;
+  tax_rate?: number;
+  tax_amount?: number;
 };
 
 type Stats = {
@@ -222,6 +225,14 @@ function SubFormModal({
 
   const set = (k: keyof SubFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
+  // Default to "No tax" / 0 when tax collection is disabled
+  useEffect(() => {
+    if (!taxEnabled && !isEdit && !form.tax_name) {
+      setForm(f => ({ ...f, tax_name: "No tax", tax_rate: "0" }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taxEnabled]);
+
   // Auto-calculate Next Billing Date when start_date or billing_interval changes
   useEffect(() => {
     if (nbtManual) return;
@@ -310,6 +321,10 @@ function SubFormModal({
               <SearchableSelect
                 value={form.partner_id || undefined}
                 onValueChange={v => {
+                  if (!taxEnabled) {
+                    setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
+                    return;
+                  }
                   set("partner_id", v);
                   const tenant = tenants.find(t => t.id === v);
                   const country = resolveCountryCode(tenant?.address?.country);
@@ -323,7 +338,11 @@ function SubFormModal({
                       const best = matches.find(m => m.state_code && region && m.state_code.toUpperCase() === region) || matches[0];
                       const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
                       setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
+                    } else {
+                      setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
                     }
+                  } else {
+                    setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
                   }
                 }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}
@@ -669,14 +688,15 @@ export function PartnerSubscriptionsTab() {
               <ColHeader compact label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["active", "Active"], ["unpaid", "Unpaid"], ["paused", "Paused"], ["cancelled", "Cancelled"]]} />
               <ColHeader compact label="Next Billing" colKey="next_billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.nextBilling} onFilter={v => setCF("nextBilling", v)} onClearFilter={() => setCF("nextBilling", { from: "", to: "" })} />
               <ColHeader compact label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
+              <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500 whitespace-nowrap">Tax Amt</th>
               <th className="text-right px-3 py-2 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={10} className="text-center py-8 text-slate-400">Loading…</td></tr>
+              <tr><td colSpan={11} className="text-center py-8 text-slate-400">Loading…</td></tr>
             ) : displaySubs.length === 0 ? (
-              <tr><td colSpan={10} className="text-center py-8 text-slate-400">No subscriptions found.</td></tr>
+              <tr><td colSpan={11} className="text-center py-8 text-slate-400">No subscriptions found.</td></tr>
             ) : displaySubs.map(sub => (
               <tr key={sub.id} className="border-t border-slate-100 hover:bg-slate-50" data-testid={`sub-row-${sub.id}`}>
                 <td className="px-3 py-2 font-mono text-xs text-slate-600">{sub.subscription_number}</td>
@@ -690,6 +710,11 @@ export function PartnerSubscriptionsTab() {
                 </td>
                 <td className="px-3 py-2 text-slate-500 text-xs">{fmtDate(sub.next_billing_date)}</td>
                 <td className="px-3 py-2 text-slate-500 text-xs">{fmtDate(sub.contract_end_date)}</td>
+                <td className="px-3 py-2 text-slate-500 text-xs text-right">
+                  {sub.tax_rate != null && sub.tax_rate > 0
+                    ? fmtAmt(sub.tax_amount ?? sub.amount * sub.tax_rate / 100, sub.currency)
+                    : sub.tax_name === "No tax" ? <span className="text-xs text-slate-400">No tax</span> : "—"}
+                </td>
                 <td className="px-3 py-2">
                   <div className="flex justify-end gap-1">
                     <Button size="sm" variant="ghost" title="Audit Logs" onClick={() => { setLogsUrl(`/admin/partner-subscriptions/${sub.id}`); setShowAuditLogs(true); }} data-testid={`sub-logs-${sub.id}`}>

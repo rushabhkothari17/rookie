@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,15 +72,23 @@ function TaxSettingsPanel() {
   const [rateTableCountries, setRateTableCountries] = useState<{value:string;label:string}[]>([]);
   const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
   const [provincesLoading, setProvincesLoading] = useState(false);
+  const [taxEntries, setTaxEntries] = useState<any[]>([]);
+  const [orgAddress, setOrgAddress] = useState<any>({});
 
   useEffect(() => {
-    api.get("/admin/taxes/settings").then((r) => {
-      setSettings(r.data.tax_settings || {});
+    Promise.all([
+      api.get("/admin/taxes/settings"),
+      api.get("/utils/countries?format=iso").catch(() => ({ data: { countries: [] } })),
+      api.get("/admin/taxes/tables").catch(() => ({ data: { entries: [] } })),
+      api.get("/admin/tenants").catch(() => ({ data: { tenants: [] } })),
+    ]).then(([settingsRes, countriesRes, tablesRes, tenantsRes]) => {
+      setSettings(settingsRes.data.tax_settings || {});
+      setRateTableCountries(countriesRes.data.countries || []);
+      setTaxEntries(tablesRes.data.entries || []);
+      const platform = (tenantsRes.data.tenants || []).find((t: any) => t.is_platform);
+      if (platform?.address) setOrgAddress(platform.address);
       setLoading(false);
     }).catch(() => setLoading(false));
-    api.get("/utils/countries?format=iso").then((r) => {
-      setRateTableCountries(r.data.countries || []);
-    }).catch(() => {});
   }, []);
 
   // Fetch provinces whenever country changes to CA or US
@@ -98,6 +106,22 @@ function TaxSettingsPanel() {
   }, [settings.country]);
 
   const save = async () => {
+    if (settings.enabled) {
+      // Validate: must have a country selected
+      if (!settings.country) {
+        toast.error("Please select your business country before enabling tax collection.");
+        return;
+      }
+      // Validate: matching tax rules must exist
+      const matches = taxEntries.filter((e: any) =>
+        e.country_code === settings.country &&
+        (!settings.state || !e.state_code || e.state_code === settings.state)
+      );
+      if (matches.length === 0) {
+        toast.error(`No tax rules found for ${settings.country}${settings.state ? "/" + settings.state : ""}. Please add tax rules in the Tax Table first.`);
+        return;
+      }
+    }
     setSaving(true);
     try {
       await api.put("/admin/taxes/settings", settings);
@@ -127,7 +151,15 @@ function TaxSettingsPanel() {
             type="checkbox"
             data-testid="tax-enabled-toggle"
             checked={!!settings.enabled}
-            onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+            onChange={(e) => {
+              const newEnabled = e.target.checked;
+              if (newEnabled && orgAddress?.country && !settings.country) {
+                // Pre-populate country/state from org address when enabling
+                setSettings({ ...settings, enabled: true, country: orgAddress.country || "", state: orgAddress.region || "" });
+              } else {
+                setSettings({ ...settings, enabled: newEnabled });
+              }
+            }}
             className="h-4 w-4 rounded border-slate-300 accent-slate-900"
           />
         </div>
@@ -226,13 +258,19 @@ function TaxTablePanel() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const params = filterCountry && filterCountry !== "all" ? `?country_code=${filterCountry}` : "";
-    const r = await api.get(`/admin/taxes/tables${params}`);
+    // Always load all entries; filter client-side for dynamic country list
+    const r = await api.get("/admin/taxes/tables");
     setEntries(r.data.entries || []);
     setLoading(false);
-  }, [filterCountry]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Derive only the countries present in the data
+  const availableCountries = useMemo(() => {
+    const codes = new Set(entries.map((e) => e.country_code));
+    return COUNTRIES.filter((c) => codes.has(c.code));
+  }, [entries]);
 
   const startEdit = (entry: any) => {
     setEditingKey(`${entry.country_code}-${entry.state_code}`);
@@ -255,6 +293,7 @@ function TaxTablePanel() {
   };
 
   const filtered = entries.filter((e) => {
+    if (filterCountry && filterCountry !== "all" && e.country_code !== filterCountry) return false;
     if (!searchTerm) return true;
     const s = searchTerm.toLowerCase();
     return e.state_name?.toLowerCase().includes(s) || e.state_code?.toLowerCase().includes(s);
@@ -269,7 +308,7 @@ function TaxTablePanel() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Countries</SelectItem>
-            {COUNTRIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
+            {availableCountries.map((c) => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="relative flex-1 min-w-48">

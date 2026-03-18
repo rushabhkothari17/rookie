@@ -572,7 +572,7 @@ export function OrdersTab() {
                 placeholder="customer@example.com"
                 value={manualOrder.customer_email}
                 onChange={e => setManualOrder({ ...manualOrder, customer_email: e.target.value })}
-                className="w-full h-9 text-sm border border-slate-200 rounded px-3 bg-white"
+                className="w-full h-9 text-sm border border-slate-200 rounded px-3 bg-white text-slate-900"
                 data-testid="manual-order-customer-email"
               />
               <datalist id="manual-order-customers">
