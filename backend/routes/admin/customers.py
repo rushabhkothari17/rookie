@@ -263,7 +263,8 @@ async def admin_customers(
                     "gocardless_customer_id": "$gocardless_customer_id",
                     "currency": "$currency",
                     "created_at": "$created_at",
-                    "tenant_id": "$tenant_id"
+                    "tenant_id": "$tenant_id",
+                    "tax_exempt": "$tax_exempt",
                 },
                 "user": {
                     "id": "$user_data.id",
