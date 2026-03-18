@@ -591,7 +591,20 @@ Build a white-label service commerce platform with:
 8. **Invoice download for refunded orders**: Download button shown for `paid`, `partially_refunded`, and `refunded` orders. Backend endpoint updated to allow these 3 statuses.
 - **Tested**: iteration_307 — 93% backend pass, 95% frontend pass. Backend plan_id and offline validations confirmed via curl tests.
 
-### Phase 26: Billing Bug Fixes & Invoice Improvements (Mar 2026)
+### Phase 27: 9-Fix Batch — UI/UX, Tax Logic, Sidebar (Mar 2026)
+**All 9 fixes implemented and verified PASS (100%):**
+1. **Sidebar icons in collapsed state** — `SectionHeader` now renders section icon (not just a divider) in collapsed mode. Each accordion section uses `(sidebarCollapsed || expandedSection === 'x')` to always show tabs when collapsed.
+2. **Strict tax collection validation** — `TaxSettingsPanel` in `TaxesTab.tsx`: save() now validates country is selected and matching tax rules exist before enabling. Toggle pre-populates country/state from org address.
+3. **Tax auto-population fix (Issue 3)** — onValueChange handler in `PartnerOrdersTab` now checks `taxEnabled` first; clears tax fields when no match found.
+4. **Customer dropdown white text fix** — Added `text-slate-900` class to customer email input in `OrdersTab.tsx` Create Manual Order modal.
+5. **Tax Amount column in Partner Subscriptions** — Added `tax_rate`, `tax_name`, `tax_amount` to `PartnerSubscription` type and `Tax Amt` column header/cell in table.
+6. **Default tax when disabled** — Both `PartnerOrdersTab` and `PartnerSubscriptionsTab`: `useEffect` sets `tax_name: 'No tax'` / `tax_rate: '0'` when `taxEnabled = false`. onValueChange also respects this.
+7. **Country filter in Tax Rate Table** — `TaxTablePanel` now loads all entries once and filters client-side; `availableCountries` is a `useMemo` derived from entry data (shows 33 countries, not 90+).
+8. **Thicker sticky scrollbar** — `StickyTableScroll.tsx` scrollbar height increased from 14 to 20px.
+9. **Footer text contrast fix** — `--aa-footer-text-dim` changed from `#475569` (dark, invisible on dark bg) to `rgba(255,255,255,0.48)` in `index.css` and `WebsiteContext.tsx`.
+- **Tested**: iteration_308 — 100% frontend pass (9/9).
+
+
 - **Free Trial plan** — Set `is_public: True` in seed and migrated existing DB record so partners can self-sign up on the Free Trial plan
 - **Invoice download for unpaid** — Download invoice button now shown for ALL statuses except `cancelled`; backend endpoint updated accordingly
 - **Refund max validation** — Partner Orders & Customer Orders: refund button now only shows when there is a positive available balance (`amount - refunded_amount > 0`); `max` attribute and front-end validation prevent submitting more than the available amount
