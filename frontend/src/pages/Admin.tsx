@@ -7,7 +7,7 @@ import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, Search,
   BookOpen, FolderOpen, ClipboardList, Building, Percent, Lock,
   LayoutTemplate, Mail, Link2, Globe, Puzzle, Code2, Zap, Activity,
   Store, SlidersHorizontal, Wallet, CreditCard, Building2, LayoutGrid,
-  Receipt, Coins, ArrowRightLeft, Repeat2, FileText, Server, Moon, Sun,
+  Receipt, Coins, ArrowRightLeft, Repeat2, FileText, Server,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommandPalette } from "@/components/admin/CommandPalette";
@@ -224,20 +224,12 @@ export default function Admin() {
     try { return localStorage.getItem("admin_sidebar_collapsed") === "true"; } catch { return false; }
   });
   const [cmdOpen, setCmdOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    try { return localStorage.getItem("aa_dark_mode") === "true"; } catch { return false; }
-  });
 
-  // Apply / remove .aa-dark on <html> whenever darkMode changes
+  // Ensure dark mode is never active
   useEffect(() => {
-    const html = document.documentElement;
-    if (darkMode) {
-      html.classList.add("aa-dark");
-    } else {
-      html.classList.remove("aa-dark");
-    }
-    try { localStorage.setItem("aa_dark_mode", String(darkMode)); } catch {}
-  }, [darkMode]);
+    document.documentElement.classList.remove("aa-dark");
+    try { localStorage.removeItem("aa_dark_mode"); } catch {}
+  }, []);
   const toggleCollapsed = () => {
     setSidebarCollapsed(prev => {
       const next = !prev;
@@ -518,19 +510,6 @@ export default function Admin() {
           </CollapsedCtx.Provider>
           </ActiveTabCtx.Provider>
 
-          {/* Dark mode toggle */}
-          <button
-            type="button"
-            onClick={() => setDarkMode(d => !d)}
-            className="aa-collapse-btn hidden md:flex"
-            data-testid="dark-mode-toggle"
-            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {darkMode
-              ? <><Sun size={14} />{!sidebarCollapsed && <span>Light Mode</span>}</>
-              : <><Moon size={14} />{!sidebarCollapsed && <span>Dark Mode</span>}</>
-            }
-          </button>
 
           {/* Collapse toggle */}
           <button
