@@ -591,7 +591,18 @@ Build a white-label service commerce platform with:
 8. **Invoice download for refunded orders**: Download button shown for `paid`, `partially_refunded`, and `refunded` orders. Backend endpoint updated to allow these 3 statuses.
 - **Tested**: iteration_307 — 93% backend pass, 95% frontend pass. Backend plan_id and offline validations confirmed via curl tests.
 
-### Phase 27: 9-Fix Batch — UI/UX, Tax Logic, Sidebar (Mar 2026)
+### Phase 28: 7-Issue Second Round Fixes (Mar 2026)
+**User reported failures from Phase 27 fixes, all addressed:**
+1. **Sidebar** (final behavior): When collapsed → only section icons visible (clickable). Click → expand sidebar + navigate to section's first tab. `!sidebarCollapsed` guard added to all 7 section tab blocks + `handleExpandSection()` function added.
+2. **Footer text** — `--aa-footer-text-dim` increased to `rgba(255,255,255,0.72)` (from 0.48) for better contrast on dark footer.
+3. **Sticky scrollbar** — Added `.sticky-scroll-bar` CSS class with `::-webkit-scrollbar { height: 14px }`, dark grey thumb, container height 18px.
+4. **Customer dropdown** — Replaced native HTML `<input list>/<datalist>` with `<SearchableSelect>` in "Create Manual Order" dialog.
+5. **Default tax** — `emptyForm()` now defaults `tax_name: "No tax"`, `tax_rate: "0"` in both `PartnerOrdersTab` and `PartnerSubscriptionsTab`.
+6. **Tax fallbacks** — `onValueChange` sets "No tax"/"0" (not empty) when partner has no address or no matching tax rules.
+7. **Strict tax validation** — `resolveISO()` function normalizes country names to ISO codes. `orgAddress` uses `find(is_platform) || tenants[0]` to get correct org for both platform and partner admins. Toggle validation checks org address country via ISO before enabling.
+- **Tested**: iteration_309 — 7/8 PASS. Final sidebar tab-hiding fix applied post-test.
+
+
 **All 9 fixes implemented and verified PASS (100%):**
 1. **Sidebar icons in collapsed state** — `SectionHeader` now renders section icon (not just a divider) in collapsed mode. Each accordion section uses `(sidebarCollapsed || expandedSection === 'x')` to always show tabs when collapsed.
 2. **Strict tax collection validation** — `TaxSettingsPanel` in `TaxesTab.tsx`: save() now validates country is selected and matching tax rules exist before enabling. Toggle pre-populates country/state from org address.
