@@ -65,6 +65,21 @@ const OPERATORS = [
 
 // ── Tax Settings Panel ─────────────────────────────────────────────────────────
 
+// Resolve common country names to ISO 2-letter codes for tax rule matching
+function resolveISO(country?: string): string {
+  if (!country) return "";
+  const c = country.trim();
+  if (c.length === 2) return c.toUpperCase();
+  const MAP: Record<string, string> = {
+    "canada": "CA", "united states": "US", "united kingdom": "GB",
+    "australia": "AU", "new zealand": "NZ", "ireland": "IE", "india": "IN",
+    "germany": "DE", "france": "FR", "netherlands": "NL", "belgium": "BE",
+    "spain": "ES", "italy": "IT", "portugal": "PT", "sweden": "SE",
+    "norway": "NO", "denmark": "DK", "finland": "FI", "austria": "AT",
+  };
+  return MAP[c.toLowerCase()] || c.toUpperCase();
+}
+
 function TaxSettingsPanel() {
   const [settings, setSettings] = useState<any>({ enabled: false, country: "", state: "" });
   const [saving, setSaving] = useState(false);
@@ -85,8 +100,11 @@ function TaxSettingsPanel() {
       setSettings(settingsRes.data.tax_settings || {});
       setRateTableCountries(countriesRes.data.countries || []);
       setTaxEntries(tablesRes.data.entries || []);
-      const platform = (tenantsRes.data.tenants || []).find((t: any) => t.is_platform);
-      if (platform?.address) setOrgAddress(platform.address);
+      const tenants = tenantsRes.data.tenants || [];
+      // For partner admins, tenants list contains only their own org
+      // For platform admins, find the platform org (is_platform), else first tenant
+      const ownTenant = tenants.find((t: any) => t.is_platform) || tenants[0];
+      if (ownTenant?.address) setOrgAddress(ownTenant.address);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -112,7 +130,7 @@ function TaxSettingsPanel() {
         toast.error("Please select your business country before enabling tax collection.");
         return;
       }
-      // Validate: matching tax rules must exist
+      // Validate: matching tax rules must exist (settings.country is already ISO)
       const matches = taxEntries.filter((e: any) =>
         e.country_code === settings.country &&
         (!settings.state || !e.state_code || e.state_code === settings.state)
@@ -153,9 +171,24 @@ function TaxSettingsPanel() {
             checked={!!settings.enabled}
             onChange={(e) => {
               const newEnabled = e.target.checked;
-              if (newEnabled && orgAddress?.country && !settings.country) {
-                // Pre-populate country/state from org address when enabling
-                setSettings({ ...settings, enabled: true, country: orgAddress.country || "", state: orgAddress.region || "" });
+              if (newEnabled && !settings.country) {
+                // First-time enable: validate org address and pre-populate
+                const rawCountry = orgAddress?.country || "";
+                const countryISO = resolveISO(rawCountry);
+                if (!countryISO) {
+                  toast.error("Please set your organization's country in Organization Info settings before enabling tax collection.");
+                  return;
+                }
+                const state = orgAddress?.region || "";
+                const matches = taxEntries.filter((e: any) =>
+                  e.country_code === countryISO &&
+                  (!state || !e.state_code || e.state_code === state)
+                );
+                if (matches.length === 0) {
+                  toast.error(`No tax rules found for ${countryISO}${state ? "/" + state : ""}. Please add tax rules in the Tax Table first.`);
+                  return;
+                }
+                setSettings({ ...settings, enabled: true, country: countryISO, state });
               } else {
                 setSettings({ ...settings, enabled: newEnabled });
               }

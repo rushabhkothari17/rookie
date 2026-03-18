@@ -451,7 +451,7 @@ function _applyBrandingToDOM(s: Record<string, any>) {
       set("--aa-primary-fg",    "#ffffff");
       set("--aa-footer-text",       "#f1f5f9");  // slate-100
       set("--aa-footer-text-muted", "#94a3b8");  // slate-400
-      set("--aa-footer-text-dim",   "rgba(255,255,255,0.48)");  // visible on dark bg
+      set("--aa-footer-text-dim",   "rgba(255,255,255,0.72)");  // visible on dark bg
       set("--aa-footer-border",     "rgba(255,255,255,0.08)");
     } else {
       // Light primary — use dark text

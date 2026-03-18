@@ -567,19 +567,17 @@ export function OrdersTab() {
           <div className="space-y-3">
             <div className="space-y-1">
               <RequiredLabel className="text-slate-500 font-normal">Customer Email</RequiredLabel>
-              <input
-                list="manual-order-customers"
-                placeholder="customer@example.com"
-                value={manualOrder.customer_email}
-                onChange={e => setManualOrder({ ...manualOrder, customer_email: e.target.value })}
-                className="w-full h-9 text-sm border border-slate-200 rounded px-3 bg-white text-slate-900"
+              <SearchableSelect
+                options={users.map((u: any) => ({
+                  value: u.email,
+                  label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
+                }))}
+                value={manualOrder.customer_email || undefined}
+                onValueChange={v => setManualOrder({ ...manualOrder, customer_email: v })}
+                placeholder="Select or search customer..."
+                searchPlaceholder="Search by name or email..."
                 data-testid="manual-order-customer-email"
               />
-              <datalist id="manual-order-customers">
-                {users.map((u: any) => (
-                  <option key={u.id} value={u.email}>{u.full_name ? `${u.full_name} (${u.email})` : u.email}</option>
-                ))}
-              </datalist>
             </div>
             <div className="space-y-1">
               <RequiredLabel className="text-slate-500 font-normal">Product</RequiredLabel>

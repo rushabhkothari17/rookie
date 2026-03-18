@@ -143,7 +143,7 @@ const emptyForm = (): SubFormData => ({
   currency: "GBP", billing_interval: "monthly", status: "pending",
   payment_method: "manual", processor_id: "", start_date: "", next_billing_date: "", internal_note: "",
   term_months: "", auto_cancel_on_termination: false, reminder_days: "", contract_end_date: "",
-  tax_name: "", tax_rate: "",
+  tax_name: "No tax", tax_rate: "0",
 });
 
 
@@ -339,10 +339,10 @@ function SubFormModal({
                       const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
                       setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
                     } else {
-                      setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
+                      setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
                     }
                   } else {
-                    setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
+                    setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
                   }
                 }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}

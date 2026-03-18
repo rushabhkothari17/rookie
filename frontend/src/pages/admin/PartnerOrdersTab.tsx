@@ -135,7 +135,7 @@ const emptyForm = (): OrderFormData => ({
   partner_id: "", plan_id: "", description: "", amount: "",
   currency: "GBP", status: "unpaid", payment_method: "manual",
   processor_id: "", invoice_date: "", due_date: "", paid_at: "", internal_note: "",
-  tax_name: "", tax_rate: "",
+  tax_name: "No tax", tax_rate: "0",
 });
 
 function OrderFormModal({
@@ -299,10 +299,10 @@ function OrderFormModal({
                       const ratePercent = best.rate < 1 ? parseFloat((best.rate * 100).toFixed(4)) : best.rate;
                       setForm(f => ({ ...f, partner_id: v, tax_name: best.label, tax_rate: String(ratePercent) }));
                     } else {
-                      setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
+                      setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
                     }
                   } else {
-                    setForm(f => ({ ...f, partner_id: v, tax_name: "", tax_rate: "" }));
+                    setForm(f => ({ ...f, partner_id: v, tax_name: "No tax", tax_rate: "0" }));
                   }
                 }}
                 options={tenants.map(t => ({ value: t.id, label: t.name }))}

@@ -70,8 +70,8 @@ export function StickyTableScroll({ children, className = "" }: Props) {
       {visible && (
         <div
           ref={barRef}
-          className="fixed z-50 overflow-x-scroll bg-white/80 backdrop-blur-sm border-t border-slate-200 shadow-sm"
-          style={{ ...barStyle, height: 20 }}
+          className="fixed z-50 overflow-x-scroll sticky-scroll-bar bg-white/90 backdrop-blur-sm border-t border-slate-200 shadow-sm"
+          style={{ ...barStyle, height: 18 }}
           onScroll={onBarScroll}
         >
           <div ref={ghostRef} style={{ height: 1 }} />

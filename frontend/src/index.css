@@ -24,7 +24,7 @@
   /* Footer auto-contrast defaults (dark primary) */
   --aa-footer-text:       #f1f5f9;
   --aa-footer-text-muted: #94a3b8;
-  --aa-footer-text-dim:   rgba(255, 255, 255, 0.48);
+  --aa-footer-text-dim:   rgba(255, 255, 255, 0.72);
   --aa-footer-border:     rgba(255,255,255,0.08);
 }
 
@@ -1291,6 +1291,12 @@ select:focus-visible {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Sticky table scrollbar ─────────────────────────────────────────────── */
+.sticky-scroll-bar::-webkit-scrollbar         { height: 14px; }
+.sticky-scroll-bar::-webkit-scrollbar-track   { background: #e2e8f0; border-radius: 0; }
+.sticky-scroll-bar::-webkit-scrollbar-thumb   { background: #64748b; border-radius: 6px; border: 2px solid #e2e8f0; }
+.sticky-scroll-bar::-webkit-scrollbar-thumb:hover { background: #475569; }
 
 /* ── Sticky table header blur ────────────────────────────────────────────── */
 .aa-sticky-header {

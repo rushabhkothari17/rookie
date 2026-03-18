@@ -114,17 +114,23 @@ const SideTab = ({ value, label, testId }: { value: string; label: string; testI
 
 /** Accordion section header with section icon */
 const SectionHeader = ({
-  label, sectionId, expanded, onToggle,
-}: { label: string; sectionId: string; expanded: boolean; onToggle: (id: string) => void }) => {
+  label, sectionId, expanded, onToggle, onCollapsedClick,
+}: { label: string; sectionId: string; expanded: boolean; onToggle: (id: string) => void; onCollapsedClick?: () => void }) => {
   const collapsed = React.useContext(CollapsedCtx);
   const SectionIcon = SECTION_ICONS[sectionId] || LayoutGrid;
 
   if (collapsed) {
     return (
-      <div className="px-2 pt-3 pb-1 flex justify-center">
-        <div title={label} className="w-full flex justify-center">
-          <SectionIcon size={14} style={{ opacity: 0.45, color: "var(--aa-muted)" }} />
-        </div>
+      <div className="px-1 pt-2 pb-0.5">
+        <button
+          type="button"
+          onClick={onCollapsedClick}
+          title={label}
+          className="w-full flex justify-center items-center py-1.5 rounded transition-colors hover:bg-[var(--aa-surface)]"
+        >
+          <SectionIcon size={14} style={{ color: "var(--aa-muted)", opacity: 0.7 }} />
+        </button>
+        <div className="mx-2 h-px my-1" style={{ background: "color-mix(in srgb, var(--aa-border) 50%, transparent)" }} />
       </div>
     );
   }
@@ -161,6 +167,16 @@ const TAB_SECTIONS: Record<string, string> = {
 };
 
 /** Accordion section header for the admin sidebar — new version defined above */
+
+const SECTION_DEFAULT_TABS: Record<string, string> = {
+  "platform": "tenants",
+  "my-billing": "plan-billing",
+  "people": "users",
+  "commerce": "catalog",
+  "content": "resources",
+  "settings": "org-info",
+  "integrations": "integrations",
+};
 
 export default function Admin() {
   const { user: authUser, permissions } = useAuth();
@@ -240,6 +256,12 @@ export default function Admin() {
     if (s) setExpandedSection(s);
   }, [activeTab]);
   const toggleSection = (id: string) => setExpandedSection(prev => prev === id ? "" : id);
+  const handleExpandSection = (sectionId: string) => {
+    setSidebarCollapsed(false);
+    setExpandedSection(sectionId);
+    const defaultTab = SECTION_DEFAULT_TABS[sectionId];
+    if (defaultTab) setActiveTab(defaultTab);
+  };
 
   useEffect(() => {
     try { localStorage.setItem("admin_active_tab", activeTab); } catch {}
@@ -376,8 +398,8 @@ export default function Admin() {
             {/* ── PLATFORM section (platform_admin only, not viewing as tenant) ── */}
             {showPartnerOrgs && (
               <>
-                <SectionHeader label="Platform" sectionId="platform" expanded={expandedSection === "platform"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "platform") && (
+                <SectionHeader label="Platform" sectionId="platform" expanded={expandedSection === "platform"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("platform")} />
+                {expandedSection === "platform" && (
                   <>
                     <SideTab value="tenants" testId="admin-tab-tenants" label="Partner Orgs" />
                     <SideTab value="plans" testId="admin-tab-plans" label="Plans" />
@@ -397,8 +419,8 @@ export default function Admin() {
             {/* ── MY BILLING section (partner admins only) ── */}
             {isPartnerAdmin && (
               <>
-                <SectionHeader label="My Billing" sectionId="my-billing" expanded={expandedSection === "my-billing"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "my-billing") && (
+                <SectionHeader label="My Billing" sectionId="my-billing" expanded={expandedSection === "my-billing"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("my-billing")} />
+                {expandedSection === "my-billing" && (
                   <>
                     <SideTab value="plan-billing" testId="admin-tab-plan-billing" label="Plan &amp; Billing" />
                     <SideTab value="usage" testId="admin-tab-usage" label="Usage &amp; Limits" />
@@ -413,8 +435,8 @@ export default function Admin() {
             {/* ── PEOPLE section ── */}
             {(isSuperAdmin || hasModule("users") || hasModule("customers")) && (
               <>
-                <SectionHeader label="People" sectionId="people" expanded={expandedSection === "people"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "people") && (
+                <SectionHeader label="People" sectionId="people" expanded={expandedSection === "people"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("people")} />
+                {expandedSection === "people" && (
                   <>
                     {(isSuperAdmin || hasModule("users")) && (
                       <SideTab value="users" testId="admin-tab-users" label="Users" />
@@ -428,8 +450,8 @@ export default function Admin() {
             {/* ── COMMERCE section ── */}
             {(hasModule("orders") || hasModule("subscriptions") || hasModule("products")) && (
               <>
-                <SectionHeader label="Commerce" sectionId="commerce" expanded={expandedSection === "commerce"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "commerce") && (
+                <SectionHeader label="Commerce" sectionId="commerce" expanded={expandedSection === "commerce"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("commerce")} />
+                {expandedSection === "commerce" && (
                   <>
                     {hasModule("products") && <SideTab value="catalog" testId="admin-tab-catalog" label="Products" />}
                     {hasModule("products") && <SideTab value="filters" testId="admin-tab-filters" label="Filters" />}
@@ -444,8 +466,8 @@ export default function Admin() {
             {/* ── CONTENT section ── */}
             {hasModule("content") && (
               <>
-                <SectionHeader label="Content" sectionId="content" expanded={expandedSection === "content"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "content") && (
+                <SectionHeader label="Content" sectionId="content" expanded={expandedSection === "content"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("content")} />
+                {expandedSection === "content" && (
                   <>
                     <SideTab value="resources" testId="admin-tab-resources" label="Resources" />
                     <SideTab value="documents" testId="admin-tab-documents" label="Documents" />
@@ -458,8 +480,8 @@ export default function Admin() {
             {/* ── SETTINGS section ── */}
             {hasModule("settings") && (
               <>
-                <SectionHeader label="Settings" sectionId="settings" expanded={expandedSection === "settings"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "settings") && (
+                <SectionHeader label="Settings" sectionId="settings" expanded={expandedSection === "settings"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("settings")} />
+                {expandedSection === "settings" && (
                   <>
                     <SideTab value="org-info" testId="admin-tab-org-info" label="Organization Info" />
                     <SideTab value="taxes" testId="admin-tab-taxes" label="Taxes" />
@@ -476,8 +498,8 @@ export default function Admin() {
             {/* ── INTEGRATIONS section ── */}
             {hasModule("integrations") && (
               <>
-                <SectionHeader label="Integrations" sectionId="integrations" expanded={expandedSection === "integrations"} onToggle={toggleSection} />
-                {(sidebarCollapsed || expandedSection === "integrations") && (
+                <SectionHeader label="Integrations" sectionId="integrations" expanded={expandedSection === "integrations"} onToggle={toggleSection} onCollapsedClick={() => handleExpandSection("integrations")} />
+                {expandedSection === "integrations" && (
                   <>
                     <SideTab value="integrations" testId="admin-tab-integrations" label="Connect Services" />
                     {isPlatformAdmin && (
