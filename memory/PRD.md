@@ -677,7 +677,32 @@ Build a white-label service commerce platform with:
 - Build new landing page
 - Allow customers to browse their own submission history
 
-### P2 — Future
+### Session: Mar 2026 - Checkout & Renewal Flow Overhaul (18 Critical Fixes)
+**Critical Bugs Fixed:**
+1. **Missing tenant_id on Stripe orders** — `create_checkout_session` order_doc now includes `tenant_id` (orders visible to partners)
+2. **IDOR vulnerability in checkout_status** — payment_transactions now store `customer_id`; IDOR guard correctly blocks cross-customer access
+3. **Lost subscriptions (browser close)** — `invoice.paid` webhook fallback creates subscription if `billing_reason=subscription_create` and frontend missed polling
+4. **Stripe renewal_date stuck** — webhook advances `renewal_date` via `advance_billing_date` after each renewal payment
+5. **GoCardless renewal_date stuck** — webhook advances `renewal_date` after each GoCardless payment confirmation
+6. **No initial order for GoCardless subscriptions** — `complete_gocardless_redirect` now creates `subscription_start` order when mandate established
+7. **billing_interval missing on bank-transfer subscriptions** — `checkout_bank_transfer` stores `billing_interval` from product
+8. **billing_interval missing on Stripe subscriptions** — `checkout_status` subscription fallback stores `billing_interval`
+
+**Logic Gaps Fixed:**
+9. **FX conversion missing on Stripe renewals** — `base_currency_amount` now FX-converted from transaction currency to base currency
+10. **Bank-transfer subscription missing tenant_id** — subscription document now includes `tenant_id`
+11. **Bank-transfer one-time order missing tenant_id** — order_doc now includes `tenant_id`
+12. **FX conversion missing on GoCardless renewals** — `base_currency_amount` FX-converted
+13. **checkout_status subscription fallback missing tenant_id** — reads `order.tenant_id` (now available after fix #1)
+14. **Scheduler renewal orders missing financial fields** — now include `tax_amount`, `tax_rate`, `base_currency`, `base_currency_amount`
+15. **dispatch_event sends stale renewal_date** — event now dispatched with NEW renewal_date after advance
+16-18. **Various FX conversions, initial GoCardless order cross-reference** — all fixed
+
+**Files modified:** `checkout.py`, `webhooks.py`, `gocardless.py`, `scheduler_service.py`
+**Test result:** 34/34 backend tests passed (iteration_314.json)
+
+### P0 — Next Priority
+
 - Google Drive & OneDrive Integration
 - Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button)
 - Move `ProductConditionBuilder` to shared components directory (Refactor)
