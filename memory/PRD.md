@@ -666,6 +666,12 @@ Build a white-label service commerce platform with:
 12. **UX**: Subtotal/Fee/Total labels in edit dialog now show actual order currency code.
 - **Tested**: iteration_312 — 100% (23/23 backend + 14/15 frontend, 1 blocked by Radix Select selector not a bug)
 
+### Phase 31: Subscriptions Module — 19 Gap Fixes (Mar 2026)
+- **Bug#1-7**: renew-now USD currency fix, billing-interval-aware date advancement (biannual+weekly added to advance_billing_date), contract_end_date null for term_months=0, billing_interval stored in model+DB, renewal_date now actually saved in update, scheduler advances customer renewal_date, cancellation email now resolves customer→user→email
+- **Issues#8-13**: payment_method field added to create, SubscriptionUpdate has billing_interval+currency, email multi-filter uses $in, cancel permission changed to "edit", CSV export respects all active filters, import template uses billing_interval
+- **Frontend#14-18**: amount label uses actual currency, billing_interval+currency editable in edit, Renew button guarded to active/unpaid, payment_method in create form, Interval column in table
+- **Tested**: iteration_313 — 100% (30/30 backend + 5/5 frontend)
+
 ### P2 — Upcoming  
 - Add radio filters for Role & Status columns in Users table
 - Build new landing page
