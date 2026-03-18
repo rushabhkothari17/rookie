@@ -650,8 +650,21 @@ Build a white-label service commerce platform with:
 
 - **Tested**: iteration_311 — 100% (24/24 backend + 11/11 frontend)
 
-### P0 — Upcoming
-- Implement AI Chatbot
+### Phase 30: Orders Module — 17 Gap Fixes (Mar 2026)
+**Critical bug fixes + validations + functional improvements:**
+1. **Bug#1 fixed**: `refund_service.py` compared cents vs currency units for status — now `new_refunded >= int(total * 100)`. $50 refund on $100 order correctly sets `partially_refunded`.
+2. **Bug#2 fixed**: Refund dialog "Already Refunded" showed hardcoded `$` — now uses order currency.
+3. **Validations added** (frontend `handleCreateManual` + `handleEdit`): payment_date required when status=paid, discount≤subtotal, quantity≥1, subtotal≥0, total≥0, refund amount>0.
+4. **Functional#10**: Refunded column added to orders table (stores in cents, displays divided by 100).
+5. **Functional#11**: Refund History dialog — "Refunds" button on refunded orders, calls `GET /admin/orders/{id}/refunds`.
+6. **Functional#12**: Status filter now supports multi-select (`$in` query) instead of exact match.
+7. **Functional#13**: Partner filter is now server-side (resolves codes → tenant IDs via DB lookup).
+8. **Functional#14**: Currency dropdown uses `useSupportedCurrencies` hook instead of 7 hardcoded values.
+9. **Functional#15**: Edit order auto-recalculates `tax_amount` from `tax_rate` when subtotal changes.
+10. **Functional#16**: Create manual order: tax included in total; live preview shows "Tax (X%): Y + Total: Z".
+11. **Functional#17**: Edit order status change away from "paid" auto-clears `payment_date`.
+12. **UX**: Subtotal/Fee/Total labels in edit dialog now show actual order currency code.
+- **Tested**: iteration_312 — 100% (23/23 backend + 14/15 frontend, 1 blocked by Radix Select selector not a bug)
 
 ### P2 — Upcoming  
 - Add radio filters for Role & Status columns in Users table

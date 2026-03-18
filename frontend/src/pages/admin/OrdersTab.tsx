@@ -535,17 +535,17 @@ export function OrdersTab() {
                 </div>
                 {/* Subtotal */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Subtotal ($)</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Subtotal ({selectedOrder?.currency || "USD"})</label>
                   <Input type="number" step="0.01" value={selectedOrder.subtotal ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, subtotal: parseFloat(e.target.value) || 0 })} data-testid="admin-order-subtotal-input" />
                 </div>
                 {/* Fee */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Fee ($)</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Fee ({selectedOrder?.currency || "USD"})</label>
                   <Input type="number" step="0.01" value={selectedOrder.fee ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, fee: parseFloat(e.target.value) || 0 })} data-testid="admin-order-fee-input" />
                 </div>
                 {/* Total */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Total ($)</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Total ({selectedOrder?.currency || "USD"})</label>
                   <Input type="number" step="0.01" value={selectedOrder.total ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, total: parseFloat(e.target.value) || 0 })} data-testid="admin-order-total-input" />
                 </div>
                 {/* Subscription ID */}
