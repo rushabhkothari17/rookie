@@ -778,6 +778,15 @@ Build a white-label service commerce platform with:
 - Google Drive & OneDrive Integration
 - Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button)
 
+### Session: Mar 2026 - Commerce Modules Audit (Round 4: Customers, Products, Taxes, Promo Codes, Enquiries)
+**5 Bugs Fixed & Verified (iteration_318.json — 18/18 backend tests + 5/5 UI verifications passed):**
+1. **[Customers/Backend] Partner filter broken**: Filter compared partner_code strings (e.g. "edd") against tenant_id (UUID), always returning 0 results. Fixed by resolving partner codes → tenant UUIDs via DB lookup before filtering. (`customers.py` lines 213-223)
+2. **[Products/Frontend] Toggle active corrupts content fields**: `handleToggleActive` sent only `{name, is_active}` to PUT endpoint, which unconditionally cleared `card_tag`, `card_description`, `card_bullets`, `description_long`, `bullets`, `show_price_breakdown`, `enquiry_form_id`, `visibility_conditions`, `price_rounding`, `tags`. Fixed by including all content fields from the existing product data. (`ProductsTab.tsx`)
+3. **[Promo Codes/Frontend] Status column blank + filter broken**: `promo.status` was always undefined — backend never returns a status field. Added `getPromoStatus()` helper computing status from `enabled`, `expiry_date`, `usage_count vs max_uses`. Updated status column display and filter logic. (`PromoCodesTab.tsx`)
+4. **[Enquiries/Frontend] Create form showed inactive products**: Products dropdown fetched all products including inactive ones. Added `?status=active` filter. (`EnquiriesTab.tsx`)
+5. **[Tax Summary/Frontend] Grand total mixed currencies**: "Total Tax Collected" stat card summed across all currencies (meaningless). Now shows per-currency totals (e.g., "USD 40.00"). (`TaxesTab.tsx`)
+**Bonus fix**: Removed incorrect "Expiry date is required" validation from Promo Code create form (backend accepts null, allowing non-expiring promo codes).
+
 ### P3 — Future / Backlog
 - Move `ProductConditionBuilder` to shared components directory (Refactor)
 - UsersTab.tsx refactor (1200+ lines, break into smaller components)

@@ -232,7 +232,7 @@ export function PromoCodesTab() {
     if (isPercent && newPromo.discount_value > 100) { toast.error("Percentage discount cannot exceed 100%"); return; }
     if (!newPromo.applies_to) { toast.error("Applies to is required"); return; }
     if (!newPromo.applies_to_products) { toast.error("Product eligibility is required"); return; }
-    if (!newPromo.expiry_date) { toast.error("Expiry date is required"); return; }
+    // expiry_date is optional — no expiry means the code never expires
     setSaving(true);
     try {
       await api.post("/admin/promo-codes", { ...newPromo, expiry_date: newPromo.expiry_date || null, max_uses: newPromo.max_uses ? parseInt(newPromo.max_uses) : null });
