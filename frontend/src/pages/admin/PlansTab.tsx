@@ -37,6 +37,7 @@ type Plan = {
   warning_threshold_pct: number;
   tenant_count?: number;
   is_default?: boolean;
+  is_readonly?: boolean;
   max_users: number | null;
   max_storage_mb: number | null;
   max_user_roles: number | null;
@@ -141,7 +142,7 @@ const defaultForm = (): FormState => ({
   warning_threshold_pct: "80",
   is_public: "false",
   monthly_price: "",
-  currency: "GBP",
+  currency: "USD",
   ...Object.fromEntries(LIMIT_FIELDS.map(f => [f.key, ""])),
 });
 
@@ -152,7 +153,7 @@ function planToForm(plan: Plan): FormState {
     warning_threshold_pct: String(plan.warning_threshold_pct ?? 80),
     is_public: plan.is_public ? "true" : "false",
     monthly_price: plan.monthly_price != null ? String(plan.monthly_price) : "",
-    currency: plan.currency || "GBP",
+    currency: plan.currency || "USD",
     ...Object.fromEntries(
       LIMIT_FIELDS.map(f => [f.key, plan[f.key as keyof Plan] !== null && plan[f.key as keyof Plan] !== undefined ? String(plan[f.key as keyof Plan]) : ""])
     ),
@@ -166,7 +167,7 @@ function formToPayload(form: FormState) {
     warning_threshold_pct: parseInt(form.warning_threshold_pct) || 80,
     is_public: form.is_public === "true",
     monthly_price: form.monthly_price !== "" ? parseFloat(form.monthly_price) : null,
-    currency: form.currency || "GBP",
+    currency: form.currency || "USD",
   };
   LIMIT_FIELDS.forEach(({ key }) => {
     payload[key] = form[key] !== "" ? parseInt(form[key]) : null;
@@ -514,7 +515,7 @@ function PlansSection() {
                           {expanded === plan.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setLogsPlan(plan)} data-testid={`logs-plan-${plan.id}`} title="Audit logs"><ScrollText className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => setEditPlan(plan)} data-testid={`edit-plan-${plan.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => !plan.is_readonly && setEditPlan(plan)} data-testid={`edit-plan-${plan.id}`} title={plan.is_readonly ? "Cannot edit: this is the default read-only plan" : "Edit"} disabled={!!plan.is_readonly} className={plan.is_readonly ? "opacity-40 cursor-not-allowed" : ""}><Pencil className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => handleToggle(plan)} data-testid={`toggle-plan-${plan.id}`} title={plan.is_active ? "Deactivate" : "Activate"} disabled={plan.is_default}>
                           {plan.is_active ? <PowerOff className="h-4 w-4 text-slate-400" /> : <Power className="h-4 w-4 text-emerald-500" />}
                         </Button>

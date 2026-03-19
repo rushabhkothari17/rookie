@@ -60,6 +60,12 @@ async def create_coupon(body: CouponCreate, admin: Dict[str, Any] = Depends(requ
         raise HTTPException(400, "discount_type must be 'percentage' or 'fixed_amount'")
     if body.applies_to not in ("ongoing", "one_time", "both"):
         raise HTTPException(400, "applies_to must be 'ongoing', 'one_time', or 'both'")
+    # Validate that any referenced plan IDs actually exist
+    if body.applicable_plan_ids:
+        found_ids = {p["id"] for p in await db.plans.find({"id": {"$in": body.applicable_plan_ids}}, {"_id": 0, "id": 1}).to_list(100)}
+        invalid = [pid for pid in body.applicable_plan_ids if pid not in found_ids]
+        if invalid:
+            raise HTTPException(400, f"Plan(s) not found: {', '.join(invalid[:3])}")
     doc = {
         "id": make_id(), "code": code,
         "internal_note": body.internal_note or "",
@@ -87,6 +93,12 @@ async def update_coupon(coupon_id: str, body: CouponUpdate, admin: Dict[str, Any
     if not coupon:
         raise HTTPException(404, "Coupon not found")
     updates = {k: v for k, v in body.dict(exclude_unset=True).items()}
+    # Validate plan IDs if being updated
+    if "applicable_plan_ids" in updates and updates["applicable_plan_ids"]:
+        found_ids = {p["id"] for p in await db.plans.find({"id": {"$in": updates["applicable_plan_ids"]}}, {"_id": 0, "id": 1}).to_list(100)}
+        invalid = [pid for pid in updates["applicable_plan_ids"] if pid not in found_ids]
+        if invalid:
+            raise HTTPException(400, f"Plan(s) not found: {', '.join(invalid[:3])}")
     if "code" in updates:
         updates["code"] = updates["code"].upper().strip()
     updates["updated_at"] = now_iso()

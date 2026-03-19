@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from core.helpers import make_id, now_iso
 from core.security import pwd_context
-from core.tenant import require_platform_admin, require_platform_super_admin, DEFAULT_TENANT_ID, get_tenant_admin, get_tenant_filter, tenant_id_of
+from core.tenant import require_platform_admin, require_platform_super_admin, DEFAULT_TENANT_ID, get_tenant_admin, get_tenant_filter, tenant_id_of, is_platform_admin
 from db.session import db
 from models import TenantCreate, TenantUpdate, CreatePartnerAdminRequest
 from services.audit_service import create_audit_log
@@ -60,8 +60,8 @@ async def admin_create_partner(
         raise HTTPException(status_code=400, detail="Organization name must be 100 characters or fewer")
     if len(admin_name) > 50:
         raise HTTPException(status_code=400, detail="Admin name must be 50 characters or fewer")
-    if len(admin_email) > 50:
-        raise HTTPException(status_code=400, detail="Admin email must be 50 characters or fewer")
+    if len(admin_email) > 320:
+        raise HTTPException(status_code=400, detail="Admin email must be 320 characters or fewer")
     if not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', admin_email):
         raise HTTPException(status_code=400, detail="Invalid email address format")
 
@@ -117,8 +117,13 @@ async def admin_create_partner(
         if free_trial:
             limits = {k: v for k, v in free_trial.items() if k.startswith("max_")}
             await db.tenants.update_one({"id": tenant_id}, {"$set": {
-                "license": {"plan_id": free_trial["id"], "plan_name": free_trial["name"],
-                            "assigned_at": now, **limits}
+                "license": {
+                    "plan_id": free_trial["id"],
+                    "plan": free_trial["name"],
+                    "warning_threshold_pct": free_trial.get("warning_threshold_pct", 80),
+                    "assigned_at": now,
+                    **limits,
+                }
             }})
     except Exception:
         pass
@@ -238,7 +243,7 @@ async def deactivate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(requ
 async def update_tenant_address(tenant_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Update tenant's organization address. Platform admins can update any tenant; partner admins only their own."""
     actor_tid = tenant_id_of(admin)
-    is_platform = admin.get("role") in ("platform_admin", "admin")
+    is_platform = is_platform_admin(admin)
     if not is_platform and actor_tid != tenant_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this tenant's address")
 

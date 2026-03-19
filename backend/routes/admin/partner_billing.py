@@ -793,7 +793,8 @@ async def _reset_partner_to_free_trial(partner_id: str) -> None:
         await db.tenants.update_one({"id": partner_id}, {"$set": {
             "license": {
                 "plan_id": free_trial["id"],
-                "plan_name": free_trial["name"],
+                "plan": free_trial["name"],
+                "warning_threshold_pct": free_trial.get("warning_threshold_pct", 80),
                 "assigned_at": now_iso(),
                 **limits,
             }

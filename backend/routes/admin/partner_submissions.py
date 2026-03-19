@@ -42,9 +42,12 @@ async def list_partner_submissions(
     }
 
 
+from pydantic import Field as PydanticField
+
+
 class SubmissionResolve(BaseModel):
     action: str  # "approve" | "reject"
-    resolution_note: Optional[str] = None
+    resolution_note: Optional[str] = PydanticField(None, max_length=5000)
 
 
 @router.put("/admin/partner-submissions/{submission_id}")
@@ -53,7 +56,11 @@ async def resolve_partner_submission(
     payload: SubmissionResolve,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    """Approve or reject a partner submission. Only platform admins."""
+    """Approve or reject a partner submission. Only platform admins.
+
+    Note: effective_date in the submission is informational only.
+    Plan changes are applied immediately upon approval.
+    """
     if not is_platform_admin(admin):
         raise HTTPException(status_code=403, detail="Only platform admins can resolve submissions")
 
@@ -80,19 +87,24 @@ async def resolve_partner_submission(
     if payload.action == "approve" and sub.get("type") == "plan_downgrade" and sub.get("requested_plan_id"):
         new_plan = await db.plans.find_one({"id": sub["requested_plan_id"]}, {"_id": 0})
         if new_plan:
-            limits = {k: v for k, v in new_plan.items() if k.startswith("max_")}
+            # Get existing license to preserve warning_threshold_pct and any per-tenant overrides
+            tenant_doc = await db.tenants.find_one({"id": sub["partner_id"]}, {"_id": 0, "license": 1})
+            existing_license = (tenant_doc or {}).get("license") or {}
+
+            plan_limits = {k: v for k, v in new_plan.items() if k.startswith("max_")}
+            new_license = {
+                "plan_id": new_plan["id"],
+                "plan": new_plan["name"],  # Use "plan" key to match DEFAULT_LICENSE
+                "warning_threshold_pct": new_plan.get("warning_threshold_pct", 80),
+                "assigned_at": now,
+                "effective_from": existing_license.get("effective_from"),
+                **plan_limits,
+            }
+
             await db.tenants.update_one(
                 {"id": sub["partner_id"]},
-                {"$set": {
-                    "license": {
-                        "plan_id": new_plan["id"],
-                        "plan_name": new_plan["name"],
-                        "assigned_at": now,
-                        **limits,
-                    }
-                }},
+                {"$set": {"license": new_license}},
             )
-            # Also update any active subscription plan reference
             # Update plan reference on subscriptions but preserve their negotiated amounts
             await db.partner_subscriptions.update_many(
                 {"partner_id": sub["partner_id"], "status": {"$in": ["active", "pending"]}},
@@ -114,5 +126,33 @@ async def resolve_partner_submission(
             "resolution_note": payload.resolution_note,
         },
     )
+
+    # Notify the partner admin via email (non-blocking)
+    try:
+        import asyncio as _asyncio
+        from core.tenant import DEFAULT_TENANT_ID
+        from services.email_service import EmailService
+
+        partner_admin = await db.users.find_one(
+            {"tenant_id": sub.get("partner_id"), "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+            {"_id": 0, "email": 1, "full_name": 1},
+        )
+        if partner_admin and partner_admin.get("email"):
+            type_label = "Plan Downgrade" if sub.get("type") == "plan_downgrade" else "Support Request"
+            _asyncio.create_task(EmailService.send(
+                trigger="partner_submission_resolved",
+                recipient=partner_admin["email"],
+                variables={
+                    "partner_name": sub.get("partner_name", ""),
+                    "submission_type": type_label,
+                    "submission_status": new_status.capitalize(),
+                    "resolution_note": payload.resolution_note or "—",
+                    "requested_plan_name": sub.get("requested_plan_name", "—"),
+                },
+                db=db,
+                tenant_id=DEFAULT_TENANT_ID,
+            ))
+    except Exception:
+        pass  # Email is best-effort; don't fail the resolution
 
     return {"message": f"Submission {new_status}", "status": new_status}

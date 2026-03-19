@@ -460,6 +460,33 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "available_variables": ["{{store_name}}", "{{partner_name}}", "{{subscription_number}}", "{{plan_name}}", "{{amount}}", "{{currency}}", "{{renewal_date}}", "{{billing_interval}}"],
         "is_system": True,
     },
+    {
+        "trigger": "partner_submission_resolved",
+        "label": "Partner Submission Resolved",
+        "description": "Sent to the partner admin when a plan-change or support submission is approved or rejected.",
+        "category": "partner_billing",
+        "subject": "Your {{submission_type}} submission has been {{submission_status}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Submission Update: {{submission_status}}</h2>
+  <p style="color:#475569;margin-top:16px;">Hi {{partner_name}},</p>
+  <p style="color:#475569;">Your <strong>{{submission_type}}</strong> submission has been reviewed and marked as <strong>{{submission_status}}</strong>.</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:160px">Type</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{submission_type}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Status</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{submission_status}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Requested Plan</td><td style="padding:6px 0;color:#1e293b">{{requested_plan_name}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Note</td><td style="padding:6px 0;color:#1e293b">{{resolution_note}}</td></tr>
+    </table>
+  </div>
+  <p style="color:#475569;font-size:13px;">If you have any questions, please contact your platform administrator.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{partner_name}}", "{{submission_type}}", "{{submission_status}}", "{{requested_plan_name}}", "{{resolution_note}}"],
+        "is_system": True,
+    },
 ]
 
 

@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
+import re as _re
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
@@ -79,7 +81,7 @@ async def list_plans(admin: Dict[str, Any] = Depends(require_platform_admin)):
 @router.post("/admin/plans")
 async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(require_platform_admin)):
     """Create a new plan."""
-    existing = await db.plans.find_one({"name": payload.name}, {"_id": 0, "id": 1})
+    existing = await db.plans.find_one({"name": {"$regex": f"^{_re.escape(payload.name)}$", "$options": "i"}}, {"_id": 0, "id": 1})
     if existing:
         raise HTTPException(status_code=409, detail="A plan with this name already exists")
 
@@ -94,7 +96,7 @@ async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(requi
         "is_default": False,
         "warning_threshold_pct": payload.warning_threshold_pct,
         "monthly_price": payload.monthly_price,
-        "currency": payload.currency or "GBP",
+        "currency": payload.currency or "USD",
         **{f: getattr(payload, f) for f in LIMIT_FIELDS},
         "created_at": now_iso(),
         "updated_at": now_iso(),

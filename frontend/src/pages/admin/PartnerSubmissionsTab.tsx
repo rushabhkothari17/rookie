@@ -16,8 +16,8 @@ interface Submission {
   partner_id: string;
   partner_name: string;
   type: string;
-  current_plan_name: string;
-  requested_plan_name: string;
+  current_plan_name: string | null;
+  requested_plan_name: string | null;
   message: string;
   status: "pending" | "approved" | "rejected";
   effective_date: string;
@@ -55,7 +55,11 @@ export function PartnerSubmissionsTab() {
     if (colFilters.partnerNames.length) r = r.filter(i => colFilters.partnerNames.includes(i.partner_name));
     if (colFilters.types.length) r = r.filter(i => colFilters.types.includes(i.type));
     if (colFilters.planChanges.length) {
-      r = r.filter(i => colFilters.planChanges.includes(`${i.current_plan_name} → ${i.requested_plan_name}`));
+      r = r.filter(i => {
+        const from = i.current_plan_name || "—";
+        const to = i.requested_plan_name || "—";
+        return colFilters.planChanges.includes(`${from} → ${to}`);
+      });
     }
     if (colFilters.statuses.length) r = r.filter(i => colFilters.statuses.includes(i.status));
     if (colFilters.effective.from) r = r.filter(i => i.effective_date && i.effective_date >= colFilters.effective.from);
@@ -79,7 +83,11 @@ export function PartnerSubmissionsTab() {
   }, [items, colFilters, colSort]);
   const partnerOpts = useMemo(() => Array.from(new Set(items.map(i => i.partner_name).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [items]);
   const typeOpts = useMemo(() => Array.from(new Set(items.map(i => i.type).filter((v): v is string => !!v))).sort().map(v => [v, TYPE_LABELS[v] || v] as [string, string]), [items]);
-  const planChangeOpts = useMemo(() => Array.from(new Set(items.map(i => `${i.current_plan_name} → ${i.requested_plan_name}`).filter(v => v !== "undefined → undefined" && v !== " → "))).sort().map(v => [v, v] as [string, string]), [items]);
+  const planChangeOpts = useMemo(() => Array.from(new Set(items.map(i => {
+    const from = i.current_plan_name || "—";
+    const to = i.requested_plan_name || "—";
+    return `${from} → ${to}`;
+  }).filter(v => v !== "— → —"))).sort().map(v => [v, v] as [string, string]), [items]);
   const [selected, setSelected] = useState<Submission | null>(null);
   const [resolveAction, setResolveAction] = useState<"approve" | "reject">("approve");
   const [resolutionNote, setResolutionNote] = useState("");
@@ -246,11 +254,15 @@ export function PartnerSubmissionsTab() {
                   onChange={e => setResolutionNote(e.target.value)}
                   data-testid="resolution-note-input"
                   rows={3}
+                  maxLength={5000}
                 />
               </div>
               {resolveAction === "approve" && selected.type === "plan_downgrade" && (
                 <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
-                  Approving will immediately apply the plan change to {selected.partner_name}.
+                  Approving will immediately apply the plan change to <strong>{selected.partner_name}</strong>.
+                  {selected.effective_date && (
+                    <> The submitted effective date ({new Date(selected.effective_date).toLocaleDateString()}) is informational — changes take effect now.</>
+                  )}
                 </p>
               )}
             </div>
