@@ -8,7 +8,7 @@ Script to test line2 validation in signup form by:
 import requests
 import json
 
-BASE_URL = "https://checkout-flow-fix-9.preview.emergentagent.com"
+BASE_URL = "https://sub-order-check.preview.emergentagent.com"
 
 # Login as admin
 login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
