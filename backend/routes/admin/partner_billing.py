@@ -904,6 +904,13 @@ async def create_partner_stripe_checkout(
         if not stripe_interval:
             raise HTTPException(status_code=400, detail="Quarterly billing is not supported for Stripe recurring. Use monthly or annual.")
 
+        # Look up partner admin email for checkout prefill
+        partner_admin_user = await db.users.find_one(
+            {"tenant_id": sub["partner_id"], "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+            {"_id": 0, "email": 1},
+        )
+        partner_email = partner_admin_user.get("email") if partner_admin_user else None
+
         # Create ad-hoc Stripe Price
         price = stripe_sdk.Price.create(
             unit_amount=int(round(sub["amount"] * 100)),
@@ -912,7 +919,7 @@ async def create_partner_stripe_checkout(
             product_data={"name": f"Platform Subscription — {sub.get('plan_name') or sub.get('description', 'Platform Access')}"},
         )
 
-        session = stripe_sdk.checkout.Session.create(
+        session_kwargs: Dict[str, Any] = dict(
             mode="subscription",
             line_items=[{"price": price.id, "quantity": 1}],
             success_url=success_url,
@@ -929,6 +936,10 @@ async def create_partner_stripe_checkout(
                 }
             },
         )
+        if partner_email:
+            session_kwargs["customer_email"] = partner_email
+
+        session = stripe_sdk.checkout.Session.create(**session_kwargs)
         payment_url = session.url
         await db.partner_subscriptions.update_one(
             {"id": sub["id"]},
@@ -948,7 +959,14 @@ async def create_partner_stripe_checkout(
         if order.get("payment_method") != "card":
             raise HTTPException(status_code=400, detail="Order payment method must be 'card' to use Stripe checkout")
 
-        session = stripe_sdk.checkout.Session.create(
+        # Look up partner admin email for checkout prefill
+        order_partner_admin = await db.users.find_one(
+            {"tenant_id": order["partner_id"], "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+            {"_id": 0, "email": 1},
+        )
+        order_partner_email = order_partner_admin.get("email") if order_partner_admin else None
+
+        order_session_kwargs: Dict[str, Any] = dict(
             mode="payment",
             line_items=[{
                 "price_data": {
@@ -966,6 +984,10 @@ async def create_partner_stripe_checkout(
                 "partner_id": order["partner_id"],
             },
         )
+        if order_partner_email:
+            order_session_kwargs["customer_email"] = order_partner_email
+
+        session = stripe_sdk.checkout.Session.create(**order_session_kwargs)
         payment_url = session.url
         await db.partner_orders.update_one(
             {"id": order["id"]},

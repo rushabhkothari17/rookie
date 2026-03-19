@@ -819,7 +819,23 @@ Build a white-label service commerce platform with:
 - Automated dunning flow / Dunning Dashboard
 
 
-### Session: Mar 2026 - Exports Audit & Comprehensive Fix
+### Session: Mar 2026 - Stripe Email Prefill + Imports Overhaul
+**Files changed:**
+- `backend/routes/admin/partner_billing.py`: Added `customer_email` to both Stripe Checkout sessions (subscription + order) by looking up partner admin user email — emails now auto-prefilled as read-only on checkout
+- `backend/routes/admin/imports.py`: Complete rewrite — 12 bugs fixed + 3 new entities + guide endpoint
+- `frontend/src/components/admin/ImportModal.tsx`: Added "Guide" download button alongside Template button
+
+**Import bugs fixed:**
+1. **3 missing import entities** (400 on import): `resources`, `resource-categories`, `resource-templates` — all added with correct collection mappings
+2. **Wrong template column names** fixed for all modules:
+   - customers: `state_province`/`status`/`payment_mode`/`partner_map_id` → corrected to actual DB fields (`region` removed since addresses are separate; `allowed_payment_modes`, etc.)
+   - subscriptions: `product_name`→`plan_name`, `end_date`→`contract_end_date`, `next_billing_date`→`renewal_date`, `stripe_subscription_id`→`processor_id`
+   - orders: `total_amount`→`total`; `items` removed (separate collection)
+   - promo-codes: `used_count`→`usage_count`, `expires_at`→`expiry_date`, `is_active`→`enabled`, `applicable_products`→`applies_to`+`applies_to_products`+`product_ids`; sample `discount_type` "percentage"→"percent"
+3. **`bank-transactions`** was in REQUIRED_FIELDS but had no collection → removed
+4. **Dead code** in `_build_doc` (identical if/else branches) → cleaned up
+5. **`_parse_val`** skips empty cells (returns None) so existing fields are not wiped on partial import
+6. **New guide endpoint** `/api/admin/import/template/{entity}/guide` returns markdown documentation for every importable module covering ALL field keys, valid enum values, JSON format examples for complex fields (intake_schema_json question types: text, textarea, number, date, select, multi_select, radio, file, checkbox, email, phone)
 **Files changed:**
 - `backend/routes/admin/exports.py`: Complete rewrite fixing 12 bugs + adding 3 new endpoints
 - `frontend/src/pages/admin/OrdersTab.tsx`: Forward all 8 missing filters to export

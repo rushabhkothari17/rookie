@@ -106,20 +106,36 @@ export function ImportModal({ entity, entityLabel, open, onClose, onSuccess }: P
   const handleDownloadTemplate = () => {
     const API_URL = process.env.REACT_APP_BACKEND_URL || "";
     const token = localStorage.getItem("aa_token") || "";
-    const link = document.createElement("a");
-    link.href = `${API_URL}/api/admin/import/template/${entity}`;
-    // Add auth header via fetch + blob
     fetch(`${API_URL}/api/admin/import/template/${entity}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.blob())
       .then(blob => {
         const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = `import_template_${entity}.csv`;
-        link.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `import_template_${entity}.csv`;
+        a.click();
         URL.revokeObjectURL(url);
       });
+  };
+
+  const handleDownloadGuide = () => {
+    const API_URL = process.env.REACT_APP_BACKEND_URL || "";
+    const token = localStorage.getItem("aa_token") || "";
+    fetch(`${API_URL}/api/admin/import/template/${entity}/guide`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.blob() : Promise.reject())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `import_guide_${entity}.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch(() => toast.error("Guide not available for this module"));
   };
 
   const maxPreviewCols = 8;
@@ -136,16 +152,22 @@ export function ImportModal({ entity, entityLabel, open, onClose, onSuccess }: P
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Template download */}
+          {/* Template + Guide download */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
             <div>
-              <p className="text-sm font-medium text-slate-800">Download Sample Template</p>
-              <p className="text-xs text-slate-500">CSV with all fields + example row. JSON fields shown as JSON strings.</p>
+              <p className="text-sm font-medium text-slate-800">Download Resources</p>
+              <p className="text-xs text-slate-500">CSV template with example row · Markdown guide with all fields explained</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="gap-2">
-              <Download className="h-3.5 w-3.5" />
-              Template
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="gap-2" data-testid="import-template-btn">
+                <Download className="h-3.5 w-3.5" />
+                Template
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadGuide} className="gap-2" data-testid="import-guide-btn">
+                <FileText className="h-3.5 w-3.5" />
+                Guide
+              </Button>
+            </div>
           </div>
 
           {/* Drop zone */}
