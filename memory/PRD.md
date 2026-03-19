@@ -730,6 +730,26 @@ Build a white-label service commerce platform with:
 
 **Test result:** 59/59 backend tests passed (iteration_315.json); all 15 frontend features verified
 
+### Session: Feb 2026 - Deep Audit & Fixes: Partner Orgs, Plans, Usage & Limits, Partner Submissions
+**18 issues fixed across 4 modules:**
+
+1. **License key `plan` vs `plan_name` (P0):** `admin_create_partner` and `_reset_partner_to_free_trial` now store `license.plan` (not `plan_name`) to match `DEFAULT_LICENSE`. `get_tenant_license()` has backward-compat fallback: if merged plan == "unlimited" but `plan_name` exists, uses `plan_name`.
+2. **`platform_super_admin` address update (P1):** `update_tenant_address` now uses `is_platform_admin()` helper (was missing `platform_super_admin` from manual role check, giving 403s).
+3. **Admin email max_length (P1):** Raised from 50 → 320 chars in `admin_create_partner`.
+4. **`is_readonly` plan Edit button (P0):** Edit button now disabled with tooltip when `plan.is_readonly=True`. Added `is_readonly` field to Plan TypeScript type.
+5. **Coupon `applicable_plan_ids` validation (P1):** `create_coupon` and `update_coupon` now validate referenced plan IDs exist in DB before saving.
+6. **Default plan currency (P2):** Changed from hardcoded `"GBP"` → `"USD"` in PlansTab.tsx (defaultForm, planToForm, formToPayload) and plans.py backend.
+7. **Case-insensitive plan name uniqueness (P2):** `create_plan` now uses regex case-insensitive match to prevent "Starter" + "starter" duplicates.
+8. **Plan downgrade approval license (P0):** `resolve_partner_submission` now: uses `"plan"` key (not `"plan_name"`), includes `warning_threshold_pct` from new plan, and preserves `effective_from` from existing license.
+9. **Email notification on submission resolve (P1):** Non-blocking `asyncio.create_task` sends `partner_submission_resolved` email to partner admin on approve/reject. New email template added to `email_service.py`.
+10. **`effective_date` informational note (P1):** Resolve dialog now shows a note that effective_date is informational and changes apply immediately.
+11. **Resolution note `maxLength` (P2):** Frontend `Textarea` has `maxLength={5000}`; backend `SubmissionResolve` model has `max_length=5000` via Pydantic Field.
+12. **Null plan names in submissions (P2):** `Submission` TypeScript interface fields `current_plan_name`/`requested_plan_name` typed as `string | null`. `planChangeOpts` and filter display `"—"` for null values.
+13. **`partner_billing.py` license fix:** `_reset_partner_to_free_trial` also updated to use `"plan"` key + `warning_threshold_pct`.
+14. **`license_service.py` backward-compat:** Added fallback in `get_tenant_license` for legacy `plan_name` data.
+
+**Test result:** 21/22 backend tests passed (iteration_316.json), 1 skipped (no is_readonly plan in DB to test); 100% frontend verified.
+
 ### P0 — Next Priority
 
 - AI Chatbot implementation

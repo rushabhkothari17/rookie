@@ -72,7 +72,13 @@ async def get_tenant_license(tenant_id: str) -> Dict[str, Any]:
     """Return the tenant's license config, falling back to defaults."""
     tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "license": 1})
     stored = (tenant or {}).get("license") or {}
-    return {**DEFAULT_LICENSE, **stored}
+    merged = {**DEFAULT_LICENSE, **stored}
+    # Backward-compat: older records stored the plan name under "plan_name" instead of "plan".
+    # If the merged result still shows the default "unlimited" but there's a "plan_name" in the
+    # stored doc, use that value so the dashboard shows the correct plan.
+    if merged.get("plan") == DEFAULT_LICENSE["plan"] and stored.get("plan_name"):
+        merged["plan"] = stored["plan_name"]
+    return merged
 
 
 async def get_or_create_monthly_usage(tenant_id: str) -> Dict[str, Any]:
