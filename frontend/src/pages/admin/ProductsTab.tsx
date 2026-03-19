@@ -82,7 +82,21 @@ export function ProductsTab() {
 
   const handleToggleActive = async (p: any) => {
     try {
-      await api.put(`/admin/products/${p.id}`, { name: p.name, is_active: !p.is_active });
+      // Include all unconditionally-overwritten backend fields to prevent data loss
+      await api.put(`/admin/products/${p.id}`, {
+        name: p.name,
+        is_active: !p.is_active,
+        card_tag: p.card_tag ?? null,
+        card_description: p.card_description ?? null,
+        card_bullets: p.card_bullets || [],
+        description_long: p.description_long ?? null,
+        bullets: p.bullets || [],
+        show_price_breakdown: p.show_price_breakdown ?? false,
+        enquiry_form_id: p.enquiry_form_id || null,
+        visibility_conditions: p.visibility_conditions || null,
+        price_rounding: p.price_rounding || null,
+        tags: p.tags || [],
+      });
       toast.success(`Product ${p.is_active ? "deactivated" : "activated"}`);
       load();
     } catch {

@@ -20,6 +20,13 @@ import { ColHeader } from "@/components/shared/ColHeader";
 
 const INITIAL_PROMO = { code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true, promo_note: "" };
 
+const getPromoStatus = (promo: any): string => {
+  if (promo.expiry_date && new Date(promo.expiry_date) < new Date()) return "Expired";
+  if (promo.max_uses && (promo.usage_count || 0) >= promo.max_uses) return "Inactive";
+  if (!promo.enabled) return "Inactive";
+  return "Active";
+};
+
 // Defined OUTSIDE PromoCodesTab to prevent remount on every keystroke
 function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) => void, products: any[] }) {
   const isPercent = form.discount_type === "percent" || form.discount_type === "percentage";
@@ -156,7 +163,7 @@ export function PromoCodesTab() {
       const usage = `${p.usage_count || 0}${p.max_uses ? ` / ${p.max_uses}` : ""}`;
       return usageFilter.includes(usage);
     });
-    if (statusFilter.length > 0) r = r.filter(p => statusFilter.includes(p.status));
+    if (statusFilter.length > 0) r = r.filter(p => statusFilter.includes(getPromoStatus(p)));
     // Date range filters
     if (expiryFrom || expiryTo) {
       r = r.filter(p => {
@@ -318,7 +325,7 @@ export function PromoCodesTab() {
                 <TableCell>{promo.expiry_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell>{promo.usage_count}{promo.max_uses ? ` / ${promo.max_uses}` : ""}</TableCell>
                 <TableCell>{promo.created_at ? new Date(promo.created_at).toLocaleDateString("en-AU") : "—"}</TableCell>
-                <TableCell><span className={`px-2 py-0.5 rounded ${promo.status === "Active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>{promo.status}</span></TableCell>
+                <TableCell><span className={`px-2 py-0.5 rounded ${getPromoStatus(promo) === "Active" ? "bg-green-100 text-green-700" : getPromoStatus(promo) === "Expired" ? "bg-orange-100 text-orange-700" : "bg-slate-100 text-slate-600"}`}>{getPromoStatus(promo)}</span></TableCell>
                 <TableCell>
                   <button onClick={() => handleToggle(promo.id, !promo.enabled)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${promo.enabled ? "bg-slate-900" : "bg-slate-200"}`} data-testid={`admin-promo-toggle-${promo.id}`}>
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${promo.enabled ? "translate-x-4" : "translate-x-0.5"}`} />

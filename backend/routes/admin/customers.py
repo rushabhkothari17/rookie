@@ -210,13 +210,19 @@ async def admin_customers(
                 or_conditions.append({"company_name": name_regex})
             match_filters.append({"$or": or_conditions})
     
-    # Partner filter (multi-select)
+    # Partner filter (multi-select) — partner values are partner codes (e.g. "edd"), not tenant UUIDs
     if partner:
         partner_list = [p.strip() for p in partner.split(",") if p.strip()]
-        if len(partner_list) == 1:
-            match_filters.append({"tenant_id": partner_list[0]})
-        else:
-            match_filters.append({"tenant_id": {"$in": partner_list}})
+        # Resolve partner codes → tenant UUIDs
+        partner_tenants = await db.tenants.find(
+            {"code": {"$in": partner_list}}, {"_id": 0, "id": 1}
+        ).to_list(len(partner_list) + 1)
+        partner_tenant_ids = [t["id"] for t in partner_tenants]
+        if partner_tenant_ids:
+            if len(partner_tenant_ids) == 1:
+                match_filters.append({"tenant_id": partner_tenant_ids[0]})
+            else:
+                match_filters.append({"tenant_id": {"$in": partner_tenant_ids}})
     
     if search:
         safe_search = re.escape(search)

@@ -182,7 +182,7 @@ export function EnquiriesTab() {
   }, [newEnquiry.form_id, forms]);
 
   const loadDropdownData = useCallback((_tenantId?: string) => {
-    api.get("/admin/products-all?per_page=200").then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/products-all?per_page=200&status=active").then(r => setProducts(r.data.products || [])).catch(() => {});
     api.get("/admin/customers?per_page=200").then(r => {
       const custs = r.data.customers || [];
       const users = r.data.users || [];

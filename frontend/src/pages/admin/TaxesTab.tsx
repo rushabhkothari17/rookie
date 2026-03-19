@@ -993,6 +993,12 @@ function TaxSummaryPanel() {
   });
 
   const months_list = Object.keys(byMonth).sort((a, b) => b.localeCompare(a));
+  // Group by currency for meaningful totals
+  const byCurrency: Record<string, number> = {};
+  rows.forEach(r => {
+    byCurrency[r.currency] = (byCurrency[r.currency] || 0) + r.total_tax;
+  });
+  const currencyTotals = Object.entries(byCurrency).sort((a, b) => b[1] - a[1]);
   const grandTotal = rows.reduce((s, r) => s + r.total_tax, 0);
   const totalOrders = rows.reduce((s, r) => s + r.order_count, 0);
 
@@ -1020,7 +1026,17 @@ function TaxSummaryPanel() {
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs text-slate-500 uppercase tracking-wide">Total Tax Collected</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{grandTotal.toFixed(2)}</p>
+          {currencyTotals.length === 0 ? (
+            <p className="text-2xl font-bold text-slate-900 mt-1">—</p>
+          ) : currencyTotals.length === 1 ? (
+            <p className="text-2xl font-bold text-slate-900 mt-1">{currencyTotals[0][0]} {currencyTotals[0][1].toFixed(2)}</p>
+          ) : (
+            <div className="mt-1 space-y-0.5">
+              {currencyTotals.map(([cur, amt]) => (
+                <p key={cur} className="text-sm font-semibold text-slate-900">{cur} {amt.toFixed(2)}</p>
+              ))}
+            </div>
+          )}
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs text-slate-500 uppercase tracking-wide">Taxed Orders</p>
