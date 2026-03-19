@@ -405,7 +405,7 @@ class ManualSubscriptionCreate(BaseModel):
     auto_cancel_on_termination: bool = False
     reminder_days: Optional[int] = None
     billing_interval: str = Field("monthly", max_length=50)   # Fix #4
-    payment_method: str = Field("offline", max_length=50)     # Fix #8
+    payment_method: str = Field("manual", max_length=50)      # C-1: was "offline" (deprecated)
 
 
 class AdminCreateUserRequest(BaseModel):
@@ -485,6 +485,7 @@ class OrderUpdate(BaseModel):
     subtotal: Optional[float] = None
     fee: Optional[float] = None
     total: Optional[float] = None
+    currency: Optional[str] = Field(None, max_length=10)          # M-8
     internal_note: Optional[str] = Field(None, max_length=5_000)
     new_note: Optional[str] = Field(None, max_length=5_000)
     subscription_id: Optional[str] = None

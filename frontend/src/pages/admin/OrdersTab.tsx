@@ -131,7 +131,7 @@ export function OrdersTab() {
     try {
       const params = new URLSearchParams({
         page: String(p), per_page: String(PER_PAGE),
-        sort_by: colSort.col === "date" ? "created_at" : colSort.col,
+        sort_by: colSort.col,  // backend handles all colKey→field alias mapping
         sort_order: colSort.dir,
         include_deleted: String(includeDeleted),
       });
@@ -144,31 +144,20 @@ export function OrdersTab() {
       if (partnerFilter.length > 0) params.append("partner_filter", partnerFilter.join(","));
       if (payDateFrom) params.append("pay_date_from", payDateFrom);
       if (payDateTo) params.append("pay_date_to", payDateTo);
+      // X-1: server-side creation date filter (was client-side, broken)
+      if (startDate) params.append("created_from", startDate);
+      if (endDate) params.append("created_to", endDate);
+      // X-2: server-side email/customer-name filter (was client-side, broken)
+      if (emailFilter.length > 0) params.append("email_filter", emailFilter.join(","));
+      if (customerFilter.length > 0) params.append("customer_name_filter", customerFilter.join(","));
       const res = await api.get(`/admin/orders?${params}`);
-      let ords = res.data.orders || [];
-      // Client-side email filter
-      if (emailFilter.length > 0) {
-        const custUserMap: Record<string, string> = {};
-        customers.forEach((c) => { custUserMap[c.id] = userMap[c.user_id]?.email || ""; });
-        ords = ords.filter((o: any) => emailFilter.some(e => custUserMap[o.customer_id]?.toLowerCase().includes(e.toLowerCase())));
-      }
-      // Client-side customer filter
-      if (customerFilter.length > 0) {
-        ords = ords.filter((o: any) => {
-          const u = getCustomerUser(o.customer_id);
-          return customerFilter.some(c => u?.full_name?.includes(c));
-        });
-      }
-      // Client-side date filter
-      if (startDate) ords = ords.filter((o: any) => o.created_at >= startDate);
-      if (endDate) ords = ords.filter((o: any) => o.created_at <= endDate + "T23:59:59");
-      setOrders(ords);
+      setOrders(res.data.orders || []);
       setOrderItems(res.data.items || []);
       setTotalPages(res.data.total_pages || 1);
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load orders"); }
-  }, [colSort, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, partnerFilter, payDateFrom, payDateTo, emailFilter, customerFilter, startDate, endDate, customers, users]);
+  }, [colSort, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, partnerFilter, payDateFrom, payDateTo, emailFilter, customerFilter, startDate, endDate]);
 
   useEffect(() => {
     api.get("/admin/filter-options").then(r => {
@@ -202,7 +191,7 @@ export function OrdersTab() {
   const uniqueProcessorIds = orders.map(o => o.processor_id).filter(Boolean);
   const uniquePartners = Array.from(new Set(orders.map(o => o.partner_code).filter(Boolean)));
 
-  useEffect(() => { load(1); }, [colSort, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, partnerFilter, payDateFrom, payDateTo]);
+  useEffect(() => { load(1); }, [colSort, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, partnerFilter, payDateFrom, payDateTo, emailFilter, customerFilter, startDate, endDate]);
 
   // customer search for edit dialog
   const [custSearch, setCustSearch] = useState("");
@@ -310,6 +299,7 @@ export function OrdersTab() {
     if (s === "paid" || s === "completed") return "aa-badge aa-badge-success";
     if (s === "unpaid") return "aa-badge aa-badge-danger";
     if (s === "awaiting_bank_transfer" || s === "pending" || s === "pending_payment" || s === "pending_direct_debit_setup") return "aa-badge aa-badge-warning";
+    if (s === "partially_refunded") return "aa-badge aa-badge-warning";  // M-6
     if (s === "cancelled" || s === "refunded" || s === "canceled_pending") return "aa-badge aa-badge-muted";
     return "aa-badge aa-badge-muted";
   };
@@ -350,18 +340,18 @@ export function OrdersTab() {
               <ColHeader label="Customer" colKey="customer" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={customerFilter} onFilter={v => setCustomerFilter(v)} onClearFilter={() => setCustomerFilter([])} statusOptions={uniqueCustomerNames.map(c => [c, c] as [string, string])} />
               <ColHeader label="Email" colKey="email" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={emailFilter} onFilter={v => setEmailFilter(v)} onClearFilter={() => setEmailFilter([])} statusOptions={uniqueEmails.map(e => [e, e] as [string, string])} />
               <ColHeader label="Product(s)" colKey="product" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={productFilter} onFilter={v => setProductFilter(v)} onClearFilter={() => setProductFilter([])} statusOptions={uniqueProductNames.map(p => [p, p] as [string, string])} />
-              <ColHeader label="Sub #" colKey="sub_number" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={subNumberFilter} onFilter={v => setSubNumberFilter(v)} onClearFilter={() => setSubNumberFilter([])} statusOptions={uniqueSubNumbers.map(s => [s, s] as [string, string])} />
+              <ColHeader label="Sub #" colKey="subscription_number" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={subNumberFilter} onFilter={v => setSubNumberFilter(v)} onClearFilter={() => setSubNumberFilter([])} statusOptions={uniqueSubNumbers.map(s => [s, s] as [string, string])} />
               <ColHeader label="Processor ID" colKey="processor_id" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={processorIdFilter} onFilter={v => setProcessorIdFilter(v)} onClearFilter={() => setProcessorIdFilter([])} statusOptions={uniqueProcessorIds.map(p => [p, p.slice(0, 14) + "…"] as [string, string])} />
               <ColHeader label="Subtotal" colKey="subtotal" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
               <ColHeader label="Fee" colKey="fee" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
-              <ColHeader label="Tax" colKey="tax" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
+              <ColHeader label="Tax" colKey="tax_amount" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
               <ColHeader label="Total" colKey="total" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Refunded</th>
               <ColHeader label="Currency" colKey="currency" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="none" />
-              <ColHeader label="Pay Date" colKey="pay_date" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="date-range" filterValue={{ from: payDateFrom, to: payDateTo }} onFilter={v => { setPayDateFrom(v.from || ""); setPayDateTo(v.to || ""); }} onClearFilter={() => { setPayDateFrom(""); setPayDateTo(""); }} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={payMethodFilter} onFilter={v => setPayMethodFilter(v)} onClearFilter={() => setPayMethodFilter([])} statusOptions={paymentMethods.map(m => [m, m] as [string, string])} />
+              <ColHeader label="Pay Date" colKey="payment_date" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="date-range" filterValue={{ from: payDateFrom, to: payDateTo }} onFilter={v => { setPayDateFrom(v.from || ""); setPayDateTo(v.to || ""); }} onClearFilter={() => { setPayDateFrom(""); setPayDateTo(""); }} />
+              <ColHeader label="Method" colKey="payment_method" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={payMethodFilter} onFilter={v => setPayMethodFilter(v)} onClearFilter={() => setPayMethodFilter([])} statusOptions={paymentMethods.map(m => [m, m] as [string, string])} />
               <ColHeader label="Status" colKey="status" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter([])} statusOptions={orderStatuses.map(s => [s, s] as [string, string])} />
-              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={partnerFilter} onFilter={v => setPartnerFilter(v)} onClearFilter={() => setPartnerFilter([])} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner_code" sortCol={colSort.col} sortDir={colSort.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort({ col: "date", dir: "desc" })} filterType="dropdown" filterValue={partnerFilter} onFilter={v => setPartnerFilter(v)} onClearFilter={() => setPartnerFilter([])} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
@@ -536,17 +526,35 @@ export function OrdersTab() {
                 {/* Subtotal */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Subtotal ({selectedOrder?.currency || "USD"})</label>
-                  <Input type="number" step="0.01" value={selectedOrder.subtotal ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, subtotal: parseFloat(e.target.value) || 0 })} data-testid="admin-order-subtotal-input" />
+                  <Input type="number" step="0.01" value={selectedOrder.subtotal ?? ""} onChange={e => {
+                    const sub = parseFloat(e.target.value) || 0;
+                    const newTotal = Math.max(0, sub + (selectedOrder.fee || 0) + (selectedOrder.tax_amount || 0) - (selectedOrder.discount_amount || 0));
+                    setSelectedOrder({ ...selectedOrder, subtotal: sub, total: Math.round(newTotal * 100) / 100 });
+                  }} data-testid="admin-order-subtotal-input" />
                 </div>
                 {/* Fee */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Fee ({selectedOrder?.currency || "USD"})</label>
-                  <Input type="number" step="0.01" value={selectedOrder.fee ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, fee: parseFloat(e.target.value) || 0 })} data-testid="admin-order-fee-input" />
+                  <Input type="number" step="0.01" value={selectedOrder.fee ?? ""} onChange={e => {
+                    const fee = parseFloat(e.target.value) || 0;
+                    const newTotal = Math.max(0, (selectedOrder.subtotal || 0) + fee + (selectedOrder.tax_amount || 0) - (selectedOrder.discount_amount || 0));
+                    setSelectedOrder({ ...selectedOrder, fee, total: Math.round(newTotal * 100) / 100 });
+                  }} data-testid="admin-order-fee-input" />
                 </div>
                 {/* Total */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Total ({selectedOrder?.currency || "USD"})</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Total ({selectedOrder?.currency || "USD"}) <span className="text-[10px] text-slate-400 normal-case">(auto-calculated)</span></label>
                   <Input type="number" step="0.01" value={selectedOrder.total ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, total: parseFloat(e.target.value) || 0 })} data-testid="admin-order-total-input" />
+                </div>
+                {/* Currency — M-8 */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Currency</label>
+                  <Select value={selectedOrder.currency || "USD"} onValueChange={v => setSelectedOrder({ ...selectedOrder, currency: v })} data-testid="admin-order-currency-edit-select">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {(supportedCurrencies.length ? supportedCurrencies : ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 {/* Subscription ID */}
                 <div className="space-y-1">

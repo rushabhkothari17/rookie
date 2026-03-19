@@ -30,6 +30,21 @@ from services.checkout_service import get_fx_rate, get_tenant_base_currency
 
 router = APIRouter(prefix="/api", tags=["admin-orders"])
 
+# X-3: sort field alias mapping (colKey → MongoDB field name)
+_ORDER_SORT_ALIASES: Dict[str, str] = {
+    "date": "created_at",
+    "sub_number": "subscription_number",
+    "pay_date": "payment_date",
+    "method": "payment_method",
+    "partner": "partner_code",
+    "tax": "tax_amount",
+}
+_ORDER_SORTABLE_FIELDS = {
+    "created_at", "order_number", "subscription_number", "payment_date",
+    "payment_method", "partner_code", "tax_amount", "total", "subtotal",
+    "fee", "status", "currency", "processor_id", "updated_at",
+}
+
 
 @router.get("/admin/orders/stats")
 async def admin_orders_stats(admin: Dict[str, Any] = Depends(get_tenant_admin)):
@@ -122,6 +137,10 @@ async def admin_orders(
     pay_date_from: Optional[str] = None,
     pay_date_to: Optional[str] = None,
     partner_filter: Optional[str] = None,
+    email_filter: Optional[str] = None,           # X-2: server-side email filter
+    customer_name_filter: Optional[str] = None,   # X-2: server-side customer name filter
+    created_from: Optional[str] = None,            # X-1: server-side creation date filter
+    created_to: Optional[str] = None,              # X-1: server-side creation date filter
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     skip = (page - 1) * per_page
@@ -130,21 +149,35 @@ async def admin_orders(
     query: Dict[str, Any] = {**tf}
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
+
+    # H-3: multi-value support via $in for all token filters
     if order_number_filter:
-        query["order_number"] = {"$regex": _re.escape(order_number_filter), "$options": "i"}
+        nums = [n.strip() for n in order_number_filter.split(",") if n.strip()]
+        query["order_number"] = {"$in": nums} if len(nums) > 1 else {"$regex": _re.escape(nums[0]), "$options": "i"}
     if status_filter:
         statuses = [s.strip() for s in status_filter.split(",") if s.strip()]
         query["status"] = {"$in": statuses} if len(statuses) > 1 else statuses[0]
     if sub_number_filter:
-        query["subscription_number"] = {"$regex": _re.escape(sub_number_filter), "$options": "i"}
+        subs = [s.strip() for s in sub_number_filter.split(",") if s.strip()]
+        query["subscription_number"] = {"$in": subs} if len(subs) > 1 else {"$regex": _re.escape(subs[0]), "$options": "i"}
     if processor_id_filter:
-        query["processor_id"] = {"$regex": _re.escape(processor_id_filter), "$options": "i"}
+        pids = [p.strip() for p in processor_id_filter.split(",") if p.strip()]
+        query["processor_id"] = {"$in": pids} if len(pids) > 1 else {"$regex": _re.escape(pids[0]), "$options": "i"}
     if payment_method_filter:
-        query["payment_method"] = payment_method_filter
+        methods = [m.strip() for m in payment_method_filter.split(",") if m.strip()]
+        query["payment_method"] = {"$in": methods} if len(methods) > 1 else methods[0]
+
     if pay_date_from:
         query.setdefault("payment_date", {})["$gte"] = pay_date_from
     if pay_date_to:
         query.setdefault("payment_date", {})["$lte"] = pay_date_to + "T23:59:59"
+
+    # X-1: server-side creation date filter
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+
     # Partner filter: resolve partner codes → tenant IDs (platform admin only)
     if partner_filter and is_platform_admin(admin):
         codes = [c.strip().lower() for c in partner_filter.split(",") if c.strip()]
@@ -153,20 +186,54 @@ async def admin_orders(
             partner_tenant_ids = [t["id"] for t in partner_tenants]
             query["tenant_id"] = {"$in": partner_tenant_ids} if partner_tenant_ids else {"$in": []}
 
-    sort_direction = -1 if sort_order == "desc" else 1
-    orders = await db.orders.find(query, {"_id": 0}).sort(sort_by, sort_direction).skip(skip).limit(per_page).to_list(per_page)
+    # X-2: server-side email/customer-name filter via customer lookup
+    customer_id_constraints: Optional[set] = None
+    if email_filter:
+        emails = [e.strip().lower() for e in email_filter.split(",") if e.strip()]
+        email_q = {"email": {"$in": emails} if len(emails) > 1 else {"$regex": _re.escape(emails[0]), "$options": "i"}}
+        matching_users = await db.users.find(email_q, {"_id": 0, "id": 1}).to_list(500)
+        mids = [u["id"] for u in matching_users]
+        custs = await db.customers.find({"user_id": {"$in": mids}}, {"_id": 0, "id": 1}).to_list(500)
+        customer_id_constraints = {c["id"] for c in custs}
+    if customer_name_filter:
+        names = [n.strip() for n in customer_name_filter.split(",") if n.strip()]
+        name_q = {"full_name": {"$in": names} if len(names) > 1 else {"$regex": _re.escape(names[0]), "$options": "i"}}
+        matching_users = await db.users.find(name_q, {"_id": 0, "id": 1}).to_list(500)
+        mids = [u["id"] for u in matching_users]
+        custs = await db.customers.find({"user_id": {"$in": mids}}, {"_id": 0, "id": 1}).to_list(500)
+        name_cids = {c["id"] for c in custs}
+        customer_id_constraints = (customer_id_constraints & name_cids) if customer_id_constraints is not None else name_cids
+    if customer_id_constraints is not None:
+        query["customer_id"] = {"$in": list(customer_id_constraints)}
 
+    # C-2: product filter pre-pagination — add to query before count/skip/limit
     if product_filter:
-        order_ids = [o["id"] for o in orders]
-        items = await db.order_items.find({"order_id": {"$in": order_ids}}, {"_id": 0}).to_list(1000)
-        products = await db.products.find(tf, {"_id": 0}).to_list(1000)
-        product_ids_matching = [p["id"] for p in products if product_filter.lower() in p.get("name", "").lower()]
-        matching_order_ids = {i["order_id"] for i in items if i["product_id"] in product_ids_matching}
-        orders = [o for o in orders if o["id"] in matching_order_ids]
+        product_names = [n.strip() for n in product_filter.split(",") if n.strip()]
+        products_all = await db.products.find(tf, {"_id": 0, "id": 1, "name": 1}).to_list(2000)
+        product_ids_matching = [
+            p["id"] for p in products_all
+            if any(pn.lower() in p.get("name", "").lower() for pn in product_names)
+        ]
+        if product_ids_matching:
+            matching_items = await db.order_items.find(
+                {"product_id": {"$in": product_ids_matching}}, {"_id": 0, "order_id": 1}
+            ).to_list(10000)
+            matching_order_ids = list({i["order_id"] for i in matching_items})
+            query["id"] = {"$in": matching_order_ids}
+        else:
+            query["id"] = {"$in": []}  # No matching products → empty result
+
+    # X-3: normalise sort field (colKey alias → MongoDB field; fallback for un-sortable cols)
+    sort_field = _ORDER_SORT_ALIASES.get(sort_by, sort_by)
+    if sort_field not in _ORDER_SORTABLE_FIELDS:
+        sort_field = "created_at"
+    sort_direction = -1 if sort_order == "desc" else 1
+
+    total_count = await db.orders.count_documents(query)
+    orders = await db.orders.find(query, {"_id": 0}).sort(sort_field, sort_direction).skip(skip).limit(per_page).to_list(per_page)
 
     all_order_ids = [o["id"] for o in orders]
     items = await db.order_items.find({"order_id": {"$in": all_order_ids}}, {"_id": 0}).to_list(1000)
-    total_count = await db.orders.count_documents(query)
 
     orders = await enrich_partner_codes(orders, is_platform_admin(admin))
     return {
@@ -363,6 +430,9 @@ async def update_order(
         update_fields["fee"] = payload.fee
     if payload.total is not None:
         update_fields["total"] = payload.total
+    if payload.currency is not None:
+        update_fields["currency"] = payload.currency
+        changes["currency"] = {"old": order.get("currency"), "new": payload.currency}
 
     if payload.subscription_id is not None:
         update_fields["subscription_id"] = payload.subscription_id

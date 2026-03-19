@@ -6,6 +6,7 @@ import re as _re
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
+from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
@@ -28,6 +29,26 @@ from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 from services.checkout_service import get_fx_rate, get_tenant_base_currency
 
 router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
+
+
+def _add_months(dt: datetime, months: int) -> datetime:
+    """Add calendar months to a datetime using proper month arithmetic (M-11)."""
+    return dt + relativedelta(months=months)
+
+
+# X-3: sort field alias mapping (colKey → MongoDB / aggregation field name)
+_SUB_SORT_ALIASES: Dict[str, str] = {
+    "sub_number": "subscription_number",
+    "email": "customer_email",
+    "plan": "plan_name",
+    "tax": "tax_amount",
+    "payment": "payment_method",
+}
+_SUB_SORTABLE_FIELDS = {
+    "created_at", "subscription_number", "customer_email", "plan_name", "tax_amount",
+    "payment_method", "amount", "currency", "renewal_date", "start_date",
+    "contract_end_date", "status", "processor_id", "updated_at",
+}
 
 
 @router.get("/admin/subscriptions/stats")
@@ -163,14 +184,26 @@ async def admin_subscriptions(
         query.setdefault("amount", {})["$gte"] = amount_min
     if amount_max is not None:
         query.setdefault("amount", {})["$lte"] = amount_max
-    if amount_currency:
-        query["currency"] = amount_currency
     if tax_min is not None:
         query.setdefault("tax_amount", {})["$gte"] = tax_min
     if tax_max is not None:
         query.setdefault("tax_amount", {})["$lte"] = tax_max
+    # M-9: merge amount_currency and tax_currency into the same currency filter
+    #       instead of overwriting query["currency"] multiple times
+    _extra_currencies: set = set()
+    if amount_currency:
+        _extra_currencies.add(amount_currency.strip())
     if tax_currency:
-        query["currency"] = tax_currency
+        _extra_currencies.add(tax_currency.strip())
+    if _extra_currencies:
+        existing_cur = query.get("currency")
+        if existing_cur:
+            # Combine with existing currency constraint
+            existing_set = set(existing_cur["$in"]) if isinstance(existing_cur, dict) else {existing_cur}
+            merged = list(existing_set & _extra_currencies) or list(existing_set | _extra_currencies)
+        else:
+            merged = list(_extra_currencies)
+        query["currency"] = {"$in": merged} if len(merged) > 1 else merged[0]
     if renewal_from:
         query.setdefault("renewal_date", {})["$gte"] = renewal_from
     if renewal_to:
@@ -247,8 +280,11 @@ async def admin_subscriptions(
     count_result = await db.subscriptions.aggregate(count_pipeline).to_list(1)
     total = count_result[0]["total"] if count_result else 0
     
-    # Add sort and pagination
-    pipeline.append({"$sort": {sort_by: sort_dir}})
+    # X-3: normalise sort field (colKey alias → MongoDB/aggregation field name)
+    _sort_field = _SUB_SORT_ALIASES.get(sort_by, sort_by)
+    if _sort_field not in _SUB_SORTABLE_FIELDS:
+        _sort_field = "created_at"
+    pipeline.append({"$sort": {_sort_field: sort_dir}})
     skip = (page - 1) * per_page
     pipeline.append({"$skip": skip})
     pipeline.append({"$limit": per_page})
@@ -342,11 +378,12 @@ async def create_manual_subscription(
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
         "is_manual": True,
-        # Fix #3: only set contract_end_date when term_months > 0
-        "contract_end_date": (
+        # Fix #3: only set contract_end_date when term_months > 0 (M-11: use calendar months)
+        "contract_end_date": _add_months(
             datetime.fromisoformat(
                 (payload.start_date or now_iso()).replace("Z", "+00:00")
-            ).replace(tzinfo=timezone.utc) + timedelta(days=30 * payload.term_months)
+            ).replace(tzinfo=timezone.utc),
+            payload.term_months
         ).isoformat() if payload.term_months and payload.term_months > 0 else None,
     }
     await db.subscriptions.insert_one(sub_doc)
@@ -519,7 +556,7 @@ async def update_subscription(
                 start_dt = datetime.fromisoformat(start.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
             except Exception:
                 start_dt = datetime.now(timezone.utc)
-            new_contract_end = (start_dt + timedelta(days=30 * new_term)).isoformat()
+            new_contract_end = _add_months(start_dt, new_term).isoformat()  # M-11: calendar months
             update_fields["contract_end_date"] = new_contract_end
             changes["contract_end_date"] = {"old": subscription.get("contract_end_date"), "new": new_contract_end}
         else:
@@ -617,21 +654,19 @@ async def admin_cancel_subscription(
     )
     # Webhook: subscription.cancelled (tenant-scoped customer lookup)
     customer = await db.customers.find_one({**tf, "id": subscription.get("customer_id", "")}, {"_id": 0}) or {}
+    # M-12: look up email via user record once (remove duplicate fetch below)
+    user = await db.users.find_one({"id": customer.get("user_id", "")}, {"_id": 0}) or {}
+    cancel_email = user.get("email") or customer.get("email", "")
     await dispatch_event("subscription.cancelled", {
         "id": subscription_id,
         "subscription_number": subscription.get("subscription_number", ""),
         "plan_name": subscription.get("plan_name", ""),
         "cancel_reason": "Admin cancelled",
         "cancel_at_period_end": True,
-        "customer_email": customer.get("email", ""),
-        "customer_name": customer.get("full_name", ""),
+        "customer_email": cancel_email,
+        "customer_name": user.get("full_name") or customer.get("full_name", ""),
         "cancelled_at": cancelled_at,
     }, tenant_id_of(admin))
-
-    # Fix #7: look up email via user record (customer doc has no email field directly)
-    customer = await db.customers.find_one({**tf, "id": subscription.get("customer_id", "")}, {"_id": 0}) or {}
-    user = await db.users.find_one({"id": customer.get("user_id", "")}, {"_id": 0}) or {}
-    cancel_email = user.get("email") or customer.get("email")
     if cancel_email:
         from services.email_service import EmailService
         asyncio.create_task(EmailService.send(
