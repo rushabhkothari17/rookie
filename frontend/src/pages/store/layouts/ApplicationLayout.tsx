@@ -45,6 +45,7 @@ export default function ApplicationLayout({
 
   const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
   const isFree = !isEnquiry && pricing && pricing.total === 0;
+  const isExternal = product.checkout_type === "external" || product.pricing_type === "external";
 
   const sections: { id: AppSection; label: string; icon: React.ReactNode; completed?: boolean }[] = [
     { id: "overview", label: ws.sdp_app_nav_overview || "Overview", icon: <FileText size={18} /> },
@@ -62,6 +63,8 @@ export default function ApplicationLayout({
     ? `Add to Cart — ${formatCurrency(scopeUnlock.price, cur)}`
     : isEnquiry && !scopeUnlock
     ? (ws.sdp_cta_quote || "Submit Enquiry")
+    : isExternal
+    ? "Continue to External Checkout"
     : isFree
     ? (ws.sdp_cta_free || "Get it free")
     : "Proceed to Checkout";

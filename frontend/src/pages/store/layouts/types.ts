@@ -56,6 +56,7 @@ export interface Product {
   category?: string;
   base_price?: number;
   pricing_type?: string;
+  checkout_type?: string;
   external_url?: string;
   is_subscription?: boolean;
   stripe_price_id?: string;

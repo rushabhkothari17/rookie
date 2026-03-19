@@ -880,6 +880,38 @@ Build a white-label service commerce platform with:
   - `.sticky-scroll-bar` scrollbar colors → `var(--aa-border)` + `var(--aa-muted)`
 **Notes:** Retained intentional values: partner branding contrast computations (Login.tsx panelText/panelMuted), ICON_COLORS palette (SectionsEditor), dark mode tinted text overrides, PDF generation hex values.
 
+### Session: Mar 2026 - External URL Checkout Feature
+
+**Feature Implemented:**
+New "External URL" checkout type for products allowing redirect to external payment pages with a secure per-product webhook callback mechanism.
+
+**Backend Changes:**
+- `models.py`: Added `checkout_type` (one_time/subscription/external), `external_url`, `external_webhook_secret` to product models.
+- `catalog.py`: Added validation — external products require a valid https/http URL. Auto-generates `external_webhook_secret` on product creation.
+- `checkout.py`: Added `POST /api/checkout/external-session` — creates a pending order using the **product's tenant_id** (not user JWT tenant_id), substitutes URL placeholders, returns redirect URL.
+- `webhooks.py`: Added `POST /api/webhooks/external/{secret}` — tenant-isolated callback updating order status. Supports events: `payment_success`, `payment_failed`, `refunded`, `partial_refund`, `subscription_activated`, `subscription_cancelled`. Idempotent (duplicate events ignored).
+
+**Frontend Changes:**
+- `ProductForm.tsx`: Added `CheckoutTypeSelector` (One-time / Subscription / External URL) and `ExternalUrlBuilder` with placeholder reference and webhook documentation section.
+- `ProductEditor.tsx`: Added external URL validation on save; after creating a new product, navigates to the edit page (not catalog list) so admin can see the generated webhook secret.
+- `ProductDetail.tsx`: Consolidated `pricing_type === "external"` and `checkout_type === "external"` into single CTA check → shows "Continue to External Checkout".
+- `Cart.tsx`: `ExternalCheckoutButton` now checks authentication before calling API, redirects to login if unauthenticated. Redirects to external URL in same tab.
+- `store/layouts/types.ts`: Added `checkout_type?: string` to `Product` interface.
+- `ClassicLayout.tsx`, `QuickBuyLayout.tsx`, `WizardLayout.tsx`, `ShowcaseLayout.tsx`, `ApplicationLayout.tsx`: All layout CTAs now handle `isExternal` → "Continue to External Checkout".
+- `ProductsTab.tsx`: Shows "External URL" badge for external products.
+- `imports.py`: External fields included in CSV import/export template.
+
+**Bugs Fixed:**
+1. Tenant isolation: `create_external_checkout_session` used `current_user.tenant_id` (null for super admins) instead of `product.tenant_id` → webhook lookup was failing.
+2. Layout CTAs: 5 layout components had no `checkout_type === "external"` check → showed "Add to Cart" for external products.
+3. Cart auth: `ExternalCheckoutButton` silently failed for unauthenticated users instead of redirecting to login.
+4. `ProductDetail.tsx`: Legacy `pricing_type === "external"` check showed "Add to cart" instead of "Continue to External Checkout".
+5. `ProductEditor.tsx`: After creating external product, navigated to catalog list before admin could see generated webhook secret.
+
+**Tenant Isolation Verified:** Cross-tenant webhook attacks blocked. EDD webhook cannot update automate-accounts orders.
+
+**Idempotency Verified:** Duplicate webhook events ignored.
+
 ## Credentials
 - Platform Admin: admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts
 

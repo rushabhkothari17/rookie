@@ -38,6 +38,8 @@ export default function ClassicLayout({
   const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
   const isFree = !isEnquiry && pricing && pricing.total === 0;
   
+  const isExternal = product.checkout_type === "external" || product.pricing_type === "external";
+
   // Build CTA config
   const ctaConfig = (() => {
     if (isEnquiry) {
@@ -45,6 +47,9 @@ export default function ClassicLayout({
         return { label: `${ws.sdp_cta_buy || "Add to cart"} — ${formatCurrency(scopeUnlock.price, cur)}`, onClick: handleAddToCart };
       }
       return { label: ws.sdp_cta_quote || "Request Quote", onClick: handleAddToCart };
+    }
+    if (isExternal) {
+      return { label: "Continue to External Checkout", onClick: handleAddToCart };
     }
     if (isFree) {
       return { label: ws.sdp_cta_free || "Get it free", onClick: handleAddToCart };

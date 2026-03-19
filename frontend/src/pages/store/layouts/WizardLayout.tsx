@@ -34,6 +34,7 @@ export default function WizardLayout({
 
   const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
   const isFree = !isEnquiry && pricing && pricing.total === 0;
+  const isExternal = product.checkout_type === "external" || product.pricing_type === "external";
 
   // Group questions by step_group or create auto-groups of 3 questions
   const steps = useMemo(() => {
@@ -75,6 +76,8 @@ export default function WizardLayout({
     ? `Add to cart — ${formatCurrency(scopeUnlock.price, cur)}`
     : isEnquiry
     ? (ws.sdp_cta_quote || "Submit Enquiry")
+    : isExternal
+    ? "Continue to External Checkout"
     : (ws.sdp_wizard_submit_btn || "Proceed to Checkout");
 
   return (

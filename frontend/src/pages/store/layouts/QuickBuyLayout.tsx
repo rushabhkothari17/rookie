@@ -33,11 +33,14 @@ export default function QuickBuyLayout({
 
   const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
   const isFree = !isEnquiry && pricing && pricing.total === 0;
+  const isExternal = product.checkout_type === "external" || product.pricing_type === "external";
 
   const ctaLabel = scopeUnlock
     ? `${ws.sdp_cta_buy || "Add to cart"} — ${formatCurrency(scopeUnlock.price, cur)}`
     : isEnquiry
     ? (ws.sdp_cta_quote || "Request Quote")
+    : isExternal
+    ? "Continue to External Checkout"
     : isFree
     ? (ws.sdp_cta_free || "Get it free")
     : (ws.sdp_cta_buy || "Buy Now");
