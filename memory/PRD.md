@@ -750,6 +750,24 @@ Build a white-label service commerce platform with:
 
 **Test result:** 21/22 backend tests passed (iteration_316.json), 1 skipped (no is_readonly plan in DB to test); 100% frontend verified.
 
+### Session: Feb 2026 - Deep Audit & Fixes: Partner Subscriptions, Partner Orders, Billing Settings, Currencies
+**17 issues fixed across 4 modules (29/29 backend tests pass — iteration_317.json):**
+
+1. **Cancel sub plan reset (P0):** `cancel_partner_subscription` now queries remaining active/pending subs for the partner before calling `_reset_partner_to_free_trial`. Only resets when 0 remain.
+2. **`plan_id` updatable on edit (P0):** Added `plan_id: Optional[str] = None` to both `PartnerSubscriptionUpdate` and `PartnerOrderUpdate`. Update handler resolves `plan_name` from DB and persists both fields.
+3. **`this_month` stats bug (P0):** Both `partner_orders_stats` and `partner_subscriptions_stats` now compute `_month_start`/`_month_end` as proper ISO date strings (e.g. `"2026-02-01"` to `"2026-03-01"`), replacing the broken `strftime("%Y-%m")` prefix match that included all future months.
+4. **Order status validation (P0):** `update_partner_order` validates `status` against `PARTNER_ORDER_STATUSES`. `partially_refunded` is NOT in the allowed list (testing agent further fixed this from the initial implementation).
+5. **Delete paid orders blocked (P1):** `delete_partner_order` checks `status in ("paid", "refunded", "partially_refunded")` and returns 400.
+6. **BillingSettings parseInt 0 bug (P0):** `parseInt(e.target.value) || 7` → `isNaN(v) ? 7 : v` in BillingSettingsTab.tsx. Warning days now correctly accept 0.
+7. **Currency delete confirmation (P1):** CurrenciesTab now has `confirmRemove` state and AlertDialog before deletion.
+8. **ISO 4217 currency validation (P1):** `add_currency` validates against `_VALID_ISO_4217` frozenset (~160 codes). "XYZ" → 400.
+9. **Currency GET access for platform_admin (P1):** `GET /admin/platform/currencies` changed from `require_platform_super_admin` to `require_platform_admin`.
+10. **auto_cancel_on_termination warning (P1):** PartnerSubscriptionsTab shows amber warning when checkbox is ticked but no contract_end_date is set.
+11. **Default currency GBP → USD (P2):** Changed in `emptyForm()` in PartnerSubscriptionsTab, PartnerOrdersTab, and in `PartnerOrderCreate`/`PartnerSubscriptionCreate` backend models.
+12. **Clear optional fields via explicit None (P2):** `update_partner_order` and `update_partner_subscription` now have `_clearable` field sets that allow explicit None to clear optional fields like `processor_id`, `internal_note`, `paid_at`.
+13. **Remove unused `useAuth` import (P2):** Cleaned up BillingSettingsTab.tsx.
+14. **Backend max bounds for billing settings (P2):** `overdue_grace_days <= 365`, `overdue_warning_days <= 180` enforced.
+
 ### P0 — Next Priority
 
 - AI Chatbot implementation
