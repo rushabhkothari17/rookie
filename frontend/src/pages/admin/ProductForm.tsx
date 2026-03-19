@@ -6,7 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   CreditCard, ExternalLink, MessageSquare, X, Plus, ChevronUp, ChevronDown, GitBranch, RefreshCw, Users,
+  Copy, CheckCircle, ChevronRight, AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { IntakeSchemaBuilder, IntakeSchemaJson, EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { SectionsEditor, CustomSection, DEFAULT_SECTION } from "./SectionsEditor";
 import { FieldTip } from "./shared/FieldTip";
@@ -48,6 +50,8 @@ export interface ProductFormData {
   show_price_breakdown: boolean;
   pricing_type: string;
   external_url: string;
+  checkout_type: string;          // one_time | subscription | external
+  external_webhook_secret: string;
   is_active: boolean;
   currency: string;
   visible_to_customers: string[];
@@ -81,7 +85,8 @@ export const EMPTY_FORM: ProductFormData = {
   faqs: [], terms_id: "", base_price: 0, is_subscription: false,
   stripe_price_id: "", price_rounding: "", show_price_breakdown: false,
   pricing_type: "internal",
-  external_url: "", currency: "USD", is_active: true, visible_to_customers: [],
+  external_url: "", checkout_type: "one_time", external_webhook_secret: "",
+  currency: "USD", is_active: true, visible_to_customers: [],
   restricted_to: [], visibility_conditions: null, intake_schema_json: EMPTY_INTAKE_SCHEMA, custom_sections: [],
   display_layout: "standard",
   enquiry_form_id: "",
@@ -116,17 +121,268 @@ function Toggle({ checked, onChange, label, note, testId }: {
   );
 }
 
-// ── BillingTypeSelector ────────────────────────────────────────────────────────
+// ── ExternalUrlBuilder ───────────────────────────────────────────────────────
 
-const BILLING_TYPES = [
-  { isSubscription: false, label: "One-time", icon: CreditCard, desc: "Single payment. No recurring charges." },
-  { isSubscription: true,  label: "Subscription", icon: RefreshCw, desc: "Recurring billing at regular intervals." },
+const PARAM_GROUPS = [
+  {
+    label: "Customer",
+    params: [
+      { key: "customer_id",       desc: "Customer UUID" },
+      { key: "customer_name",     desc: "Full name" },
+      { key: "customer_email",    desc: "Email address" },
+      { key: "customer_phone",    desc: "Phone number" },
+      { key: "customer_company",  desc: "Company name" },
+      { key: "customer_currency", desc: "Customer currency (GBP/USD)" },
+    ],
+  },
+  {
+    label: "Product",
+    params: [
+      { key: "product_id",       desc: "Product UUID" },
+      { key: "product_name",     desc: "Product display name" },
+      { key: "product_category", desc: "Category name" },
+      { key: "product_price",    desc: "Base price" },
+      { key: "product_currency", desc: "Product currency" },
+    ],
+  },
+  {
+    label: "Order / Platform",
+    params: [
+      { key: "order_id",     desc: "Unique order UUID (REQUIRED for webhook callbacks)" },
+      { key: "order_number", desc: "Human-readable order number (AA-XXXXX)" },
+      { key: "partner_code", desc: "Tenant/partner code" },
+      { key: "tenant_id",    desc: "Tenant UUID" },
+    ],
+  },
+  {
+    label: "Intake Answers",
+    params: [
+      { key: "answer_QUESTION_ID", desc: "Replace QUESTION_ID with the id field from your intake questions. E.g. {answer_q1}" },
+    ],
+  },
+  {
+    label: "Custom Sections",
+    params: [
+      { key: "section_SECTION_NAME", desc: "Replace SECTION_NAME with the section name (spaces become _). HTML stripped. E.g. {section_Overview}" },
+    ],
+  },
 ];
 
+const WEBHOOK_EVENTS = [
+  { event: "payment_success",        status: "paid",                desc: "Payment completed successfully" },
+  { event: "payment_failed",         status: "failed",              desc: "Payment attempt failed" },
+  { event: "refunded",               status: "refunded",            desc: "Full refund issued" },
+  { event: "partial_refund",         status: "partially_refunded",  desc: "Partial refund; include refund_amount" },
+  { event: "cancelled",              status: "cancelled",           desc: "Order cancelled" },
+  { event: "subscription_activated", status: "active",              desc: "Subscription started" },
+  { event: "subscription_cancelled", status: "cancelled",           desc: "Subscription cancelled" },
+];
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); };
+  return (
+    <button type="button" onClick={copy}
+      className="ml-1.5 p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+      {copied ? <CheckCircle size={13} className="text-green-600" /> : <Copy size={13} />}
+    </button>
+  );
+}
+
+function ExternalUrlBuilder({ form, setForm, baseUrl }: { form: any; setForm: (f: any) => void; baseUrl: string }) {
+  const [showParams, setShowParams] = useState(false);
+  const [showWebhook, setShowWebhook] = useState(false);
+
+  const webhookUrl = form.external_webhook_secret
+    ? `${baseUrl}/api/webhooks/external/${form.external_webhook_secret}`
+    : "(Save the product first to generate a webhook URL)";
+
+  const hasOrderId = (form.external_url || "").includes("{order_id}");
+
+  const webhookExample = JSON.stringify({
+    event: "payment_success",
+    order_id: "{order_id from the URL you received}",
+    amount: 149.00,
+    currency: "GBP",
+    processor_id: "ext-ref-123",
+  }, null, 2);
+
+  return (
+    <div className="space-y-4 border border-slate-200 rounded-xl p-5 bg-white">
+      {/* URL Template */}
+      <div>
+        <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">
+          External URL Template
+        </label>
+        <Input
+          value={form.external_url || ""}
+          onChange={e => setForm({ ...form, external_url: e.target.value })}
+          placeholder="https://partner.com/checkout?email={customer_email}&order={order_id}"
+          data-testid="pf-external-url"
+          className="font-mono text-sm"
+        />
+        <p className="text-[11px] text-slate-400 mt-1">
+          Use <code className="bg-slate-100 px-1 rounded">{"{param}"}</code> placeholders. Customer is redirected here after completing the intake form. Values are URL-encoded automatically.
+        </p>
+        {!hasOrderId && (form.external_url || "").length > 5 && (
+          <div className="flex items-center gap-2 mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+            <AlertTriangle size={13} className="text-amber-500 shrink-0" />
+            <span className="text-[11px] text-amber-700">
+              We recommend including <code className="font-mono">{"{order_id}"}</code> in your URL so the external system can reference the order in webhook callbacks.
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Param reference */}
+      <div className="border border-slate-100 rounded-lg overflow-hidden">
+        <button type="button"
+          onClick={() => setShowParams(p => !p)}
+          className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-left transition-colors">
+          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Available {"{params}"} reference</span>
+          <ChevronRight size={14} className={`text-slate-400 transition-transform ${showParams ? "rotate-90" : ""}`} />
+        </button>
+        {showParams && (
+          <div className="p-4 space-y-4">
+            {PARAM_GROUPS.map(g => (
+              <div key={g.label}>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{g.label}</p>
+                <div className="space-y-1">
+                  {g.params.map(p => (
+                    <div key={p.key} className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <code className="text-[11px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-mono shrink-0">
+                          {"{" + p.key + "}"}
+                        </code>
+                        <CopyButton text={"{" + p.key + "}"} />
+                      </div>
+                      <span className="text-[11px] text-slate-500 text-right leading-relaxed">{p.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Webhook section */}
+      <div className="border border-slate-100 rounded-lg overflow-hidden">
+        <button type="button"
+          onClick={() => setShowWebhook(p => !p)}
+          className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-left transition-colors">
+          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Inbound webhook (callback URL)</span>
+          <ChevronRight size={14} className={`text-slate-400 transition-transform ${showWebhook ? "rotate-90" : ""}`} />
+        </button>
+        {showWebhook && (
+          <div className="p-4 space-y-4">
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Configure your external platform to POST to this URL when a payment event occurs.
+              This updates the order status in real time. The webhook is scoped to <strong>this product only</strong> — it cannot affect other products or tenants.
+            </p>
+
+            {/* Webhook URL */}
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Webhook Endpoint (POST)</p>
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                <code className="text-[11px] font-mono text-slate-700 break-all flex-1">{webhookUrl}</code>
+                {form.external_webhook_secret && <CopyButton text={webhookUrl} />}
+              </div>
+            </div>
+
+            {/* Webhook Secret */}
+            {form.external_webhook_secret && (
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Webhook Secret (in URL)</p>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                  <code className="text-[11px] font-mono text-slate-600 break-all flex-1">{form.external_webhook_secret}</code>
+                  <CopyButton text={form.external_webhook_secret} />
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">The secret is embedded in the webhook URL — no additional authentication header required.</p>
+              </div>
+            )}
+
+            {/* Event table */}
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Supported Events</p>
+              <div className="rounded-lg overflow-hidden border border-slate-100">
+                <table className="w-full text-[11px]">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-semibold text-slate-500">event value</th>
+                      <th className="text-left px-3 py-2 font-semibold text-slate-500">Order status set</th>
+                      <th className="text-left px-3 py-2 font-semibold text-slate-500">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {WEBHOOK_EVENTS.map((ev, i) => (
+                      <tr key={ev.event} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                        <td className="px-3 py-2"><code className="font-mono text-blue-700">{ev.event}</code></td>
+                        <td className="px-3 py-2 text-slate-600">{ev.status}</td>
+                        <td className="px-3 py-2 text-slate-500">{ev.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Payload example */}
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Webhook Payload (JSON)</p>
+              <pre className="text-[11px] bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto leading-relaxed">{webhookExample}</pre>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Include <code className="font-mono">refund_amount</code> for <code className="font-mono">refunded</code> / <code className="font-mono">partial_refund</code> events.
+                Duplicate POSTs with the same <code className="font-mono">event</code> + <code className="font-mono">order_id</code> are silently ignored (idempotent).
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── CheckoutTypeSelector ──────────────────────────────────────────────────────
+
+const CHECKOUT_TYPES = [
+  { value: "one_time",     label: "One-time",     icon: CreditCard,   desc: "Single payment. No recurring charges." },
+  { value: "subscription", label: "Subscription", icon: RefreshCw,    desc: "Recurring billing at regular intervals." },
+  { value: "external",     label: "External URL", icon: ExternalLink, desc: "Intake on this platform, payment on external URL." },
+];
+
+function CheckoutTypeSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {CHECKOUT_TYPES.map(ct => {
+        const active = value === ct.value;
+        const Icon = ct.icon;
+        return (
+          <button key={ct.value} type="button" onClick={() => onChange(ct.value)}
+            data-testid={`checkout-type-${ct.value}`}
+            className={`flex flex-col items-start p-4 rounded-lg border text-left transition-all ${
+              active ? "bg-blue-50 border-[#1e40af] ring-1 ring-[#1e40af]/20 shadow-sm" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+            }`}>
+            <Icon size={16} className={`mb-2 ${active ? "text-[#1e40af]" : "text-slate-400"}`} />
+            <span className={`text-sm font-semibold mb-0.5 ${active ? "text-[#1e40af]" : "text-slate-700"}`}>{ct.label}</span>
+            <span className="text-[11px] text-slate-500 leading-relaxed">{ct.desc}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Keep the old BillingTypeSelector name for backward-compat usage inside internal section
+// (only one_time / subscription, no external)
+const BILLING_ONLY_TYPES = [
+  { isSubscription: false, label: "One-time",     icon: CreditCard,  desc: "Single payment. No recurring charges." },
+  { isSubscription: true,  label: "Subscription", icon: RefreshCw,   desc: "Recurring billing at regular intervals." },
+];
 function BillingTypeSelector({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {BILLING_TYPES.map(bt => {
+      {BILLING_ONLY_TYPES.map(bt => {
         const active = value === bt.isSubscription;
         const Icon = bt.icon;
         return (
@@ -219,7 +475,7 @@ function FAQList({ faqs, onChange }: { faqs: FAQ[]; onChange: (v: FAQ[]) => void
   );
 }
 
-// ── Pricing type selector ──────────────────────────────────────────────────────
+// ── Pricing type selector (internal checkout vs enquiry only) ──────────────────
 
 const PRICING_TYPES = [
   {
@@ -227,12 +483,6 @@ const PRICING_TYPES = [
     label: "Internal Checkout",
     icon: <CreditCard size={18} />,
     desc: "Base price + intake questions. Customer checks out on your platform.",
-  },
-  {
-    id: "external",
-    label: "External Link",
-    icon: <ExternalLink size={18} />,
-    desc: "Redirect to a third-party URL in a new tab.",
   },
   {
     id: "enquiry",
@@ -244,7 +494,7 @@ const PRICING_TYPES = [
 
 function PricingTypeSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="grid grid-cols-3 gap-3 mb-5">
+    <div className="grid grid-cols-2 gap-3 mb-5">
       {PRICING_TYPES.map(pt => {
         const active = value === pt.id;
         return (
@@ -811,7 +1061,10 @@ export function ProductForm({
                 {/* Billing type + Stripe Price ID — shown first */}
                 <div className="flex flex-col gap-3 pb-5 border-b border-slate-100 mb-6">
                   <RequiredLabel className={labelCls} trailing={<FieldTip tip="One-time: customer pays once at checkout. Subscription: recurring charge at a set interval — requires a Stripe Price ID." />}>Billing type</RequiredLabel>
-                  <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
+                  <CheckoutTypeSelector
+                    value={form.checkout_type || (form.is_subscription ? "subscription" : "one_time")}
+                    onChange={v => setForm({ ...form, checkout_type: v, is_subscription: v === "subscription" })}
+                  />
                   {form.is_subscription && (
                     <>
                     <div>
@@ -934,20 +1187,13 @@ export function ProductForm({
             </>
           )}
 
-          {/* External */}
-          {form.pricing_type === "external" && (
-            <div className={cardCls}>
-              <div>
-                <label className={labelCls}>External URL</label>
-                <Input
-                  value={form.external_url || ""}
-                  onChange={e => s("external_url")(e.target.value)}
-                  placeholder="https://..."
-                  data-testid="pf-external-url"
-                />
-                <p className="text-[11px] text-slate-400 mt-1">Opens in a new tab when customer clicks the product</p>
-              </div>
-            </div>
+          {/* External URL builder — shown when checkout_type = "external" within internal pricing */}
+          {form.pricing_type === "internal" && form.checkout_type === "external" && (
+            <ExternalUrlBuilder
+              form={form}
+              setForm={setForm}
+              baseUrl={process.env.REACT_APP_BACKEND_URL || ""}
+            />
           )}
 
           {/* Enquiry */}

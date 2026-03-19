@@ -83,8 +83,16 @@ export default function ProductEditor() {
       scope_request: "enquiry",
       inquiry: "enquiry",
     };
-    const pricing_type = legacyMap[p.pricing_type] ?? p.pricing_type ?? "internal";
+    // Legacy: products with pricing_type = "external" migrate to internal + checkout_type = "external"
+    const rawPricingType = legacyMap[p.pricing_type] ?? p.pricing_type ?? "internal";
+    const pricing_type = rawPricingType === "external" ? "internal" : rawPricingType;
     const external_url = p.external_url || p.pricing_rules?.external_url || "";
+
+    // Derive checkout_type: explicit field > legacy pricing_type > is_subscription
+    const checkout_type =
+      p.checkout_type ||
+      (rawPricingType === "external" ? "external" :
+        p.is_subscription ? "subscription" : "one_time");
 
     return {
       name: p.name || "",
@@ -105,6 +113,8 @@ export default function ProductEditor() {
       show_price_breakdown: p.show_price_breakdown ?? false,
       pricing_type,
       external_url,
+      checkout_type,
+      external_webhook_secret: p.external_webhook_secret || "",
       is_active: p.is_active ?? true,
       visible_to_customers: p.visible_to_customers || [],
       restricted_to: p.restricted_to || [],
@@ -146,6 +156,18 @@ export default function ProductEditor() {
       toast.error("Checkout type (internal checkout / external link / enquiry only) is required");
       return;
     }
+    // External URL validation
+    if (form.checkout_type === "external") {
+      const extUrl = (form.external_url || "").trim();
+      if (!extUrl) {
+        toast.error("External URL is required when Checkout Type is 'External URL'");
+        return;
+      }
+      if (!extUrl.startsWith("http://") && !extUrl.startsWith("https://")) {
+        toast.error("External URL must start with http:// or https://");
+        return;
+      }
+    }
     if (schemaHasErrors) {
       toast.error("Fix intake question errors before saving (check Pricing tab → Intake Questions)");
       return;
@@ -170,7 +192,7 @@ export default function ProductEditor() {
         faqs: form.faqs,
         terms_id: form.terms_id || null,
         base_price: form.base_price,
-        is_subscription: form.is_subscription,
+        is_subscription: form.checkout_type === "subscription",
         stripe_price_id: form.stripe_price_id || null,
         price_rounding: form.price_rounding || null,
         show_price_breakdown: form.show_price_breakdown ?? false,
@@ -180,7 +202,9 @@ export default function ProductEditor() {
         intake_schema_json: form.intake_schema_json,
         custom_sections: form.custom_sections,
         pricing_type: form.pricing_type || "internal",
+        checkout_type: form.checkout_type || "one_time",
         external_url: form.external_url || null,
+        external_webhook_secret: form.external_webhook_secret || null,
         display_layout: form.display_layout || "standard",
         currency: form.currency || "USD",
         visibility_conditions: form.visibility_conditions || null,
@@ -191,13 +215,16 @@ export default function ProductEditor() {
       };
 
       if (isNew) {
-        await api.post("/admin/products", payload);
+        const res = await api.post("/admin/products", payload);
         toast.success("Product created");
+        // Navigate to edit page so admin can see the generated webhook secret
+        const newId = res.data?.product?.id;
+        navigate(newId ? `/admin/products/${newId}/edit` : "/admin?tab=catalog");
       } else {
         await api.put(`/admin/products/${id}`, payload);
         toast.success("Product updated");
+        navigate("/admin?tab=catalog");
       }
-      navigate("/admin?tab=catalog");
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || "Failed to save product");
     } finally {
@@ -305,7 +332,8 @@ function StoreCardPreview({ form, onClose }: { form: ProductFormData; onClose: (
     category: form.category || "",
     base_price: Number(form.base_price) || 0,
     pricing_type: form.pricing_type || "internal",
-    is_subscription: form.is_subscription,
+    checkout_type: form.checkout_type || "one_time",
+    is_subscription: form.checkout_type === "subscription",
     external_url: form.external_url || "",
     intake_schema_json: form.intake_schema_json,
     price_rounding: form.price_rounding || null,

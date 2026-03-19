@@ -139,8 +139,9 @@ export function ProductsTab() {
     const matchCategory = categoryFilter.length === 0 || categoryFilter.includes(p.category);
     // Billing filter (multi-select)
     const matchBilling = billingFilter.length === 0 || billingFilter.some(f => {
-      if (f === "subscription") return p.is_subscription;
-      if (f === "one-time") return !p.is_subscription;
+      if (f === "subscription") return p.checkout_type === "subscription" || (!p.checkout_type && p.is_subscription);
+      if (f === "one-time") return p.checkout_type === "one_time" || (!p.checkout_type && !p.is_subscription && p.pricing_type !== "external");
+      if (f === "external") return p.checkout_type === "external" || p.pricing_type === "external";
       return true;
     });
     // Status filter (multi-select)
@@ -215,7 +216,7 @@ export function ProductsTab() {
                   <TableRow className="bg-slate-50">
                     <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => { setNameFilter(v); setPage(1); }} onClearFilter={() => { setNameFilter([]); setPage(1); }} statusOptions={uniqueNames} />
                     <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={uniqueCategories} />
-                    <ColHeader label="Billing" colKey="billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={billingFilter} onFilter={v => { setBillingFilter(v); setPage(1); }} onClearFilter={() => { setBillingFilter([]); setPage(1); }} statusOptions={[["subscription", "Subscription"], ["one-time", "One-time"]]} />
+                    <ColHeader label="Billing" colKey="billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={billingFilter} onFilter={v => { setBillingFilter(v); setPage(1); }} onClearFilter={() => { setBillingFilter([]); setPage(1); }} statusOptions={[["subscription", "Subscription"], ["one-time", "One-time"], ["external", "External URL"]]} />
                     <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
                     <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
                     {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
@@ -251,8 +252,18 @@ export function ProductsTab() {
                       </TableCell>
                       <TableCell className="text-xs text-slate-500">{product.category}</TableCell>
                       <TableCell>
-                        <span className={`aa-badge ${product.is_subscription ? "aa-badge-accent" : "aa-badge-muted"}`}>
-                          {product.is_subscription ? "Subscription" : "One-time"}
+                        <span className={`aa-badge ${
+                          (product.checkout_type || (product.is_subscription ? "subscription" : "one_time")) === "subscription"
+                            ? "aa-badge-accent"
+                            : (product.checkout_type === "external" || product.pricing_type === "external")
+                            ? "aa-badge-warning"
+                            : "aa-badge-muted"
+                        }`}>
+                          {product.checkout_type === "external" || product.pricing_type === "external"
+                            ? "External URL"
+                            : product.checkout_type === "subscription" || product.is_subscription
+                            ? "Subscription"
+                            : "One-time"}
                         </span>
                       </TableCell>
                       <TableCell className="text-sm aa-mono">{product.base_price ? new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(product.base_price) : product.pricing_type === "enquiry" ? <span className="text-slate-400 text-xs">RFQ</span> : <span className="text-slate-400 text-xs">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(0)}</span>}</TableCell>

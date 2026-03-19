@@ -272,8 +272,10 @@ class AdminProductUpdate(BaseModel):
     currency: Optional[str] = Field(None, max_length=10)
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = Field(None, ge=0, le=300)
-    billing_type: Optional[str] = None
+    billing_type: Optional[str] = "prorata"
     tags: Optional[List[str]] = None
+    checkout_type: Optional[str] = None      # one_time | subscription | external
+    external_webhook_secret: Optional[str] = None  # auto-generated; settable on import
 
 
 class AdminOrderUpdate(BaseModel):
@@ -577,6 +579,8 @@ class AdminProductCreate(BaseModel):
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = Field(None, ge=0, le=300)
     billing_type: Optional[str] = "prorata"
+    checkout_type: Optional[str] = None      # one_time | subscription | external
+    external_webhook_secret: Optional[str] = None  # auto-generated when checkout_type = external
 
 
 class AppSettingsUpdate(BaseModel):

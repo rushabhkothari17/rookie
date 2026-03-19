@@ -147,9 +147,10 @@ TEMPLATES: Dict[str, List[str]] = {
     "catalog": [
         "id", "name", "category", "card_tag", "card_description", "card_bullets",
         "description_long", "bullets", "base_price", "currency",
-        "is_subscription", "billing_type", "billing_cycle",
+        "is_subscription", "checkout_type", "billing_type", "billing_cycle",
         "pricing_type", "stripe_price_id", "is_active", "visible_to_customers",
         "display_layout", "default_term_months", "show_price_breakdown",
+        "external_url", "external_webhook_secret",
         "custom_sections", "intake_schema_json",
     ],
     "promo-codes": [
@@ -246,15 +247,18 @@ SAMPLE_DATA: Dict[str, Dict[str, str]] = {
         "base_price": "149.00",
         "currency": "GBP",
         "is_subscription": "true",
+        "checkout_type": "subscription",
         "billing_type": "prorata",
         "billing_cycle": "monthly",
-        "pricing_type": "fixed",
+        "pricing_type": "internal",
         "stripe_price_id": "price_XXXX",
         "is_active": "true",
         "visible_to_customers": "true",
         "display_layout": "standard",
         "default_term_months": "12",
         "show_price_breakdown": "false",
+        "external_url": "",
+        "external_webhook_secret": "",
         "custom_sections": '[{"name":"Overview","content":"<p>Overview here</p>","icon":"FileText","icon_color":"blue","tags":[]}]',
         "intake_schema_json": '{"questions":[{"id":"q1","label":"Company name","type":"text","required":true},{"id":"q2","label":"How many employees?","type":"number","required":false},{"id":"q3","label":"Software used","type":"multi_select","required":false,"options":["Xero","QuickBooks","Sage","Other"]},{"id":"q4","label":"Filing frequency","type":"radio","required":true,"options":["Monthly","Quarterly","Annually"]},{"id":"q5","label":"Any notes?","type":"textarea","required":false}]}',
     },
@@ -497,8 +501,46 @@ GUIDES: Dict[str, str] = {
         | display_layout | string | No | standard / compact / featured |
         | default_term_months | number | No | Default contract length |
         | show_price_breakdown | boolean | No | Show tax breakdown on checkout |
+        | checkout_type | string | No | one_time / subscription / external (see below) |
+        | external_url | string | No | URL template with {param} placeholders (for checkout_type=external) |
+        | external_webhook_secret | string | No | Auto-generated on save. Include to preserve existing secret on re-import |
         | custom_sections | JSON array | No | Array of section objects |
         | intake_schema_json | JSON object | No | Question schema (see above) |
+
+        ## checkout_type = "external" — URL Parameters
+        When `checkout_type` is `external`, customers fill the intake form on this platform
+        then are redirected to `external_url` with these placeholders substituted (URL-encoded):
+
+        | Placeholder | Description |
+        |---|---|
+        | {customer_id} | Customer UUID |
+        | {customer_name} | Full name |
+        | {customer_email} | Email address |
+        | {customer_phone} | Phone number |
+        | {customer_company} | Company name |
+        | {customer_currency} | Customer currency (GBP/USD) |
+        | {product_id} | Product UUID |
+        | {product_name} | Product display name |
+        | {product_category} | Category name |
+        | {product_price} | Base price |
+        | {product_currency} | Product currency |
+        | {order_id} | Unique order UUID (RECOMMENDED — required for webhook callbacks) |
+        | {order_number} | Human-readable order number (AA-XXXXX) |
+        | {partner_code} | Tenant/partner code |
+        | {tenant_id} | Tenant UUID |
+        | {answer_QUESTION_ID} | Intake answer for question with id=QUESTION_ID |
+        | {section_SECTION_NAME} | Custom section content (HTML stripped, spaces→underscore) |
+
+        ## Inbound Webhook (external checkout callback)
+        Configure the external platform to POST to:
+          POST /api/webhooks/external/{external_webhook_secret}
+
+        Payload:
+          { "event": "payment_success", "order_id": "...", "amount": 149.00,
+            "currency": "GBP", "processor_id": "ext-ref", "refund_amount": 50.00 }
+
+        Supported events: payment_success, payment_failed, refunded, partial_refund,
+          cancelled, subscription_activated, subscription_cancelled
     """),
 
     "promo-codes": textwrap.dedent("""\

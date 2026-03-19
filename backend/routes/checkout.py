@@ -1134,3 +1134,148 @@ async def checkout_free(
         "status": "paid",
         "total": 0.0,
     }
+
+
+
+# ── External checkout session ─────────────────────────────────────────────────
+
+import re as _re
+import urllib.parse as _urlparse
+import html as _html
+
+
+def _strip_html(text: str) -> str:
+    """Strip HTML tags from a string."""
+    return _re.sub(r"<[^>]+>", "", _html.unescape(text or "")).strip()
+
+
+def _substitute_url(template: str, context: Dict[str, Any]) -> str:
+    """Replace {param} placeholders in the URL template with URL-encoded values.
+    Unknown placeholders are left as-is so admins can diagnose missing params."""
+    def replacer(match):
+        key = match.group(1)
+        if key in context:
+            return _urlparse.quote(str(context[key]) if context[key] is not None else "", safe="")
+        return match.group(0)  # leave unknown params as-is
+    return _re.sub(r"\{([^}]+)\}", replacer, template)
+
+
+@router.post("/checkout/external-session")
+async def create_external_checkout_session(
+    body: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Create a pending_external order and return the substituted redirect URL.
+
+    Request body:
+      {
+        "product_id": "...",
+        "intake_answers": { "q1": "value", ... },  (optional)
+      }
+    """
+    product_id = body.get("product_id")
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id required")
+
+    user_id = current_user["id"]
+
+    # Load product first — use product's tenant_id as the authoritative tenant scope
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # Always use the product's own tenant_id (current_user.tenant_id can be None for super admins)
+    tenant_id = product.get("tenant_id") or current_user.get("tenant_id")
+
+    # Resolve checkout_type (backward compat with legacy pricing_type = "external")
+    checkout_type = product.get("checkout_type") or (
+        "external" if product.get("pricing_type") == "external" else "one_time"
+    )
+    if checkout_type != "external":
+        raise HTTPException(status_code=400, detail="Product does not use external checkout")
+
+    external_url_template = product.get("external_url", "")
+    if not external_url_template:
+        raise HTTPException(status_code=400, detail="Product has no external URL configured")
+
+    # Load customer — scoped to the product's tenant
+    customer = await db.customers.find_one({"user_id": user_id, "tenant_id": tenant_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=400, detail="Customer record not found for this store")
+
+    # Load tenant for partner_code
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "code": 1})
+
+    # Generate order number scoped to the product's tenant
+    seq = await db.orders.count_documents({"tenant_id": tenant_id}) + 1
+    order_number = f"AA-{seq:05d}"
+    order_id = make_id()
+
+    intake_answers: Dict[str, Any] = body.get("intake_answers") or {}
+
+    # Build substitution context
+    context: Dict[str, Any] = {
+        # Customer
+        "customer_id": customer["id"],
+        "customer_name": current_user.get("full_name", ""),
+        "customer_email": current_user.get("email", ""),
+        "customer_phone": current_user.get("phone", "") or customer.get("phone", ""),
+        "customer_company": current_user.get("company_name", "") or customer.get("company_name", ""),
+        "customer_currency": customer.get("currency", ""),
+        # Product
+        "product_id": product["id"],
+        "product_name": product.get("name", ""),
+        "product_category": product.get("category", ""),
+        "product_price": str(product.get("base_price", 0)),
+        "product_currency": product.get("currency", ""),
+        # Order/context
+        "order_id": order_id,
+        "order_number": order_number,
+        "partner_code": (tenant or {}).get("code", ""),
+        "tenant_id": tenant_id or "",
+    }
+
+    # Intake answers: {answer_QUESTION_ID}
+    for q_id, answer_val in intake_answers.items():
+        context[f"answer_{q_id}"] = answer_val if not isinstance(answer_val, (list, dict)) else ", ".join(str(v) for v in (answer_val if isinstance(answer_val, list) else answer_val.values()))
+
+    # Custom sections: {section_SECTION_NAME} (HTML stripped)
+    for sec in product.get("custom_sections") or []:
+        safe_name = (sec.get("name") or "").replace(" ", "_")
+        context[f"section_{safe_name}"] = _strip_html(sec.get("content", ""))
+
+    redirect_url = _substitute_url(external_url_template, context)
+
+    # Create pending_external order — tenant-scoped
+    order_doc: Dict[str, Any] = {
+        "id": order_id,
+        "tenant_id": tenant_id,
+        "order_number": order_number,
+        "customer_id": customer["id"],
+        "product_id": product_id,
+        "product_name": product.get("name", ""),
+        "type": "external",
+        "status": "pending_external",
+        "total": product.get("base_price", 0),
+        "currency": product.get("currency", "GBP"),
+        "payment_method": "external",
+        "intake_answers": intake_answers,
+        "external_redirect_url": redirect_url,
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    await db.orders.insert_one(order_doc)
+    order_doc.pop("_id", None)
+
+    await create_audit_log(
+        entity_type="order", entity_id=order_id,
+        action="external_checkout_initiated",
+        actor=current_user.get("email", user_id),
+        details={"product_id": product_id, "tenant_id": tenant_id, "order_number": order_number},
+    )
+
+    return {
+        "order_id": order_id,
+        "order_number": order_number,
+        "redirect_url": redirect_url,
+    }

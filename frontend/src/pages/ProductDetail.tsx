@@ -362,8 +362,8 @@ export default function ProductDetail() {
     if (!ws.stripe_enabled && !ws.gocardless_enabled && product.pricing_type === "fixed") {
       return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
     }
-    if (product.pricing_type === "external") {
-      return { label: "Add to cart", onClick: handleAddToCart };
+    if (product.pricing_type === "external" || product.checkout_type === "external") {
+      return { label: "Continue to External Checkout", onClick: handleAddToCart };
     }
     if (product.pricing_type === "enquiry") {
       return {

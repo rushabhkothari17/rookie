@@ -819,7 +819,17 @@ Build a white-label service commerce platform with:
 - Automated dunning flow / Dunning Dashboard
 
 
-### Session: Mar 2026 - Stripe Email Prefill + Imports Overhaul
+### Session: Mar 2026 - External Checkout Feature
+**Files changed:**
+- `backend/routes/admin/catalog.py`: `checkout_type` field (one_time/subscription/external), auto-generated `external_webhook_secret`, backward compat for legacy `pricing_type=external` products
+- `backend/routes/checkout.py`: New `POST /api/checkout/external-session` endpoint — creates pending_external order, substitutes {params} in URL template, returns redirect_url
+- `backend/routes/webhooks.py`: New `POST /api/webhooks/external/{webhook_secret}` endpoint — inbound callback, tenant-scoped, idempotent, 7 event types
+- `backend/models.py`: Added `checkout_type` + `external_webhook_secret` to AdminProductCreate/Update
+- `frontend/src/pages/admin/ProductForm.tsx`: Replaced 2-way BillingTypeSelector with 3-way CheckoutTypeSelector (one_time/subscription/external); added ExternalUrlBuilder component with URL template field, param reference panel, webhook endpoint display, webhook payload reference
+- `frontend/src/pages/ProductEditor.tsx`: Updated productToForm + save payload to include checkout_type and external_webhook_secret
+- `frontend/src/pages/admin/ProductsTab.tsx`: Updated billing type badge + filter to handle "external"
+- `frontend/src/pages/Cart.tsx`: ExternalCheckoutButton component replaces raw href link
+- `backend/routes/admin/imports.py`: Catalog template + guide updated with checkout_type, external_url, external_webhook_secret
 **Files changed:**
 - `backend/routes/admin/partner_billing.py`: Added `customer_email` to both Stripe Checkout sessions (subscription + order) by looking up partner admin user email — emails now auto-prefilled as read-only on checkout
 - `backend/routes/admin/imports.py`: Complete rewrite — 12 bugs fixed + 3 new entities + guide endpoint

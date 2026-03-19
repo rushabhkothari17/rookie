@@ -12,7 +12,42 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { ShoppingCart, Trash2, Tag, CreditCard, Building2, ChevronDown, ChevronUp, X, Check, AlertCircle, FileText, Clock, ExternalLink, HelpCircle, ClipboardList } from "lucide-react";
 
-const fmtMoney = (amount: number, currency = "USD") =>
+function ExternalCheckoutButton({ product, intakeAnswers }: { product: any; intakeAnswers: Record<string, any> }) {
+  const [loading, setLoading] = useState(false);
+  const { customer } = useAuth();
+  const navigate = useNavigate();
+  const handleClick = async () => {
+    if (!customer) {
+      navigate(`/login?redirect=${encodeURIComponent("/cart")}`);
+      return;
+    }
+    setLoading(true);
+    try {
+      const resp = await api.post("/checkout/external-session", {
+        product_id: product.id,
+        intake_answers: intakeAnswers,
+      });
+      const { redirect_url } = resp.data;
+      window.location.href = redirect_url;
+    } catch (e: any) {
+      toast.error(e?.response?.data?.detail || "Failed to initiate external checkout");
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      data-testid={`cart-external-checkout-btn-${product.id}`}
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 transition-colors"
+    >
+      {loading ? "Redirecting..." : "Continue"} <ExternalLink size={13} />
+    </button>
+  );
+}
+
+const fmtMoney = (amount: number, currency: string, _displayCurrency?: string) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
 export default function Cart() {
@@ -156,12 +191,12 @@ export default function Cart() {
     preview.items.forEach((item: any) => {
       const p = item.product;
       if (p.pricing_type === "scope_request") groups.scope.push(item);
-      else if (p.pricing_type === "external_checkout") groups.external.push(item);
+      else if (p.pricing_type === "external_checkout" || p.pricing_type === "external" || p.checkout_type === "external") groups.external.push(item);
       else if (p.pricing_type === "enquiry") groups.inquiry.push(item);
       // Only treat as RFQ if the product type is NOT "internal" — internal products with
       // price = 0 are legitimately free and should flow through /checkout/free.
       else if (item.pricing.subtotal === 0 && !item.inputs?._scope_unlock && p.pricing_type !== "internal") groups.rfq.push(item);
-      else if (p.is_subscription) groups.subscriptions.push(item);
+      else if (p.checkout_type === "subscription" || p.is_subscription) groups.subscriptions.push(item);
       else groups.oneTime.push(item);
     });
     return groups;
@@ -757,14 +792,16 @@ export default function Cart() {
               <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
                 <div className="p-4 border-b border-slate-100 bg-slate-50">
                   <h2 className="font-semibold text-slate-900">External Services</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Complete your intake below, then you'll be redirected to the external payment page.</p>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {grouped.external.map((item: any) => (
                     <div key={item.product.id} className="p-4 flex items-center justify-between" data-testid={`cart-external-item-${item.product.id}`}>
-                      <p className="font-medium text-slate-900">{item.product.name}</p>
-                      <a href={item.pricing.external_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
-                        Continue <ExternalLink size={14} />
-                      </a>
+                      <div>
+                        <p className="font-medium text-slate-900">{item.product.name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{item.product.card_description}</p>
+                      </div>
+                      <ExternalCheckoutButton product={item.product} intakeAnswers={item.inputs || {}} />
                     </div>
                   ))}
                 </div>

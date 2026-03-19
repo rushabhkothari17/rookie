@@ -830,3 +830,119 @@ async def gocardless_webhook(request: Request):
                 )
 
     return {"status": "ok"}
+
+
+
+# ── External checkout inbound webhook ────────────────────────────────────────
+
+EXTERNAL_WEBHOOK_EVENTS = {
+    "payment_success", "payment_failed", "refunded",
+    "partial_refund", "cancelled",
+    "subscription_activated", "subscription_cancelled",
+}
+
+EVENT_STATUS_MAP: dict[str, str] = {
+    "payment_success": "paid",
+    "payment_failed": "failed",
+    "refunded": "refunded",
+    "partial_refund": "partially_refunded",
+    "cancelled": "cancelled",
+    "subscription_activated": "active",
+    "subscription_cancelled": "cancelled",
+}
+
+
+@router.post("/webhooks/external/{webhook_secret}")
+async def external_checkout_webhook(webhook_secret: str, request: Request):
+    """Inbound webhook from an external payment platform.
+
+    Tenant-scoped: the webhook_secret belongs to exactly one product in one tenant,
+    so this endpoint cannot affect any other tenant's data.
+
+    Expected JSON body:
+      {
+        "event":        "payment_success" | "payment_failed" | "refunded" |
+                        "partial_refund" | "cancelled" |
+                        "subscription_activated" | "subscription_cancelled",
+        "order_id":     "<order UUID sent as {order_id} in the redirect URL>",
+        "amount":       149.00,
+        "currency":     "GBP",
+        "processor_id": "<external payment reference>",
+        "refund_amount": 50.00,     (only for refunded / partial_refund events)
+        "notes":        "optional message"
+      }
+    """
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    event = payload.get("event", "")
+    order_id = payload.get("order_id", "")
+
+    if not event or event not in EXTERNAL_WEBHOOK_EVENTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown event '{event}'. Valid events: {', '.join(sorted(EXTERNAL_WEBHOOK_EVENTS))}",
+        )
+    if not order_id:
+        raise HTTPException(status_code=400, detail="Missing required field: order_id")
+
+    # Look up the product by webhook_secret — this implicitly scopes to a single tenant
+    product = await db.products.find_one(
+        {"external_webhook_secret": webhook_secret}, {"_id": 0, "id": 1, "tenant_id": 1, "name": 1}
+    )
+    if not product:
+        raise HTTPException(status_code=404, detail="Webhook secret not recognised")
+
+    tenant_id = product["tenant_id"]
+
+    # Look up the order — MUST belong to the same tenant (prevents cross-tenant manipulation)
+    order = await db.orders.find_one(
+        {"id": order_id, "tenant_id": tenant_id}, {"_id": 0, "id": 1, "status": 1}
+    )
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found for this webhook")
+
+    # Idempotency: if this exact event was already processed, return 200 silently
+    already_processed = await db.orders.find_one(
+        {"id": order_id, "tenant_id": tenant_id, f"_ext_event_{event}": True},
+        {"_id": 0, "id": 1},
+    )
+    if already_processed:
+        return {"status": "ok", "note": "duplicate event ignored"}
+
+    new_status = EVENT_STATUS_MAP.get(event)
+    update: dict = {
+        f"_ext_event_{event}": True,  # idempotency marker
+        "updated_at": now_iso(),
+    }
+    if new_status:
+        update["status"] = new_status
+    if payload.get("processor_id"):
+        update["external_processor_id"] = payload["processor_id"]
+    if payload.get("amount") is not None:
+        update["external_amount_paid"] = float(payload["amount"])
+    if payload.get("currency"):
+        update["external_currency"] = payload["currency"]
+    if payload.get("refund_amount") is not None:
+        update["refund_amount"] = float(payload["refund_amount"])
+    if payload.get("notes"):
+        update["external_notes"] = payload["notes"]
+
+    await db.orders.update_one({"id": order_id, "tenant_id": tenant_id}, {"$set": update})
+
+    await create_audit_log(
+        entity_type="order", entity_id=order_id,
+        action=f"external_webhook_{event}",
+        actor="external_webhook",
+        details={
+            "event": event,
+            "product_id": product["id"],
+            "tenant_id": tenant_id,
+            "new_status": new_status,
+            "processor_id": payload.get("processor_id"),
+        },
+    )
+
+    return {"status": "ok", "order_id": order_id, "new_status": new_status}

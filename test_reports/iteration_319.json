@@ -1,0 +1,68 @@
+{
+  "summary": "Completed full backend + frontend testing of the External URL Checkout feature. All 21 backend tests pass (product creation validation, external session, webhook, cross-tenant isolation, idempotency). One critical frontend bug found: ProductDetail page shows 'Add to cart' instead of 'Continue to External Checkout' for external products. Admin UI (product editor, ExternalUrlBuilder, webhook section, catalog badge) works correctly. Cart 'External Services' section works correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductDetail.tsx / ClassicLayout.tsx",
+        "issue": "External products show 'Add to cart' CTA instead of 'Continue to External Checkout'. Root cause: ProductDetail.tsx computes ctaConfig (correctly checking checkout_type === 'external') but this ctaConfig is NEVER PASSED to ProductLayout or any layout component. Each layout (ClassicLayout, QuickBuyLayout, WizardLayout) has its own local ctaConfig that does NOT check checkout_type === 'external'. Also, Product interface in types.ts is missing checkout_type field.",
+        "selector": "button:has-text('Add to cart') on /product/e986e726-3015-4162-b815-8af4f354928b",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "ProductForm.tsx / ExternalUrlBuilder / Webhook Events Table",
+        "issue": "Console hydration error: <span> cannot be a child of <tbody>. The WEBHOOK_EVENTS are mapped inside a span wrapper inside tbody. Minor HTML structure issue but doesn't block functionality.",
+        "selector": "table > tbody > span > tr",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter319_external_checkout.py",
+    "/app/test_reports/pytest/pytest_iter319_external_checkout.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Fix ProductDetail 'Continue to External Checkout' CTA. Fix: Update ClassicLayout.tsx (line 41-53), QuickBuyLayout.tsx, WizardLayout.tsx, ShowcaseLayout.tsx to check `product.checkout_type === 'external'` and return 'Continue to External Checkout'. Also add `checkout_type?: string` to Product interface in types.ts. Alternatively, pass `ctaConfig` from ProductDetail.tsx through LayoutProps and have all layouts use it.",
+    "MINOR: Fix <span> inside <tbody> HTML hydration error in ExternalUrlBuilder webhook events table. Wrap WEBHOOK_EVENTS map directly in <tbody> using React.Fragment instead of a span wrapper."
+  ],
+  "critical_code_review_comments": [
+    "ProductDetail.tsx has a dead-code useMemo for ctaConfig (lines 343-382) that is never used - the layout components each build their own CTA logic. This duplication creates the bug. Either remove the ProductDetail useMemo and pass checkout_type to layouts, or pass ctaConfig down to layouts and eliminate the per-layout CTA logic.",
+    "types.ts Product interface is missing checkout_type field (only has pricing_type). This means layout components that receive `product: Product` cannot easily type-check checkout_type.",
+    "ClassicLayout.tsx ctaConfig (lines 41-53) only handles isEnquiry, isFree, and default 'Add to cart' - missing external checkout type detection.",
+    "The ProductDetail.tsx dead ctaConfig useMemo has handleAddToCart in the function body but NOT in the dependency array - potential stale closure issue."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter319_external_checkout.py"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21 tests pass)",
+    "frontend": "80% (admin UI all works, cart external section works, product detail CTA broken)"
+  },
+  "seed_data_creation": "No new seed data created. Used pre-existing EDD external product (e986e726-3015-4162-b815-8af4f354928b) and AA external product (7ebbb803-7edc-4cd8-8baf-fce169518124). Created and cleaned up 7 TEST_ products.",
+  "test_credentials": {
+    "edd_admin": "rushabh0996@gmail.com / ChangeMe123!",
+    "edd_customer": "edd_customer@test.com / Test123!",
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123!",
+    "edd_product_id": "e986e726-3015-4162-b815-8af4f354928b",
+    "edd_webhook_secret": "4BLXL4zCccv3wnY9Y8mGKnOoH76b_p_-V_qU7LvaGbA"
+  },
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is fully working. The only critical frontend issue is: ProductDetail shows 'Add to cart' for external products instead of 'Continue to External Checkout'. The fix is in ClassicLayout.tsx (and other layout files) - they need to check `product.checkout_type === 'external'`. The ProductDetail.tsx ctaConfig useMemo IS correct but is NOT used by layout components. After E1 fixes ClassicLayout, test by navigating to /product/e986e726-3015-4162-b815-8af4f354928b as edd_customer and verifying the CTA button says 'Continue to External Checkout'.",
+  "rca_of_the_issue": {
+    "issue": "ProductDetail.tsx shows 'Add to cart' instead of 'Continue to External Checkout' for external products",
+    "root_cause": "ProductDetail.tsx computes a ctaConfig useMemo that correctly handles checkout_type==='external' (returns 'Continue to External Checkout'). However, this ctaConfig variable is NEVER PASSED to ProductLayout or any of the layout components. The ProductLayout component receives product, pricing, handleAddToCart, isRFQ etc. but NOT ctaConfig. Each layout file (ClassicLayout.tsx, QuickBuyLayout.tsx, etc.) builds its own local ctaConfig that only handles enquiry, free, and default (Add to cart) - without checking checkout_type. Additionally, the Product interface in types.ts lacks the checkout_type field.",
+    "reproduction_steps": [
+      "1. Login as edd_customer@test.com on EDD store",
+      "2. Navigate to /product/e986e726-3015-4162-b815-8af4f354928b",
+      "3. Observe the CTA button shows 'Add to cart' instead of 'Continue to External Checkout'",
+      "4. The API confirms checkout_type='external' for this product"
+    ],
+    "mitigation": "Option A (minimal): In ClassicLayout.tsx, QuickBuyLayout.tsx, WizardLayout.tsx - add check before default 'Add to cart': if (product.checkout_type === 'external' || product.pricing_type === 'external') return { label: 'Continue to External Checkout', onClick: handleAddToCart }. Option B (clean): Add ctaConfig to LayoutProps in types.ts, pass it from ProductDetail.tsx to ProductLayout, and have layout components use it instead of computing their own."
+  }
+}

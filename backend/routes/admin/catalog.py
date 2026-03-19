@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import secrets
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +15,20 @@ from services.audit_service import create_audit_log
 from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-catalog"])
+
+
+def _resolve_checkout_type(checkout_type: Optional[str], is_subscription: bool, pricing_type: str) -> str:
+    """Derive canonical checkout_type from various product fields (for backward compat)."""
+    if checkout_type:
+        return checkout_type
+    # Legacy: pricing_type = "external" maps to checkout_type = "external"
+    if pricing_type == "external":
+        return "external"
+    return "subscription" if is_subscription else "one_time"
+
+
+def _generate_webhook_secret() -> str:
+    return secrets.token_urlsafe(32)
 
 
 def _label_to_key(label: str, fallback: str = "key") -> str:
@@ -160,6 +175,28 @@ async def admin_create_product(
 ):
     tid = tenant_id_of(admin)
     product_id = make_id()
+
+    # Resolve checkout_type (supports legacy pricing_type = "external")
+    resolved_checkout_type = _resolve_checkout_type(
+        payload.checkout_type,
+        payload.is_subscription,
+        payload.pricing_type or "internal",
+    )
+
+    # Validate: external products must have a valid URL
+    if resolved_checkout_type == "external":
+        url = (payload.external_url or "").strip()
+        if not url:
+            raise HTTPException(status_code=400, detail="external_url is required when checkout_type is 'external'")
+        if not (url.startswith("http://") or url.startswith("https://")):
+            raise HTTPException(status_code=400, detail="external_url must start with http:// or https://")
+    # Auto-generate webhook secret for external products
+    webhook_secret = payload.external_webhook_secret or (
+        _generate_webhook_secret() if resolved_checkout_type == "external" else None
+    )
+    # Normalise pricing_type: "external" pricing_type is replaced by checkout_type field
+    normalised_pricing_type = "internal" if (payload.pricing_type or "internal") == "external" else (payload.pricing_type or "internal")
+
     product: Dict[str, Any] = {
         "id": product_id,
         "tenant_id": tid,
@@ -173,7 +210,7 @@ async def admin_create_product(
         "faqs": payload.faqs,
         "terms_id": payload.terms_id,
         "base_price": payload.base_price,
-        "is_subscription": payload.is_subscription,
+        "is_subscription": resolved_checkout_type == "subscription",
         "stripe_price_id": payload.stripe_price_id,
         "is_active": payload.is_active,
         "visible_to_customers": payload.visible_to_customers,
@@ -181,8 +218,10 @@ async def admin_create_product(
         "visibility_conditions": payload.visibility_conditions.model_dump() if payload.visibility_conditions else None,
         "price_rounding": payload.price_rounding or None,
         "show_price_breakdown": bool(payload.show_price_breakdown),
-        "pricing_type": payload.pricing_type or "internal",
+        "pricing_type": normalised_pricing_type,
+        "checkout_type": resolved_checkout_type,
         "external_url": payload.external_url,
+        "external_webhook_secret": webhook_secret,
         "display_layout": payload.display_layout or "standard",
         "currency": payload.currency or "USD",
         "enquiry_form_id": payload.enquiry_form_id or None,
@@ -287,6 +326,37 @@ async def admin_update_product(
     if payload.billing_type is not None:
         update_fields["billing_type"] = payload.billing_type
     update_fields["tags"] = payload.tags or []
+
+    # checkout_type + external_webhook_secret
+    if payload.checkout_type is not None:
+        resolved_ct = payload.checkout_type
+    else:
+        # Derive from is_subscription if explicitly provided, else keep existing
+        if payload.is_subscription is not None:
+            resolved_ct = "subscription" if payload.is_subscription else "one_time"
+        else:
+            resolved_ct = existing.get("checkout_type") or _resolve_checkout_type(
+                None, existing.get("is_subscription", False), existing.get("pricing_type", "internal")
+            )
+    update_fields["checkout_type"] = resolved_ct
+    update_fields["is_subscription"] = resolved_ct == "subscription"
+
+    # Validate: external products must have a valid URL
+    effective_url = (payload.external_url if payload.external_url is not None else existing.get("external_url", "")) or ""
+    if resolved_ct == "external":
+        if not effective_url.strip():
+            raise HTTPException(status_code=400, detail="external_url is required when checkout_type is 'external'")
+        if not (effective_url.startswith("http://") or effective_url.startswith("https://")):
+            raise HTTPException(status_code=400, detail="external_url must start with http:// or https://")
+    # Normalise pricing_type: never store "external" as pricing_type — use checkout_type instead
+    if payload.pricing_type is not None:
+        update_fields["pricing_type"] = "internal" if payload.pricing_type == "external" else payload.pricing_type
+    update_fields["external_url"] = payload.external_url  # always update (allows clearing)
+    # Auto-generate secret when switching to external and none exists yet
+    if resolved_ct == "external" and not existing.get("external_webhook_secret") and not payload.external_webhook_secret:
+        update_fields["external_webhook_secret"] = _generate_webhook_secret()
+    elif payload.external_webhook_secret:
+        update_fields["external_webhook_secret"] = payload.external_webhook_secret
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
         schema_dict = payload.intake_schema_json.dict()
