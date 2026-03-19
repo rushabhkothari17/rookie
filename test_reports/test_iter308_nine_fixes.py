@@ -7,7 +7,7 @@ import asyncio
 # Full login + test flow
 await page.set_viewport_size({"width": 1920, "height": 1080})
 
-BASE_URL = "https://platform-health-scan.preview.emergentagent.com"
+BASE_URL = "https://bug-hunt-commerce.preview.emergentagent.com"
 
 async def login_admin():
     """Login with admin credentials"""
