@@ -237,9 +237,11 @@ async def create_partner_order(
     payload: PartnerOrderCreate,
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
-    tenant = await db.tenants.find_one({"id": payload.partner_id}, {"_id": 0, "id": 1, "name": 1})
+    tenant = await db.tenants.find_one({"id": payload.partner_id}, {"_id": 0, "id": 1, "name": 1, "status": 1})
     if tenant is None:
         raise HTTPException(status_code=404, detail="Partner not found")
+    if tenant.get("status") == "inactive":
+        raise HTTPException(status_code=400, detail="Cannot create an order for an inactive partner")
 
     if payload.status not in PARTNER_ORDER_STATUSES:
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {PARTNER_ORDER_STATUSES}")
@@ -546,9 +548,11 @@ async def create_partner_subscription(
     payload: PartnerSubscriptionCreate,
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
-    tenant = await db.tenants.find_one({"id": payload.partner_id}, {"_id": 0, "id": 1, "name": 1})
+    tenant = await db.tenants.find_one({"id": payload.partner_id}, {"_id": 0, "id": 1, "name": 1, "status": 1})
     if tenant is None:
         raise HTTPException(status_code=404, detail="Partner not found")
+    if tenant.get("status") == "inactive":
+        raise HTTPException(status_code=400, detail="Cannot create a subscription for an inactive partner")
 
     if payload.billing_interval not in BILLING_INTERVALS:
         raise HTTPException(status_code=400, detail=f"Invalid billing_interval. Allowed: {BILLING_INTERVALS}")

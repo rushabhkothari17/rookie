@@ -501,7 +501,7 @@ export function PartnerOrdersTab() {
       api.get("/admin/taxes/overrides").catch(() => ({ data: { rules: [] } })),
       api.get("/admin/tenants/my").catch(() => ({ data: { tenant: {} } })),
     ]).then(([t, p, ts, te, tor, myTenant]) => {
-      setTenants((t.data.tenants || []).filter((x: any) => x.code !== "automate-accounts"));
+      setTenants((t.data.tenants || []).filter((x: any) => x.code !== "automate-accounts" && x.status !== "inactive"));
       setPlans((p.data.plans || []).filter((x: Plan) => x.is_active));
       setTaxEnabled(ts.data?.tax_settings?.enabled === true);
       setTaxEntries(te.data?.entries || []);
