@@ -111,7 +111,7 @@ export default function Login() {
     setPassword("");
   }
 
-  const primary = partnerInfo?.primary_color || "#0f172a";
+  const primary = partnerInfo?.primary_color || "var(--aa-primary)";
   const accent = partnerInfo?.accent_color || primary;
   const lightBg = isLightColor(primary);
   const panelText = lightBg ? "#0f172a" : "#ffffff";

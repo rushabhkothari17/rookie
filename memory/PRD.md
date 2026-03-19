@@ -819,6 +819,22 @@ Build a white-label service commerce platform with:
 - Automated dunning flow / Dunning Dashboard
 
 
+### Session: Mar 2026 - Hardcoded Color Refactor (CSS Variables)
+**Files changed:**
+- `frontend/src/pages/Login.tsx`: `#0f172a` fallback → `var(--aa-primary)`
+- `frontend/src/pages/ForgotPassword.tsx`: `#94a3b8` expired button bg → `var(--aa-muted)`
+- `frontend/src/components/IconPicker.tsx`: `#64748b` icon fallback → `var(--aa-muted)` (x2)
+- `frontend/src/pages/admin/SectionsEditor.tsx`: `#3b82f6` → `var(--aa-accent)` (x2), `#64748b` → `var(--aa-muted)` (x1)
+- `frontend/src/index.css`:
+  - `::selection color: #0f172a` → `var(--aa-text)`
+  - `.shimmer-bg` first definition → CSS variables
+  - `.nav-pill-active` rgba(15,23,42) → `color-mix(in srgb, var(--aa-primary) 7%, transparent)`
+  - `.tiptap blockquote` border+color → `var(--aa-border)` + `var(--aa-muted)`
+  - `.tiptap code` background → `var(--aa-surface)`
+  - `focusGlow` / `focusGlowRed` keyframes → `color-mix()` with CSS vars
+  - `.sticky-scroll-bar` scrollbar colors → `var(--aa-border)` + `var(--aa-muted)`
+**Notes:** Retained intentional values: partner branding contrast computations (Login.tsx panelText/panelMuted), ICON_COLORS palette (SectionsEditor), dark mode tinted text overrides, PDF generation hex values.
+
 ## Credentials
 - Platform Admin: admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts
 

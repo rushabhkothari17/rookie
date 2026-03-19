@@ -7,7 +7,7 @@ import asyncio
 import json
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://bug-hunt-commerce.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://design-system-fix-3.preview.emergentagent.com')
 ADMIN_EMAIL = 'admin@automateaccounts.local'
 ADMIN_PASSWORD = 'ChangeMe123!'
 TENANT_CODE = 'automate-accounts'

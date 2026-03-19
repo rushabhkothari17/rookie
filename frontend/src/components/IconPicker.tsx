@@ -15,7 +15,7 @@ export const ALL_SECTION_ICONS = [
 function DynamicIcon({ name, colorHex }: { name: string; colorHex?: string }) {
   const IconComp = (LucideIcons as any)[name];
   if (!IconComp) return <span className="w-4 h-4" />;
-  return <IconComp size={16} style={{ color: colorHex || "#64748b" }} />;
+  return <IconComp size={16} style={{ color: colorHex || "var(--aa-muted)" }} />;
 }
 
 export function IconPicker({
@@ -61,7 +61,7 @@ export function IconPicker({
               }`}
               data-testid={`icon-option-${name}`}
             >
-              <DynamicIcon name={name} colorHex={colorHex || "#64748b"} />
+              <DynamicIcon name={name} colorHex={colorHex || "var(--aa-muted)"} />
             </button>
           ))}
         </div>

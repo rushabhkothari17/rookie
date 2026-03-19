@@ -285,7 +285,7 @@ export default function ForgotPassword() {
             <Button
               type="submit"
               className="w-full h-12 text-white font-semibold"
-              style={{ backgroundColor: isExpired ? "#94a3b8" : primaryColor }}
+              style={{ backgroundColor: isExpired ? "var(--aa-muted)" : primaryColor }}
               disabled={loading || isExpired}
               data-testid="reset-password-submit"
             >

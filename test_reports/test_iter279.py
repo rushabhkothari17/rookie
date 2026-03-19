@@ -14,7 +14,7 @@ Tests 8 features:
 import asyncio
 import sys
 
-BASE_URL = "https://bug-hunt-commerce.preview.emergentagent.com"
+BASE_URL = "https://design-system-fix-3.preview.emergentagent.com"
 results = {}
 
 async def login(page):

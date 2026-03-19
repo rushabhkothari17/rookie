@@ -46,7 +46,7 @@ function makeId() {
 function DynamicIcon({ name, colorHex }: { name: string; colorHex?: string }) {
   const IconComp = (LucideIcons as any)[name];
   if (!IconComp) return null;
-  return <IconComp size={15} style={{ color: colorHex || "#3b82f6" }} />;
+  return <IconComp size={15} style={{ color: colorHex || "var(--aa-accent)" }} />;
 }
 
 export const DEFAULT_SECTION: CustomSection = {
@@ -126,7 +126,7 @@ export function SectionsEditor({
               onClick={() => setExpandedIdx(isExpanded ? null : i)}
               data-testid={`section-header-${i}`}
             >
-              <DynamicIcon name={sec.icon || "FileText"} colorHex={COLOR_HEX[sec.icon_color] || "#3b82f6"} />
+              <DynamicIcon name={sec.icon || "FileText"} colorHex={COLOR_HEX[sec.icon_color] || "var(--aa-accent)"} />
               <span className="flex-1 text-sm font-medium text-slate-700 truncate">
                 {sec.name || <span className="text-slate-400 italic">Untitled section</span>}
               </span>
@@ -158,7 +158,7 @@ export function SectionsEditor({
                       <IconPicker
                         value={sec.icon || "FileText"}
                         onChange={v => update(i, { icon: v })}
-                        colorHex={COLOR_HEX[sec.icon_color] || "#64748b"}
+                        colorHex={COLOR_HEX[sec.icon_color] || "var(--aa-muted)"}
                       />
                     </div>
                   </div>
