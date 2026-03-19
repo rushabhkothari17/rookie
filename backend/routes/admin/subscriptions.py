@@ -60,6 +60,7 @@ async def admin_subscriptions_stats(admin: Dict[str, Any] = Depends(get_tenant_a
 
     now = datetime.now(timezone.utc)
     this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d")
+    next_month_start = f"{now.year + 1}-01-01" if now.month == 12 else f"{now.year}-{now.month + 1:02d}-01"
     base_flt = {**tf}
 
     async def _total():
@@ -76,21 +77,33 @@ async def admin_subscriptions_stats(admin: Dict[str, Any] = Depends(get_tenant_a
         return {(r["_id"] or "unknown"): r["count"] for r in results}
 
     async def _mrr_by_currency():
-        """Sum monthly amounts for active subscriptions, grouped by currency."""
+        """Sum normalized monthly amounts for active subscriptions, grouped by currency."""
         pipeline = [
             {"$match": {**base_flt, "status": "active"}},
-            {"$group": {"_id": "$currency", "total": {"$sum": "$amount"}}},
+            {"$addFields": {
+                "monthly_amount": {"$switch": {
+                    "branches": [
+                        {"case": {"$eq": ["$billing_interval", "weekly"]},    "then": {"$multiply": ["$amount", 4.333]}},
+                        {"case": {"$eq": ["$billing_interval", "monthly"]},   "then": "$amount"},
+                        {"case": {"$eq": ["$billing_interval", "quarterly"]}, "then": {"$divide": ["$amount", 3]}},
+                        {"case": {"$eq": ["$billing_interval", "biannual"]},  "then": {"$divide": ["$amount", 6]}},
+                        {"case": {"$eq": ["$billing_interval", "annual"]},    "then": {"$divide": ["$amount", 12]}},
+                    ],
+                    "default": "$amount",
+                }},
+            }},
+            {"$group": {"_id": "$currency", "total": {"$sum": "$monthly_amount"}}},
         ]
         return await db.subscriptions.aggregate(pipeline).to_list(20)
 
     async def _new_this_month():
-        return await db.subscriptions.count_documents({**base_flt, "created_at": {"$gte": this_month_start}})
+        return await db.subscriptions.count_documents({**base_flt, "created_at": {"$gte": this_month_start, "$lt": next_month_start}})
 
     async def _churned_this_month():
         return await db.subscriptions.count_documents({
             **base_flt,
             "status": {"$in": ["cancelled", "canceled"]},
-            "updated_at": {"$gte": this_month_start},
+            "canceled_at": {"$gte": this_month_start, "$lt": next_month_start},
         })
 
     async def _active_count():

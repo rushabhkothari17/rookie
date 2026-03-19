@@ -187,7 +187,7 @@ export function OrdersTab() {
   const uniqueEmails = Array.from(new Set(users.map(u => u.email).filter(Boolean)));
   const uniqueCustomerNames = Array.from(new Set(users.map(u => u.full_name).filter(Boolean)));
   const uniqueProductNames = Array.from(new Set(products.map((p: any) => p.name).filter(Boolean)));
-  const uniqueSubNumbers = Array.from(new Set(orders.map(o => o.subscription_number || o.subscription_id?.slice(0, 8)).filter(Boolean)));
+  const uniqueSubNumbers = Array.from(new Set(orders.map(o => o.subscription_number).filter(Boolean)));
   const uniqueProcessorIds = orders.map(o => o.processor_id).filter(Boolean);
   const uniquePartners = Array.from(new Set(orders.map(o => o.partner_code).filter(Boolean)));
 
@@ -196,6 +196,7 @@ export function OrdersTab() {
   // customer search for edit dialog
   const [custSearch, setCustSearch] = useState("");
   const filteredCusts = customers.filter(c => {
+    if (c.deleted_at) return false;
     const u = userMap[c.user_id];
     const q = custSearch.toLowerCase();
     return !q || u?.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q);
@@ -581,7 +582,7 @@ export function OrdersTab() {
               <SearchableSelect
                 value={selectedOrder.edit_product_id || undefined}
                 onValueChange={v => setSelectedOrder({ ...selectedOrder, edit_product_id: v })}
-                options={[{ value: "", label: "— Keep current product —" }, ...products.map((p: any) => ({ value: p.id, label: p.name }))]}
+                options={[{ value: "", label: "— Keep current product —" }, ...products.filter((p: any) => !p.deleted_at && p.is_active !== false).map((p: any) => ({ value: p.id, label: p.name }))]}
                 placeholder="— Keep current product —"
                 searchPlaceholder="Search products..."
                 data-testid="admin-order-product-select"
@@ -637,10 +638,13 @@ export function OrdersTab() {
             <div className="space-y-1">
               <RequiredLabel className="text-slate-500 font-normal">Customer Email</RequiredLabel>
               <SearchableSelect
-                options={users.map((u: any) => ({
-                  value: u.email,
-                  label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
-                }))}
+                options={(() => {
+                  const activeUserIds = new Set(customers.filter((c: any) => !c.deleted_at).map((c: any) => c.user_id));
+                  return users.filter((u: any) => activeUserIds.has(u.id) && u.email).map((u: any) => ({
+                    value: u.email,
+                    label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
+                  }));
+                })()}
                 value={manualOrder.customer_email || undefined}
                 onValueChange={v => {
                   // Auto-populate tax when customer is selected

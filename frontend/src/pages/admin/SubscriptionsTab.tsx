@@ -138,7 +138,7 @@ export function SubscriptionsTab() {
   const today = new Date().toISOString().slice(0, 10);
 
   const EMPTY_MANUAL_SUB = {
-    customer_email: "", product_id: "", quantity: 1, amount: 0, currency: "GBP",
+    customer_email: "", product_id: "", quantity: 1, amount: 0, currency: "USD",
     start_date: today,
     billing_interval: "monthly",
     payment_method: "manual",      // C-1: was "offline" (deprecated)
