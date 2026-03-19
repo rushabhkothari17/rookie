@@ -663,7 +663,7 @@ export function UsersTab() {
     } finally {
       setUsersLoading(false);
     }
-  }, [searchFilter, partnerFilter]);
+  }, [searchFilter]);
 
   const loadMeta = useCallback(async () => {
     try {
