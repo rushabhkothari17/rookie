@@ -174,7 +174,7 @@
 
 ### ⚠️ UI RUNTIME TESTING BLOCKED:
 - **Issue:** External preview URL showing "Preview Unavailable"
-- **URL:** https://sub-order-check.preview.emergentagent.com
+- **URL:** https://platform-audit-16.preview.emergentagent.com
 - **Root Cause:** Preview infrastructure issue (not app bug)
 - **Services:** All running correctly on localhost (backend:8001, frontend:3000)
 - **Impact:** Cannot perform click-through UI testing, but code review validates implementations
