@@ -47,10 +47,14 @@ async def update_billing_settings(
     if payload.overdue_grace_days is not None:
         if payload.overdue_grace_days < 1:
             raise HTTPException(status_code=400, detail="overdue_grace_days must be >= 1")
+        if payload.overdue_grace_days > 365:
+            raise HTTPException(status_code=400, detail="overdue_grace_days must be <= 365")
         current["overdue_grace_days"] = payload.overdue_grace_days
     if payload.overdue_warning_days is not None:
         if payload.overdue_warning_days < 0:
             raise HTTPException(status_code=400, detail="overdue_warning_days must be >= 0")
+        if payload.overdue_warning_days > 180:
+            raise HTTPException(status_code=400, detail="overdue_warning_days must be <= 180")
         current["overdue_warning_days"] = payload.overdue_warning_days
 
     # Cross-field validation: warning must trigger before grace period ends

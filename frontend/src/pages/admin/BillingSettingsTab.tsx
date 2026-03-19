@@ -4,8 +4,7 @@ import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, Info, Lock } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Loader2, Save, Info } from "lucide-react";
 
 export function BillingSettingsTab() {
   const [settings, setSettings] = useState({ overdue_grace_days: 7, overdue_warning_days: 3 });
@@ -74,9 +73,12 @@ export function BillingSettingsTab() {
             <Label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Grace Days</Label>
             <p className="text-xs text-slate-400 mb-1.5">Days before auto-cancellation</p>
             <Input
-              type="number" min={1} max={90}
+              type="number" min={1} max={365}
               value={settings.overdue_grace_days}
-              onChange={e => setSettings(s => ({ ...s, overdue_grace_days: parseInt(e.target.value) || 7 }))}
+              onChange={e => {
+                const v = parseInt(e.target.value);
+                setSettings(s => ({ ...s, overdue_grace_days: isNaN(v) ? 7 : v }));
+              }}
               data-testid="overdue-grace-days-input"
             />
           </div>
@@ -84,9 +86,12 @@ export function BillingSettingsTab() {
             <Label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Warning Days Before</Label>
             <p className="text-xs text-slate-400 mb-1.5">Days before grace to send warning</p>
             <Input
-              type="number" min={0} max={60}
+              type="number" min={0} max={180}
               value={settings.overdue_warning_days}
-              onChange={e => setSettings(s => ({ ...s, overdue_warning_days: parseInt(e.target.value) || 3 }))}
+              onChange={e => {
+                const v = parseInt(e.target.value);
+                setSettings(s => ({ ...s, overdue_warning_days: isNaN(v) ? 3 : v }));
+              }}
               data-testid="overdue-warning-days-input"
             />
           </div>

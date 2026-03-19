@@ -122,7 +122,7 @@ type SubFormData = {
 
 const emptyForm = (): SubFormData => ({
   partner_id: "", plan_id: "", description: "", amount: "",
-  currency: "GBP", billing_interval: "monthly", status: "pending",
+  currency: "USD", billing_interval: "monthly", status: "pending",
   payment_method: "manual", processor_id: "", start_date: "", next_billing_date: "", internal_note: "",
   term_months: "", auto_cancel_on_termination: false, reminder_days: "", contract_end_date: "",
   tax_name: "No tax", tax_rate: "0",
@@ -416,6 +416,11 @@ function SubFormModal({
               <input type="checkbox" id="ps_auto_cancel" data-testid="partner-sub-auto-cancel" checked={form.auto_cancel_on_termination} onChange={e => setForm(f => ({ ...f, auto_cancel_on_termination: e.target.checked }))} />
               <label htmlFor="ps_auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end (as per Expiry Date)</label>
             </div>
+            {form.auto_cancel_on_termination && !form.contract_end_date && (
+              <p className="text-xs text-amber-600 bg-amber-50 rounded px-2 py-1.5 col-span-2">
+                Auto-cancel requires an Expiry Date to be set — the flag will be saved but will not fire without one.
+              </p>
+            )}
           </div>
           {/* Renewal reminder */}
           <div className="space-y-1">

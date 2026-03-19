@@ -117,7 +117,7 @@ type OrderFormData = {
 
 const emptyForm = (): OrderFormData => ({
   partner_id: "", plan_id: "", description: "", amount: "",
-  currency: "GBP", status: "unpaid", payment_method: "manual",
+  currency: "USD", status: "unpaid", payment_method: "manual",
   processor_id: "", invoice_date: "", due_date: "", paid_at: "", internal_note: "",
   tax_name: "No tax", tax_rate: "0",
 });

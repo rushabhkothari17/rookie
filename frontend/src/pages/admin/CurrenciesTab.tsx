@@ -6,6 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Plus, Trash2, RefreshCw, Coins } from "lucide-react";
 import { invalidateCurrencyCache } from "@/hooks/useSupportedCurrencies";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function CurrenciesTab() {
   const [currencies, setCurrencies] = useState<string[]>([]);
@@ -13,6 +18,7 @@ export function CurrenciesTab() {
   const [newCode, setNewCode] = useState("");
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -46,6 +52,7 @@ export function CurrenciesTab() {
   };
 
   const handleRemove = async (code: string) => {
+    setConfirmRemove(null);
     setRemoving(code);
     try {
       const r = await api.delete(`/admin/platform/currencies/${code}`);
@@ -105,7 +112,7 @@ export function CurrenciesTab() {
                 <span className="font-mono font-semibold text-sm text-slate-800">{code}</span>
               </div>
               <button
-                onClick={() => handleRemove(code)}
+                onClick={() => setConfirmRemove(code)}
                 disabled={removing === code}
                 className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity ml-2"
                 data-testid={`remove-currency-${code}`}
@@ -121,6 +128,31 @@ export function CurrenciesTab() {
       <p className="text-xs text-slate-400">
         Removing a currency will not affect existing subscriptions or orders already using it.
       </p>
+
+      {/* Confirmation dialog */}
+      {confirmRemove && (
+        <AlertDialog open onOpenChange={() => setConfirmRemove(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove {confirmRemove}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove <strong>{confirmRemove}</strong> from the supported currencies list.
+                Existing subscriptions and orders using this currency are not affected, but it will no longer appear in dropdowns.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => handleRemove(confirmRemove)}
+                data-testid="confirm-remove-currency-btn"
+              >
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

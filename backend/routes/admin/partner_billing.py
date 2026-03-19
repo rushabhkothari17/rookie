@@ -12,7 +12,7 @@ Supports:
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -71,7 +71,7 @@ class PartnerOrderCreate(BaseModel):
     plan_id: Optional[str] = None
     description: str
     amount: float
-    currency: str = "GBP"
+    currency: str = "USD"
     status: str = "unpaid"
     payment_method: str = "manual"
     processor_id: Optional[str] = None
@@ -85,6 +85,7 @@ class PartnerOrderCreate(BaseModel):
 
 
 class PartnerOrderUpdate(BaseModel):
+    plan_id: Optional[str] = None
     description: Optional[str] = None
     amount: Optional[float] = None
     currency: Optional[str] = None
@@ -105,7 +106,7 @@ class PartnerSubscriptionCreate(BaseModel):
     plan_id: Optional[str] = None
     description: Optional[str] = None
     amount: float
-    currency: str = "GBP"
+    currency: str = "USD"
     billing_interval: str = "monthly"
     status: str = "pending"
     payment_method: str = "manual"
@@ -123,6 +124,7 @@ class PartnerSubscriptionCreate(BaseModel):
 
 
 class PartnerSubscriptionUpdate(BaseModel):
+    plan_id: Optional[str] = None
     description: Optional[str] = None
     amount: Optional[float] = None
     currency: Optional[str] = None
@@ -154,6 +156,9 @@ class PartnerCheckoutRequest(BaseModel):
 
 @router.get("/admin/partner-orders/stats")
 async def partner_orders_stats(admin: Dict[str, Any] = Depends(require_platform_admin)):
+    _now = datetime.now(timezone.utc)
+    _month_start = _now.strftime("%Y-%m-01")
+    _month_end = f"{_now.year + 1}-01-01" if _now.month == 12 else f"{_now.year}-{_now.month + 1:02d}-01"
     pipeline = [
         {"$facet": {
             "total": [{"$count": "n"}],
@@ -164,7 +169,7 @@ async def partner_orders_stats(admin: Dict[str, Any] = Depends(require_platform_
                 {"$group": {"_id": "$currency", "total": {"$sum": "$amount"}}},
             ],
             "this_month": [
-                {"$match": {"created_at": {"$gte": datetime.now(timezone.utc).strftime("%Y-%m")}}},
+                {"$match": {"created_at": {"$gte": _month_start, "$lt": _month_end}}},
                 {"$count": "n"},
             ],
         }}
@@ -331,11 +336,30 @@ async def update_partner_order(
     payload: PartnerOrderUpdate,
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
-    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0, "id": 1})
+    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0, "id": 1, "status": 1})
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    updates = {k: v for k, v in payload.dict(exclude_unset=True).items() if v is not None}
+    explicitly_set = payload.dict(exclude_unset=True)
+    # Allow explicit None only for clearable optional fields; drop None for everything else
+    _clearable = {"processor_id", "internal_note", "paid_at", "due_date", "invoice_date",
+                  "tax_name", "tax_rate", "tax_amount", "plan_id"}
+    updates = {k: v for k, v in explicitly_set.items() if v is not None or k in _clearable}
+
+    if "status" in updates and updates["status"] is not None:
+        if updates["status"] not in PARTNER_ORDER_STATUSES:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {PARTNER_ORDER_STATUSES}. Note: 'partially_refunded' is set automatically by the refund process.")
+
+    # Resolve plan_name when plan_id is updated
+    if "plan_id" in updates:
+        if updates["plan_id"]:
+            plan = await db.plans.find_one({"id": updates["plan_id"]}, {"_id": 0, "name": 1})
+            if not plan:
+                raise HTTPException(status_code=404, detail="Plan not found")
+            updates["plan_name"] = plan.get("name")
+        else:
+            updates["plan_name"] = None
+
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
     updates["updated_at"] = now_iso()
@@ -361,9 +385,11 @@ async def update_partner_order(
 
 @router.delete("/admin/partner-orders/{order_id}")
 async def delete_partner_order(order_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
-    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0, "id": 1, "order_number": 1})
+    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0, "id": 1, "order_number": 1, "status": 1})
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if order.get("status") in ("paid", "refunded", "partially_refunded"):
+        raise HTTPException(status_code=400, detail="Paid or refunded orders cannot be deleted to preserve payment records")
     await db.partner_orders.update_one({"id": order_id}, {"$set": {"deleted_at": now_iso(), "updated_at": now_iso()}})
     await create_audit_log(
         entity_type="partner_order", entity_id=order_id, action="deleted",
@@ -438,6 +464,9 @@ async def refund_partner_order(
 
 @router.get("/admin/partner-subscriptions/stats")
 async def partner_subscriptions_stats(admin: Dict[str, Any] = Depends(require_platform_admin)):
+    _now = datetime.now(timezone.utc)
+    _month_start = _now.strftime("%Y-%m-01")
+    _month_end = f"{_now.year + 1}-01-01" if _now.month == 12 else f"{_now.year}-{_now.month + 1:02d}-01"
     pipeline = [
         {"$facet": {
             "total": [{"$count": "n"}],
@@ -453,7 +482,7 @@ async def partner_subscriptions_stats(admin: Dict[str, Any] = Depends(require_pl
                 {"$group": {"_id": "$currency", "total": {"$sum": "$amount"}}},
             ],
             "new_this_month": [
-                {"$match": {"created_at": {"$gte": datetime.now(timezone.utc).strftime("%Y-%m")}}},
+                {"$match": {"created_at": {"$gte": _month_start, "$lt": _month_end}}},
                 {"$count": "n"},
             ],
         }}
@@ -661,7 +690,21 @@ async def update_partner_subscription(
     if sub is None:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
-    updates = {k: v for k, v in payload.dict(exclude_unset=True).items() if v is not None}
+    explicitly_set = payload.dict(exclude_unset=True)
+    _clearable = {"processor_id", "internal_note", "paid_at", "start_date", "next_billing_date",
+                  "contract_end_date", "term_months", "reminder_days", "tax_name", "tax_rate",
+                  "tax_amount", "plan_id"}
+    updates = {k: v for k, v in explicitly_set.items() if v is not None or k in _clearable}
+
+    # Resolve plan_name when plan_id is updated
+    if "plan_id" in updates:
+        if updates["plan_id"]:
+            plan = await db.plans.find_one({"id": updates["plan_id"]}, {"_id": 0, "name": 1})
+            if not plan:
+                raise HTTPException(status_code=404, detail="Plan not found")
+            updates["plan_name"] = plan.get("name")
+        else:
+            updates["plan_name"] = None
     # Handle term_months: -1 or 0 sentinel clears the term
     if "term_months" in payload.dict(exclude_unset=True):
         raw_term = payload.term_months
@@ -775,8 +818,16 @@ async def cancel_partner_subscription(sub_id: str, admin: Dict[str, Any] = Depen
 
     sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0})
 
-    # Reset partner to Free Trial plan after cancellation
-    await _reset_partner_to_free_trial(sub.get("partner_id", "") if sub else "")
+    # Reset partner to Free Trial only if no other active/pending subscriptions remain
+    partner_id = sub.get("partner_id", "") if sub else ""
+    if partner_id:
+        remaining = await db.partner_subscriptions.count_documents({
+            "partner_id": partner_id,
+            "status": {"$in": ["active", "pending"]},
+            "deleted_at": {"$exists": False},
+        })
+        if remaining == 0:
+            await _reset_partner_to_free_trial(partner_id)
 
     return {"subscription": sub}
 

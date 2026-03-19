@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.helpers import now_iso
-from core.tenant import require_platform_super_admin, get_tenant_admin
+from core.tenant import require_platform_super_admin, require_platform_admin, get_tenant_admin
 from db.session import db
 from services.audit_service import create_audit_log
 
@@ -15,6 +15,22 @@ router = APIRouter(prefix="/api", tags=["platform-currencies"])
 
 DEFAULT_CURRENCIES = ["AUD", "CAD", "EUR", "GBP", "INR", "MXN", "USD"]
 _DOC_KEY = "supported_currencies"
+
+# Active ISO 4217 currency codes (as of 2024)
+_VALID_ISO_4217: frozenset = frozenset({
+    "AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN",
+    "BHD","BIF","BMD","BND","BOB","BOV","BRL","BSD","BTN","BWP","BYN","BZD","CAD","CDF",
+    "CHE","CHF","CHW","CLF","CLP","CNY","COP","COU","CRC","CUC","CUP","CVE","CZK","DJF",
+    "DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP","GEL","GHS","GIP","GMD",
+    "GNF","GTQ","GYD","HKD","HNL","HTG","HUF","IDR","ILS","INR","IQD","IRR","ISK","JMD",
+    "JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW","KWD","KYD","KZT","LAK","LBP","LKR",
+    "LRD","LSL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRU","MUR","MVR","MWK",
+    "MXN","MXV","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK",
+    "PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK",
+    "SGD","SHP","SLE","SLL","SOS","SRD","STN","SVC","SYP","SZL","THB","TJS","TMT","TND",
+    "TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","USN","UYI","UYU","UYW","UZS","VED",
+    "VES","VND","VUV","WST","XAF","XCD","XOF","XPF","YER","ZAR","ZMW","ZWL",
+})
 
 
 async def _get_list_doc(key: str, defaults: list) -> Dict:
@@ -51,7 +67,7 @@ async def public_get_currencies(admin: Dict[str, Any] = Depends(get_tenant_admin
 
 
 @router.get("/admin/platform/currencies")
-async def admin_get_currencies(admin: Dict[str, Any] = Depends(require_platform_super_admin)):
+async def admin_get_currencies(admin: Dict[str, Any] = Depends(require_platform_admin)):
     return {"currencies": await get_supported_currencies_list()}
 
 
@@ -64,6 +80,8 @@ async def add_currency(payload: AddCurrencyPayload, admin: Dict[str, Any] = Depe
     code = payload.code.strip().upper()
     if len(code) != 3 or not code.isalpha():
         raise HTTPException(status_code=400, detail="Currency code must be 3 letters (ISO 4217)")
+    if code not in _VALID_ISO_4217:
+        raise HTTPException(status_code=400, detail=f"'{code}' is not a recognised ISO 4217 currency code")
     currencies = await get_supported_currencies_list()
     if code in currencies:
         raise HTTPException(status_code=409, detail="Currency already in the list")
