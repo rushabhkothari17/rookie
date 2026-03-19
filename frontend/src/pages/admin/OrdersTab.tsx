@@ -291,6 +291,16 @@ export function OrdersTab() {
     if (orderNumberFilter.length > 0) params.append("order_number_filter", orderNumberFilter.join(","));
     if (statusFilter.length > 0) params.append("status_filter", statusFilter.join(","));
     if (productFilter.length > 0) params.append("product_filter", productFilter.join(","));
+    if (subNumberFilter.length > 0) params.append("sub_number_filter", subNumberFilter.join(","));
+    if (processorIdFilter.length > 0) params.append("processor_id_filter", processorIdFilter.join(","));
+    if (payMethodFilter.length > 0) params.append("payment_method_filter", payMethodFilter.join(","));
+    if (partnerFilter.length > 0) params.append("partner_filter", partnerFilter.join(","));
+    if (emailFilter.length > 0) params.append("email_filter", emailFilter.join(","));
+    if (customerFilter.length > 0) params.append("customer_name_filter", customerFilter.join(","));
+    if (payDateFrom) params.append("pay_date_from", payDateFrom);
+    if (payDateTo) params.append("pay_date_to", payDateTo);
+    if (startDate) params.append("created_from", startDate);
+    if (endDate) params.append("created_to", endDate);
     fetch(`${baseUrl}/api/admin/export/orders?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));

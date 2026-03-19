@@ -370,12 +370,15 @@ export function SubscriptionsTab() {
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
     const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
-    // Fix #12: pass all active filters to export so exported CSV matches current view
+    // Pass all active filters to export so exported CSV matches current view
     const params = new URLSearchParams({ t: Date.now().toString() });
     if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
     if (paymentFilter.length > 0) params.append("payment_method", paymentFilter.join(","));
     if (currencyFilter.length > 0) params.append("currency_filter", currencyFilter.join(","));
     if (subNumberFilter.length > 0) params.append("sub_number_filter", subNumberFilter.join(","));
+    if (emailFilter.length > 0) params.append("email_filter", emailFilter.join(","));
+    if (planFilter.length > 0) params.append("plan_filter", planFilter.join(","));
+    if (processorIdFilter.length > 0) params.append("processor_id_filter", processorIdFilter.join(","));
     if (renewalFrom) params.append("renewal_from", renewalFrom);
     if (renewalTo) params.append("renewal_to", renewalTo);
     if (createdFrom) params.append("created_from", createdFrom);

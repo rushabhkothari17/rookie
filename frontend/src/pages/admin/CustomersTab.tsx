@@ -186,7 +186,15 @@ export function CustomersTab() {
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
     const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
-    fetch(`${baseUrl}/api/admin/export/customers`, { headers: { Authorization: `Bearer ${token}` } })
+    const params = new URLSearchParams();
+    if (nameFilter.length > 0) params.append("name_filter", nameFilter.join(","));
+    if (emailFilter.length > 0) params.append("email_filter", emailFilter.join(","));
+    if (stateFilter.length > 0) params.append("state_filter", stateFilter.join(","));
+    if (countryFilter.length > 0) params.append("country_filter", countryFilter.join(","));
+    if (statusFilter.length > 0) params.append("status_filter", statusFilter.join(","));
+    if (paymentModeFilter.length > 0) params.append("payment_mode_filter", paymentModeFilter.join(","));
+    if (partnerFilter.length > 0) params.append("partner_filter", partnerFilter.join(","));
+    fetch(`${baseUrl}/api/admin/export/customers?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `customers-${new Date().toISOString().slice(0,10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
   };

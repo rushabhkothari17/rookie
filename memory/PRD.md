@@ -819,7 +819,26 @@ Build a white-label service commerce platform with:
 - Automated dunning flow / Dunning Dashboard
 
 
-### Session: Mar 2026 - Hardcoded Color Refactor (CSS Variables)
+### Session: Mar 2026 - Exports Audit & Comprehensive Fix
+**Files changed:**
+- `backend/routes/admin/exports.py`: Complete rewrite fixing 12 bugs + adding 3 new endpoints
+- `frontend/src/pages/admin/OrdersTab.tsx`: Forward all 8 missing filters to export
+- `frontend/src/pages/admin/CustomersTab.tsx`: Forward all 7 filters to export (was sending none)
+- `frontend/src/pages/admin/SubscriptionsTab.tsx`: Forward email, plan, processorId filters to export
+
+**Bug fixes:**
+1. **3 missing 404 endpoints** added: `/export/resources`, `/export/resource-categories`, `/export/resource-templates`
+2. **Orders `product_filter`** - accepted but never applied in DB query → now joins order_items to find matching orders
+3. **Orders multi-value filters** (`status`, `order_number`) - broken regex on comma-joined string → now uses `$in` operator
+4. **Orders `email_filter` multi-value** - substring check on joined string failed → now checks each email individually
+5. **Orders 6 missing params** (`sub_number`, `processor_id`, `payment_method`, `partner`, `pay_date_range`, `customer_name`) not forwarded from frontend
+6. **Customers export** - sent zero filters → now forwards all 7 active UI filters
+7. **Promo codes `status` + `search` params** missing from backend signature → silently ignored, now implemented with correct expiry/usage logic
+8. **Promo codes `applies_to` multi-value** - exact string match → now uses `$in`
+9. **Terms all filters ignored** - backend accepted no params → now handles `search` and `status`
+10. **Subscriptions `email`, `plan`, `processorId` filters** missing from export
+11. **Subscriptions missing audit log** added
+12. **Permissions** - only orders had `reports.view` check; all others now use appropriate module permission keys (`products`, `customers`, `subscriptions`, `content`, `promo_codes`)
 **Files changed:**
 - `frontend/src/pages/Login.tsx`: `#0f172a` fallback → `var(--aa-primary)`
 - `frontend/src/pages/ForgotPassword.tsx`: `#94a3b8` expired button bg → `var(--aa-muted)`
