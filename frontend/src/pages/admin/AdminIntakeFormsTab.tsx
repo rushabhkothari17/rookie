@@ -98,7 +98,7 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
-    api.get("/admin/customers?page=1&limit=500").then(r => setAllCustomers(r.data.customers || [])).catch(() => {});
+    api.get("/admin/customers?page=1&per_page=500").then(r => setAllCustomers(r.data.customers || [])).catch(() => {});
   }, []);
 
   const resetEditor = () => {
@@ -437,7 +437,7 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     api.get("/admin/intake-forms").then(r => setForms(r.data.forms)).catch(() => {});
-    api.get("/admin/customers?page=1&limit=500").then(r => setCustomers(r.data.customers || [])).catch(() => {});
+    api.get("/admin/customers?page=1&per_page=500").then(r => setCustomers(r.data.customers || [])).catch(() => {});
   }, []);
 
   const updateStatus = async (record: IntakeRecord, newStatus: string, reason?: string) => {

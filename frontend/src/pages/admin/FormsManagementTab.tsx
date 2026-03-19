@@ -114,8 +114,7 @@ export function FormsManagementTab() {
       toast.error(e?.response?.data?.detail || "Failed to create form");
     } finally {
       setSavingForm(false);
-    }
-  };
+    }  };
 
   const handleSaveEdit = async () => {
     if (!editSlide.form) return;
@@ -321,7 +320,7 @@ export function FormsManagementTab() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Form</AlertDialogTitle>
             <AlertDialogDescription>
-              Delete "{deleteTarget?.name}"? This cannot be undone. Products using this form will fall back to the Default Form.
+              Delete "{deleteTarget?.name}"? This cannot be undone. If any products are using this form, deletion will be blocked — remove it from those products first.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

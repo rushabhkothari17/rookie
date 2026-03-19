@@ -4,6 +4,7 @@ Collections: intake_forms, intake_form_records
 """
 from __future__ import annotations
 import asyncio
+import json
 import re
 import os
 from datetime import datetime, timezone
@@ -145,6 +146,14 @@ async def create_intake_form(
 ):
     tid = tenant_id_of(admin)
     now = now_iso()
+
+    # Validate form_schema is valid JSON before saving
+    if payload.form_schema and payload.form_schema != "[]":
+        try:
+            json.loads(payload.form_schema)
+        except (json.JSONDecodeError, ValueError):
+            raise HTTPException(400, "form_schema must be a valid JSON array")
+
     doc = {
         "id": make_id(),
         "tenant_id": tid,
@@ -195,12 +204,13 @@ async def update_intake_form(
         if val is not None:
             updates[field] = val
     if payload.form_schema is not None:
+        try:
+            json.loads(payload.form_schema)
+        except (json.JSONDecodeError, ValueError):
+            raise HTTPException(400, "form_schema must be a valid JSON array")
         updates["schema"] = payload.form_schema
     if payload.visibility_conditions is not None:
         updates["visibility_conditions"] = payload.visibility_conditions
-    elif hasattr(payload, "visibility_conditions") and payload.visibility_conditions is None:
-        # Explicitly cleared
-        updates["visibility_conditions"] = None
     await db.intake_forms.update_one({"id": form_id}, {"$set": updates})
     await create_audit_log(
         entity_type="intake_form", entity_id=form_id,
@@ -213,9 +223,17 @@ async def update_intake_form(
 @router.delete("/admin/intake-forms/{form_id}")
 async def delete_intake_form(form_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
-    res = await db.intake_forms.delete_one({**tf, "id": form_id})
-    if res.deleted_count == 0:
+    existing = await db.intake_forms.find_one({**tf, "id": form_id}, {"_id": 0, "id": 1})
+    if not existing:
         raise HTTPException(404, "Intake form not found")
+    records_count = await db.intake_form_records.count_documents({"intake_form_id": form_id})
+    if records_count > 0:
+        raise HTTPException(
+            400,
+            f"Cannot delete: {records_count} record(s) exist for this form. "
+            "Disable the form instead, or delete its records first."
+        )
+    await db.intake_forms.delete_one({"id": form_id})
     await create_audit_log(entity_type="intake_form", entity_id=form_id, action="deleted",
                            actor=admin.get("email", "admin"), details={})
     return {"message": "Deleted"}
@@ -290,17 +308,25 @@ async def admin_create_record(
     if not form:
         raise HTTPException(404, "Intake form not found")
 
-    customer = await db.users.find_one(
-        {"tenant_id": tid, "id": payload.customer_id, "role": "customer"}, {"_id": 0}
-    )
-    if not customer:
+    # Resolve customer UUID → user UUID so customer_id is consistent with portal-created records
+    customer_doc = await db.customers.find_one({**tf, "id": payload.customer_id}, {"_id": 0, "user_id": 1})
+    if not customer_doc:
         raise HTTPException(404, "Customer not found")
+    user = await db.users.find_one(
+        {"id": customer_doc["user_id"], "role": "customer"},
+        {"_id": 0, "id": 1, "full_name": 1, "email": 1},
+    )
+    if not user:
+        raise HTTPException(404, "Customer user account not found")
 
-    # Check if record already exists
+    # Store customer_id as user UUID — same as portal-created records
+    user_id = customer_doc["user_id"]
+
+    # Check if record already exists (using user UUID for consistency)
     existing = await db.intake_form_records.find_one({
         "tenant_id": tid,
         "intake_form_id": payload.intake_form_id,
-        "customer_id": payload.customer_id,
+        "customer_id": user_id,
     })
     if existing:
         raise HTTPException(400, "A record already exists for this customer and form. Use edit instead.")
@@ -312,9 +338,9 @@ async def admin_create_record(
         "tenant_id": tid,
         "intake_form_id": payload.intake_form_id,
         "intake_form_name": form["name"],
-        "customer_id": payload.customer_id,
-        "customer_name": customer.get("full_name") or customer.get("name", ""),
-        "customer_email": customer.get("email", ""),
+        "customer_id": user_id,
+        "customer_name": user.get("full_name") or user.get("name", ""),
+        "customer_email": user.get("email", ""),
         "responses": {},
         "signature_data_url": None,
         "signature_name": None,
@@ -366,7 +392,7 @@ async def admin_update_record(
     now = now_iso()
     # Archive current version before updating
     current_version = {
-        "version": record.get("version", 1),
+        "version": record.get("version", 0),
         "responses": record.get("responses", {}),
         "signature_data_url": record.get("signature_data_url"),
         "signature_name": record.get("signature_name"),
@@ -376,11 +402,16 @@ async def admin_update_record(
         "archived_at": now,
     }
 
+    current_status = record.get("status", "pending")
     updates: Dict[str, Any] = {
         "updated_at": now,
-        "version": record.get("version", 1) + 1,
-        "status": "submitted",
+        "version": record.get("version", 0) + 1,
     }
+    # Only transition to "submitted" from "pending" or "rejected" — preserve approved/under_review
+    if current_status in {"pending", "rejected"}:
+        updates["status"] = "submitted"
+        if not record.get("submitted_at"):
+            updates["submitted_at"] = now
     if payload.responses is not None:
         updates["responses"] = payload.responses
     if payload.signature_data_url is not None:
@@ -392,7 +423,8 @@ async def admin_update_record(
         if form and form.get("allow_skip_signature"):
             updates["signature_skipped"] = payload.skip_signature
     if updates.get("signature_data_url") or updates.get("signature_skipped"):
-        updates["submitted_at"] = now
+        if not record.get("submitted_at"):
+            updates["submitted_at"] = now
 
     # Check auto-approve
     form = await db.intake_forms.find_one({"id": record["intake_form_id"]}, {"_id": 0})
@@ -620,7 +652,6 @@ async def portal_get_intake_forms(user: Dict[str, Any] = Depends(get_current_use
 
     result = []
     for form in forms:
-        rules = form.get("visibility_rules", [])
         c_ids = form.get("customer_ids", [])
         if not _customer_matches_rules(customer, c_ids, form.get("visibility_conditions")):
             continue
@@ -653,7 +684,6 @@ async def portal_check_pending(user: Dict[str, Any] = Depends(get_current_user))
     blocking = []
 
     for form in forms:
-        rules = form.get("visibility_rules", [])
         c_ids = form.get("customer_ids", [])
         if not _customer_matches_rules(customer, c_ids, form.get("visibility_conditions")):
             continue

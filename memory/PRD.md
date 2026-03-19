@@ -778,6 +778,17 @@ Build a white-label service commerce platform with:
 - Google Drive & OneDrive Integration
 - Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button)
 
+### Session: Mar 2026 - Forms Module Deep Audit (8 Bugs Fixed)
+**Fixed (verified via curl/API tests):**
+1. **[Intake Forms/Backend] Admin record creation always 404'd** — Backend looked up `customers.id` in `users` collection (different UUID spaces). Fixed: resolve `customers.id → user_id` via `db.customers` first, then look up user. Also fixed both frontend customer list calls using wrong `limit=500` param (should be `per_page=500`) causing only 25 customers to appear in dropdown.
+2. **[Intake Forms/Backend] Toggle enabled silently cleared visibility conditions** — `elif hasattr(payload, "visibility_conditions") and payload.visibility_conditions is None` always fired on partial updates, nuking targeting rules. Fixed: removed the elif; only update `visibility_conditions` when explicitly provided.
+3. **[Intake Forms/Backend] Admin record edit reset approved records to "submitted"** — Status was unconditionally overwritten. Fixed: only transition `pending → submitted` or `rejected → submitted`. Approved/under_review status is preserved.
+4. **[Intake Forms/Backend] Delete left orphaned records** — No guard before deletion. Fixed: count existing records and block with 400 error if any exist.
+5. **[Forms/Frontend] Delete confirm text was wrong** — Said "Products will fall back" but backend actually blocks. Fixed confirmation text to correctly warn deletion is blocked.
+6. **[Intake Forms/Backend] No JSON validation on form_schema** — Stored any string without parsing. Fixed: try/except JSON parse in both create and update before saving.
+7. **[Intake Forms/Backend] customer_id filter used wrong ID type** — Resolved as part of Bug 1 fix (all records now use user UUID consistently).
+8. **[Intake Forms/Backend] Dead `rules` variable in portal endpoints** — Removed both `rules = form.get("visibility_rules", [])` dead code lines.
+
 ### Session: Mar 2026 - Customers & Users Deep Audit (10 Bugs Fixed)
 **Fixed (all verified via curl/API tests):**
 1. **[Customers/Frontend] Notes button crashed** — Missing `GET /admin/customers/{id}/notes` endpoint added to `customers.py`. Frontend call wrapped in try/catch.
