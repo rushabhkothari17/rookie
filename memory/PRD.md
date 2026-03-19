@@ -778,6 +778,19 @@ Build a white-label service commerce platform with:
 - Google Drive & OneDrive Integration
 - Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button)
 
+### Session: Mar 2026 - Customers & Users Deep Audit (10 Bugs Fixed)
+**Fixed (all verified via curl/API tests):**
+1. **[Customers/Frontend] Notes button crashed** — Missing `GET /admin/customers/{id}/notes` endpoint added to `customers.py`. Frontend call wrapped in try/catch.
+2. **[Customers/Backend] Admin-created customers invisible in payment stats** — `allowed_payment_modes: ["gocardless"]` now populated on new `customer_doc` in `admin_create_customer`.
+3. **[Customers/Backend] No password validation on customer create** — Added `_pw_ok()` helper to `customers.py`; customer create now enforces same password strength rules as admin user create.
+4. **[Users/Frontend] Partner sort was a no-op** — Sort comparator read `a.org_name` (always undefined); fixed to `a.tenant_name || a.org_name`.
+5. **[Customers/Backend] `allowed_payment_modes` missing from aggregation projection** — Added to `$project` stage so frontend receives it directly instead of relying on legacy fallback fields.
+6. **[Customers/Frontend] displayCustomers sort rebuilt userMap O(n²) times** — Moved `um` map construction before `r.sort()` call, not inside the comparator.
+7. **[Customers/Backend] Unescaped regex in name/email filters** — Applied `re.escape()` to single-value name and email filter patterns.
+8. **[Customers/Backend] Address update silently skipped when no record exists** — `update_customer` now inserts a new address record when none exists (upsert behaviour).
+9. **[Customers/Backend] Redundant `is_active` write to customers collection** — Removed; only `users.is_active` is the source of truth for customer status.
+10. **[Users/Frontend] Dead code cleanup** — Removed `partnerFilter` state (filter UI was deleted but state remained), removed legacy `"super_admin"` role from `isSuperAdmin`.
+
 ### Session: Mar 2026 - Commerce Modules Audit (Round 4: Customers, Products, Taxes, Promo Codes, Enquiries)
 **5 Bugs Fixed & Verified (iteration_318.json — 18/18 backend tests + 5/5 UI verifications passed):**
 1. **[Customers/Backend] Partner filter broken**: Filter compared partner_code strings (e.g. "edd") against tenant_id (UUID), always returning 0 results. Fixed by resolving partner codes → tenant UUIDs via DB lookup before filtering. (`customers.py` lines 213-223)

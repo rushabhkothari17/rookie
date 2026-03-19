@@ -548,7 +548,7 @@ export function UsersTab() {
   const { user: authUser } = useAuth();
   const isPlatformSuperAdmin = authUser?.role === "platform_super_admin";
   const isPartnerSuperAdmin = authUser?.role === "partner_super_admin";
-  const isSuperAdmin = isPlatformSuperAdmin || isPartnerSuperAdmin || authUser?.role === "super_admin";
+  const isSuperAdmin = isPlatformSuperAdmin || isPartnerSuperAdmin;
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
 
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -558,7 +558,6 @@ export function UsersTab() {
   const [total, setTotal] = useState(0);
   const PER_PAGE = 20;
   const [searchFilter, setSearchFilter] = useState("");
-  const [partnerFilter, setPartnerFilter] = useState("all");
   const [partners, setPartners] = useState<{ id: string; name: string }[]>([]);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [colFilters, setColFilters] = useState({
@@ -583,7 +582,7 @@ export function UsersTab() {
         let av: any = "", bv: any = "";
         if (colSort.col === "name") { av = (a.full_name || a.email || "").toLowerCase(); bv = (b.full_name || b.email || "").toLowerCase(); }
         else if (colSort.col === "role") { av = a.role; bv = b.role; }
-        else if (colSort.col === "partner") { av = a.org_name || ""; bv = b.org_name || ""; }
+        else if (colSort.col === "partner") { av = a.tenant_name || a.org_name || ""; bv = b.tenant_name || b.org_name || ""; }
         else if (colSort.col === "partnerCode") { av = a.tenant_code || ""; bv = b.tenant_code || ""; }
         else if (colSort.col === "modules") { av = Object.keys(a.module_permissions || {}).filter(k => a.module_permissions[k] !== "none").length; bv = Object.keys(b.module_permissions || {}).filter(k => b.module_permissions[k] !== "none").length; }
         else if (colSort.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
@@ -654,7 +653,6 @@ export function UsersTab() {
     try {
       const params: any = { page: p, per_page: PER_PAGE };
       if (searchFilter) params.search = searchFilter;
-      if (partnerFilter !== "all") params.partner_id = partnerFilter;
       const r = await api.get("/admin/users", { params });
       setAdminUsers(r.data.users || []);
       setTotalPages(r.data.total_pages || 1);
@@ -683,7 +681,7 @@ export function UsersTab() {
   }, [isPlatformAdmin]);
 
   useEffect(() => { load(); loadMeta(); }, []); // eslint-disable-line
-  useEffect(() => { const t = setTimeout(() => load(1), 300); return () => clearTimeout(t); }, [searchFilter, partnerFilter]); // eslint-disable-line
+  useEffect(() => { const t = setTimeout(() => load(1), 300); return () => clearTimeout(t); }, [searchFilter]); // eslint-disable-line
 
   // Check if selected org already has a super admin
   const checkOrgSuperAdmin = async (orgId: string) => {

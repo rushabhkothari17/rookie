@@ -28,6 +28,21 @@ _MODULE = "customers"
 async def _check(admin: Dict[str, Any], action: str):
     if not await _has_perm(admin, _MODULE, action):
         raise HTTPException(403, f"No {action} access to {_MODULE} module")
+
+
+def _pw_ok(pw: str) -> Optional[str]:
+    """Shared password strength validator (mirrors users.py)."""
+    if len(pw) < 10:
+        return "Password must be at least 10 characters"
+    if not re.search(r'[A-Z]', pw):
+        return "Password must contain at least one uppercase letter"
+    if not re.search(r'[a-z]', pw):
+        return "Password must contain at least one lowercase letter"
+    if not re.search(r'\d', pw):
+        return "Password must contain at least one number"
+    if not re.search(r'[!@#$%^&*()\-_=+\[\]{}|;:,.<>?/~`"]', pw):
+        return "Password must contain at least one special character"
+    return None
 from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 
 router = APIRouter(prefix="/api", tags=["admin-customers"])
@@ -195,7 +210,7 @@ async def admin_customers(
     if name:
         name_list = [n.strip() for n in name.split(",") if n.strip()]
         if len(name_list) == 1:
-            name_regex = {"$regex": name_list[0], "$options": "i"}
+            name_regex = {"$regex": re.escape(name_list[0]), "$options": "i"}
             match_filters.append({
                 "$or": [
                     {"user_data.full_name": name_regex},
@@ -205,7 +220,7 @@ async def admin_customers(
         else:
             or_conditions = []
             for n in name_list:
-                name_regex = {"$regex": f"^{n}$", "$options": "i"}
+                name_regex = {"$regex": f"^{re.escape(n)}$", "$options": "i"}
                 or_conditions.append({"user_data.full_name": name_regex})
                 or_conditions.append({"company_name": name_regex})
             match_filters.append({"$or": or_conditions})
@@ -237,7 +252,7 @@ async def admin_customers(
     if email:
         email_list = [e.strip() for e in email.split(",") if e.strip()]
         if len(email_list) == 1:
-            match_filters.append({"user_data.email": {"$regex": email_list[0], "$options": "i"}})
+            match_filters.append({"user_data.email": {"$regex": re.escape(email_list[0]), "$options": "i"}})
         else:
             match_filters.append({"user_data.email": {"$in": email_list}})
     
@@ -265,6 +280,7 @@ async def admin_customers(
                     "company_name": "$company_name",
                     "allow_card_payment": "$allow_card_payment",
                     "allow_bank_transfer": "$allow_bank_transfer",
+                    "allowed_payment_modes": "$allowed_payment_modes",
                     "stripe_customer_id": "$stripe_customer_id",
                     "gocardless_customer_id": "$gocardless_customer_id",
                     "currency": "$currency",
@@ -412,6 +428,10 @@ async def admin_create_customer(
         detail = "Email already registered as a customer in this organisation" if role == "customer" else "Email belongs to an existing user in this organisation"
         raise HTTPException(status_code=400, detail=detail)
 
+    pw_err = _pw_ok(payload.password)
+    if pw_err:
+        raise HTTPException(status_code=400, detail=pw_err)
+
     user_id = make_id()
     customer_id = make_id()
     hashed = pwd_context.hash(payload.password)
@@ -457,6 +477,7 @@ async def admin_create_customer(
         "currency_locked": False,
         "allow_bank_transfer": True,
         "allow_card_payment": False,
+        "allowed_payment_modes": ["gocardless"],
         "stripe_customer_id": None,
         "zoho_crm_contact_id": None,
         "zoho_books_contact_id": None,
@@ -593,6 +614,25 @@ async def update_customer(
             updated_addr = await db.addresses.find_one({"customer_id": customer_id}, {"_id": 0})
             if updated_addr:
                 asyncio.create_task(auto_sync_to_zoho_crm(tf.get("tenant_id", ""), "addresses", updated_addr, "update"))
+    else:
+        # No address record exists — create one so the update is not silently dropped
+        new_addr: Dict[str, Any] = {
+            "id": make_id(),
+            "customer_id": customer_id,
+            "tenant_id": customer.get("tenant_id", ""),
+            "line1": address_data.line1 or "",
+            "line2": address_data.line2 or "",
+            "city": address_data.city or "",
+            "region": address_data.region or "",
+            "postal": address_data.postal or "",
+            "country": address_data.country or "",
+            "is_primary": True,
+            "created_at": now_iso(),
+        }
+        if any([new_addr["line1"], new_addr["city"], new_addr["country"]]):
+            await db.addresses.insert_one(new_addr)
+            new_addr.pop("_id", None)
+            asyncio.create_task(auto_sync_to_zoho_crm(tf.get("tenant_id", ""), "addresses", new_addr, "create"))
 
     await create_audit_log(
         entity_type="customer",
@@ -650,7 +690,7 @@ async def admin_set_customer_active(
     user = linked_user
     old_state = user.get("is_active", True) if user else True
 
-    await db.customers.update_one({"id": customer_id}, {"$set": {"is_active": active, "updated_at": now_iso()}})
+    await db.customers.update_one({"id": customer_id}, {"$set": {"updated_at": now_iso()}})
     if user:
         await db.users.update_one({"id": user["id"]}, {"$set": {"is_active": active, "updated_at": now_iso()}})
 
@@ -731,6 +771,21 @@ async def admin_send_customer_reset_link(
         details={"email": user["email"], "sent_by": admin.get("email"), "mocked": result.get("status") == "mocked"},
     )
     return {"message": f"Password reset email sent to {user['email']}", "mocked": result.get("status") == "mocked"}
+
+
+@router.get("/admin/customers/{customer_id}/notes")
+async def get_customer_notes(
+    customer_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tf = get_tenant_filter(admin)
+    customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0, "id": 1})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    notes = await db.customer_notes.find(
+        {"customer_id": customer_id}, {"_id": 0}
+    ).sort("timestamp", -1).to_list(200)
+    return {"notes": notes}
 
 
 @router.get("/admin/customers/{customer_id}/logs")

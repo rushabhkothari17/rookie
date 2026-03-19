@@ -324,9 +324,10 @@ export function CustomersTab() {
   const displayCustomers = useMemo(() => {
     const r = [...customers];
     if (colSort) {
+      // Build userMap once before sorting — not inside the comparator
+      const um: Record<string, any> = {};
+      users.forEach((u: any) => { um[u.id] = u; });
       r.sort((a, b) => {
-        const um: Record<string, any> = {};
-        users.forEach((u: any) => { um[u.id] = u; });
         let av: any = "", bv: any = "";
         if (colSort.col === "name") { av = (um[a.user_id]?.full_name || a.company_name || "").toLowerCase(); bv = (um[b.user_id]?.full_name || b.company_name || "").toLowerCase(); }
         else if (colSort.col === "email") { av = um[a.user_id]?.email || ""; bv = um[b.user_id]?.email || ""; }
@@ -402,7 +403,7 @@ export function CustomersTab() {
                   <TableCell>
                     <div className="flex gap-1 items-center flex-nowrap">
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id, country: normaliseCountry(address.country || customer.country || "", countries), region: address.region || customer.region || "" }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
-                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const res = await api.get(`/admin/customers/${customer.id}/notes`); setCustomerNotes(res.data.notes || []); setViewNotesCustomer(customer); }} data-testid={`admin-customer-notes-${customer.id}`}>Notes</Button>
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { try { const res = await api.get(`/admin/customers/${customer.id}/notes`); setCustomerNotes(res.data.notes || []); } catch { setCustomerNotes([]); } setViewNotesCustomer(customer); }} data-testid={`admin-customer-notes-${customer.id}`}>Notes</Button>
                       <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/customers/${customer.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-customer-logs-${customer.id}`}>Logs</Button>
                       {user.id !== authUser?.id && (
                         <Button variant={isActive ? "destructive" : "outline"} size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmToggleCustomer({id: customer.id, active: isActive})} data-testid={`admin-customer-toggle-active-${customer.id}`}>{isActive ? "Deactivate" : "Activate"}</Button>
