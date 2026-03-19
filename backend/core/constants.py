@@ -10,6 +10,7 @@ ALLOWED_ORDER_STATUSES = [
     "completed",
     "cancelled",
     "refunded",
+    "partially_refunded",
     "disputed",
     "scope_pending",
     "scope_requested",

@@ -701,16 +701,52 @@ Build a white-label service commerce platform with:
 **Files modified:** `checkout.py`, `webhooks.py`, `gocardless.py`, `scheduler_service.py`
 **Test result:** 34/34 backend tests passed (iteration_314.json)
 
+### Session: Mar 2026 - Orders & Subscriptions Comprehensive Audit (17 Fixes)
+**Backend fixes:**
+- **X-1**: Added `created_from`/`created_to` server-side date filter to `GET /admin/orders` — was completely non-functional client-side
+- **X-2**: Added `email_filter`/`customer_name_filter` server-side params to `GET /admin/orders` via customer/user DB lookup — was client-side only, never triggered reload
+- **X-3 Orders**: Sort field alias map in `orders.py` → `pay_date`→`payment_date`, `method`→`payment_method`, `sub_number`→`subscription_number`, `partner`→`partner_code`, `tax`→`tax_amount`; 8 sort columns were silently broken
+- **X-3 Subscriptions**: Sort field alias map in `subscriptions.py` → `email`→`customer_email`, `plan`→`plan_name`, `tax`→`tax_amount`, `payment`→`payment_method`, `sub_number`→`subscription_number`; 5 sort columns were silently broken
+- **C-2**: Fixed product filter in orders — was post-pagination Python filter, now pre-pagination MongoDB query; `total_count` was wrong
+- **H-3**: Multi-select filters now use `$in` for `order_number`, `sub_number`, `processor_id`, `payment_method` in orders — were single-value regex
+- **M-8 (backend)**: Added `currency` field to `OrderUpdate` model and `update_order` handler
+- **M-9**: Fixed currency filter conflict in subscriptions — `amount_currency`/`tax_currency` were overwriting the `currency` filter; now merged as a set
+- **M-11**: `contract_end_date` now uses `relativedelta` (calendar months) instead of `timedelta(days=30*months)` approximation
+- **M-12**: Removed duplicate customer DB fetch in `admin_cancel_subscription` (was fetching twice)
+- **C-1 (backend)**: `ManualSubscriptionCreate.payment_method` default changed from deprecated `"offline"` to `"manual"`
+- **constants.py**: Added `"partially_refunded"` to `ALLOWED_ORDER_STATUSES` so admins can filter by it
+
+**Frontend fixes:**
+- **X-1 (frontend)**: Removed client-side date filter from `load()`; sends `created_from`/`created_to` to API
+- **X-2 (frontend)**: Removed client-side email/customer filter; sends `email_filter`/`customer_name_filter` to API
+- **X-3 (frontend)**: Fixed all 5 OrdersTab and 5 SubscriptionsTab colKey values to match actual MongoDB fields
+- **useEffect deps**: Added `emailFilter`, `customerFilter`, `startDate`, `endDate` to OrdersTab useEffect dep array
+- **M-6**: Added `partially_refunded` → `aa-badge-warning` case to `statusColor()` in OrdersTab
+- **M-7**: Subtotal and Fee inputs in Order edit dialog now auto-recalculate Total on change
+- **M-8 (frontend)**: Added Currency select dropdown to Order edit dialog
+- **M-10**: `uniqueSubNumbers` in SubscriptionsTab now uses `Array.from(new Set(...))` to prevent duplicates
+- **C-1 (frontend)**: `EMPTY_MANUAL_SUB.payment_method` changed from `"offline"` to `"manual"`
+- **data-testid**: Added `data-testid="admin-order-currency-edit-select"` to currency combobox in edit dialog
+
+**Test result:** 59/59 backend tests passed (iteration_315.json); all 15 frontend features verified
+
 ### P0 — Next Priority
 
+- AI Chatbot implementation
+- Users table: add radio filters for Role & Status columns
+- Landing page build
+
+### P2 — Upcoming
 - Google Drive & OneDrive Integration
 - Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button)
-- Move `ProductConditionBuilder` to shared components directory (Refactor)
 
 ### P3 — Future / Backlog
-- Google Drive & OneDrive Integration
-- Customer Portal: self-service subscription cancellation, renewal dates, Reorder button
+- Move `ProductConditionBuilder` to shared components directory (Refactor)
 - UsersTab.tsx refactor (1200+ lines, break into smaller components)
+- Allow customers to browse their own submission history
+- "Send Invoice" button to email invoice PDFs from admin panel
+- Automated dunning flow / Dunning Dashboard
+
 
 ## Credentials
 - Platform Admin: admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts

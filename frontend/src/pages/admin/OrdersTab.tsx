@@ -549,8 +549,8 @@ export function OrdersTab() {
                 {/* Currency — M-8 */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Currency</label>
-                  <Select value={selectedOrder.currency || "USD"} onValueChange={v => setSelectedOrder({ ...selectedOrder, currency: v })} data-testid="admin-order-currency-edit-select">
-                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                  <Select value={selectedOrder.currency || "USD"} onValueChange={v => setSelectedOrder({ ...selectedOrder, currency: v })}>
+                    <SelectTrigger className="w-full bg-white" data-testid="admin-order-currency-edit-select"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(supportedCurrencies.length ? supportedCurrencies : ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                     </SelectContent>
