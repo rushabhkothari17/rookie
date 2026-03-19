@@ -14,7 +14,7 @@ Tests 8 features:
 import asyncio
 import sys
 
-BASE_URL = "https://platform-audit-16.preview.emergentagent.com"
+BASE_URL = "https://platform-health-scan.preview.emergentagent.com"
 results = {}
 
 async def login(page):

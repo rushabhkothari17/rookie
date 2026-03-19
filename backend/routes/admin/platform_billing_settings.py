@@ -53,6 +53,13 @@ async def update_billing_settings(
             raise HTTPException(status_code=400, detail="overdue_warning_days must be >= 0")
         current["overdue_warning_days"] = payload.overdue_warning_days
 
+    # Cross-field validation: warning must trigger before grace period ends
+    if current["overdue_warning_days"] >= current["overdue_grace_days"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Warning days ({current['overdue_warning_days']}) must be less than grace days ({current['overdue_grace_days']})"
+        )
+
     current["id"] = SETTINGS_ID
     current["updated_at"] = now_iso()
     await db.platform_settings.replace_one(

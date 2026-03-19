@@ -672,7 +672,7 @@ export function PartnerSubscriptionsTab() {
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex justify-end gap-1">
-                    <Button size="sm" variant="ghost" title="Audit Logs" onClick={() => { setLogsUrl(`/admin/partner-subscriptions/${sub.id}`); setShowAuditLogs(true); }} data-testid={`sub-logs-${sub.id}`}>
+                    <Button size="sm" variant="ghost" title="Audit Logs" onClick={() => { setLogsUrl(`/admin/partner-subscriptions/${sub.id}/logs`); setShowAuditLogs(true); }} data-testid={`sub-logs-${sub.id}`}>
                       <ScrollText className="h-4 w-4" />
                     </Button>
                     <Button size="sm" variant="ghost" title="Edit" onClick={() => setEditSub(sub)} data-testid={`edit-sub-${sub.id}`}>

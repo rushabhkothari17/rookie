@@ -93,9 +93,10 @@ async def resolve_partner_submission(
                 }},
             )
             # Also update any active subscription plan reference
+            # Update plan reference on subscriptions but preserve their negotiated amounts
             await db.partner_subscriptions.update_many(
                 {"partner_id": sub["partner_id"], "status": {"$in": ["active", "pending"]}},
-                {"$set": {"plan_id": new_plan["id"], "plan_name": new_plan["name"], "amount": new_plan.get("monthly_price", 0), "updated_at": now}},
+                {"$set": {"plan_id": new_plan["id"], "plan_name": new_plan["name"], "updated_at": now}},
             )
             update["applied_plan_id"] = new_plan["id"]
             update["applied_plan_name"] = new_plan["name"]

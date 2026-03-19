@@ -4,7 +4,8 @@ import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, Info } from "lucide-react";
+import { Loader2, Save, Info, Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function BillingSettingsTab() {
   const [settings, setSettings] = useState({ overdue_grace_days: 7, overdue_warning_days: 3 });

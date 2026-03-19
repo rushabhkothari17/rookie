@@ -204,7 +204,7 @@ async def list_partner_orders(
     limit: int = 20,
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
-    query: Dict[str, Any] = {}
+    query: Dict[str, Any] = {"deleted_at": {"$exists": False}}
     if partner_id:
         query["partner_id"] = partner_id
     if status:
@@ -616,6 +616,30 @@ async def create_partner_subscription(
         ))
 
     return {"subscription": doc}
+
+
+@router.get("/admin/partner-subscriptions/{sub_id}/logs")
+async def get_partner_subscription_logs(
+    sub_id: str,
+    page: int = 1,
+    limit: int = 20,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    """Get paginated audit logs for a specific partner subscription."""
+    sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0, "id": 1})
+    if sub is None:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    query = {"entity_type": "partner_subscription", "entity_id": sub_id}
+    total = await db.audit_logs.count_documents(query)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {
+        "logs": logs,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": max(1, (total + limit - 1) // limit),
+    }
 
 
 @router.get("/admin/partner-subscriptions/{sub_id}")
